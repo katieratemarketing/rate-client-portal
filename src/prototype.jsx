@@ -127,10 +127,9 @@ function TTag({t, themes}) {
   if (!t) return null; const v = (themes||DEFAULT_THEMES)[t]; if(!v) return null;
   return (<span style={{display:"inline-flex",alignItems:"center",gap:4,background:v.c+"10",color:v.c,padding:"2px 8px",borderRadius:6,fontSize:9,fontWeight:600,border:`1px dashed ${v.c}30`}}><span style={{width:4,height:4,borderRadius:"50%",background:v.c}}/>{v.l}</span>);
 }
-function TypeTag({ch}) {
+function TypeTag({ch, size}) {
   const v = CH[ch]; if(!v) return null;
-  const isEmoji = v.tag === v.i;
-  return (<span style={{display:"inline-flex",alignItems:"center",fontSize:isEmoji?11:9,fontWeight:800,color:R.dark,letterSpacing:.3,flexShrink:0}}>{v.tag}</span>);
+  return (<span title={v.l} style={{display:"inline-flex",alignItems:"center",fontSize:size||13,lineHeight:1,flexShrink:0}}>{v.i}</span>);
 }
 function Eyebrow({children}) {
   return (<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}><span style={{width:20,height:2,background:R.lime,borderRadius:1}}/><span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:R.dark}}>{children}</span></div>);
@@ -241,21 +240,27 @@ function ItemForm({item, areas, themes, onSave, onDelete, onCancel}) {
 /* ══════════════════════════════════════════════
    CHANNEL DROPDOWN
    ══════════════════════════════════════════════ */
+const TYPE_FILTER_OPTIONS = [...Object.entries(CH).map(([k,c])=>({k,label:c.l,icon:c.i})), {k:"keydates",label:"Key Dates",icon:"📅"}];
+
 function ChDrop({value, onChange}) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
-  const label = value ? `${CH[value].i} ${CH[value].l}` : "All types";
+  const toggle = (k) => onChange(value.includes(k) ? value.filter(x=>x!==k) : [...value,k]);
+  const label = value.length===0 ? "All types" : value.length===1 ? (TYPE_FILTER_OPTIONS.find(o=>o.k===value[0])||{}).label : `${value.length} types`;
   return (
     <div ref={ref} style={{position:"relative"}}>
-      <button onClick={()=>setOpen(!open)} style={{padding:"5px 12px",borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer",background:R.white,color:value?R.black:R.dark,border:`1px solid ${R.mid}`,display:"flex",alignItems:"center",gap:4}}>
+      <button onClick={()=>setOpen(!open)} style={{padding:"5px 12px",borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer",background:R.white,color:value.length?R.black:R.dark,border:`1px solid ${R.mid}`,display:"flex",alignItems:"center",gap:4}}>
         {label} <span style={{fontSize:8,marginLeft:2}}>▾</span>
       </button>
       {open&&(
-        <div style={{position:"absolute",top:"100%",right:0,marginTop:4,zIndex:50,background:R.white,borderRadius:12,border:`1px solid ${R.mid}`,boxShadow:"0 8px 24px rgba(0,0,0,.1)",overflow:"hidden",minWidth:170,maxHeight:280,overflowY:"auto"}}>
-          <button onClick={()=>{onChange(null);setOpen(false);}} style={{display:"block",width:"100%",padding:"8px 14px",border:"none",cursor:"pointer",background:!value?R.grey:R.white,fontSize:11,fontWeight:600,color:R.black,textAlign:"left"}}>All types</button>
-          {Object.entries(CH).map(([k,c])=>(
-            <button key={k} onClick={()=>{onChange(k);setOpen(false);}} style={{display:"block",width:"100%",padding:"8px 14px",border:"none",cursor:"pointer",background:value===k?R.grey:R.white,fontSize:11,fontWeight:500,color:R.black,textAlign:"left"}}>{c.i}  {c.l}</button>
+        <div style={{position:"absolute",top:"100%",right:0,marginTop:4,zIndex:50,background:R.white,borderRadius:12,border:`1px solid ${R.mid}`,boxShadow:"0 8px 24px rgba(0,0,0,.1)",overflow:"hidden",minWidth:190,maxHeight:300,overflowY:"auto"}}>
+          <button onClick={()=>onChange([])} style={{display:"block",width:"100%",padding:"8px 14px",border:"none",borderBottom:`1px solid ${R.mid}`,cursor:"pointer",background:value.length===0?R.grey:R.white,fontSize:11,fontWeight:700,color:R.black,textAlign:"left"}}>All types</button>
+          {TYPE_FILTER_OPTIONS.map(o=>(
+            <label key={o.k} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"8px 14px",cursor:"pointer",background:value.includes(o.k)?R.grey:R.white,fontSize:11,fontWeight:500,color:R.black}}>
+              <input type="checkbox" checked={value.includes(o.k)} onChange={()=>toggle(o.k)} style={{margin:0}}/>
+              <span>{o.icon}</span><span>{o.label}</span>
+            </label>
           ))}
         </div>
       )}
@@ -398,26 +403,36 @@ function StrategyView({strategies, areas, fArea, admin, monthSummary, onToggleSu
    KEY DATES
    ══════════════════════════════════════════════ */
 function KeyDatesView({events, areas, onSelect}) {
+  const sorted = [...events].sort((a,b)=>new Date(a.start)-new Date(b.start));
+  let lastMonthKey = null;
   return (
     <div style={{maxWidth:680}}>
       <Eyebrow>Key Dates</Eyebrow>
       <h2 style={{fontSize:22,fontWeight:800,color:R.black,margin:"0 0 20px",letterSpacing:-.5}}>What's coming up.</h2>
-      {[...events].sort((a,b)=>new Date(a.start)-new Date(b.start)).map(ev=>{
+      {sorted.map((ev,idx)=>{
         const s=new Date(ev.start),e=new Date(ev.end),same=ev.start===ev.end;
+        const monthKey = `${s.getFullYear()}-${s.getMonth()}`;
+        const showHeader = monthKey !== lastMonthKey;
+        lastMonthKey = monthKey;
         return (
-          <button key={ev.id} onClick={()=>onSelect(ev)} style={{display:"flex",gap:14,padding:"16px 0",borderBottom:`1px solid ${R.mid}`,width:"100%",background:"none",border:"none",borderBottomStyle:"solid",cursor:"pointer",textAlign:"left"}}>
-            <div style={{minWidth:50,background:R.black,color:R.white,borderRadius:10,padding:"8px 10px",textAlign:"center",alignSelf:"flex-start"}}>
-              <div style={{fontSize:8,fontWeight:600,opacity:.5,letterSpacing:.5}}>{same?DAYS[(s.getDay()||7)-1].toUpperCase():"FROM"}</div>
-              <div style={{fontSize:20,fontWeight:800}}>{s.getDate()}</div>
-              <div style={{fontSize:8,opacity:.5}}>{MN[s.getMonth()]}</div>
-            </div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:14,fontWeight:700,color:R.black,marginBottom:4}}>{ev.title}</div>
-              <div style={{fontSize:10,color:R.dark,marginBottom:6}}>{same?s.toLocaleDateString("en-GB",{day:"numeric",month:"long"}):`${s.toLocaleDateString("en-GB",{day:"numeric",month:"short"})} – ${e.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}`}</div>
-              <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:4}}>{ev.areas.map(a=>(<ATag key={a} a={a} areas={areas} sm/>))}</div>
-              <div style={{fontSize:11,color:R.dark,lineHeight:1.5}}>{ev.notes}</div>
-            </div>
-          </button>
+          <div key={ev.id}>
+            {showHeader && (
+              <div style={{fontSize:12,fontWeight:800,color:R.black,textTransform:"uppercase",letterSpacing:.8,margin:idx===0?"0 0 4px":"20px 0 4px"}}>{s.toLocaleDateString("en-GB",{month:"long",year:"numeric"})}</div>
+            )}
+            <button onClick={()=>onSelect(ev)} style={{display:"flex",gap:14,padding:"16px 0",borderBottom:`1px solid ${R.mid}`,width:"100%",background:"none",border:"none",borderBottomStyle:"solid",cursor:"pointer",textAlign:"left"}}>
+              <div style={{minWidth:50,background:R.black,color:R.white,borderRadius:10,padding:"8px 10px",textAlign:"center",alignSelf:"flex-start"}}>
+                <div style={{fontSize:8,fontWeight:600,opacity:.5,letterSpacing:.5}}>{same?DAYS[(s.getDay()||7)-1].toUpperCase():"FROM"}</div>
+                <div style={{fontSize:20,fontWeight:800}}>{s.getDate()}</div>
+                <div style={{fontSize:8,opacity:.5}}>{MN[s.getMonth()]}</div>
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:700,color:R.black,marginBottom:4}}>{ev.title}</div>
+                <div style={{fontSize:10,color:R.dark,marginBottom:6}}>{same?s.toLocaleDateString("en-GB",{day:"numeric",month:"long"}):`${s.toLocaleDateString("en-GB",{day:"numeric",month:"short"})} – ${e.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}`}</div>
+                <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:4}}>{ev.areas.map(a=>(<ATag key={a} a={a} areas={areas} sm/>))}</div>
+                <div style={{fontSize:11,color:R.dark,lineHeight:1.5}}>{ev.notes}</div>
+              </div>
+            </button>
+          </div>
         );
       })}
     </div>
@@ -517,12 +532,13 @@ function ApprovalsView({items, areas, themes, onSelect}) {
 /* ══════════════════════════════════════════════
    SIDE PANEL
    ══════════════════════════════════════════════ */
-function Panel({item, items, events, areas, themes, admin, onClose, onApprove, onEdit, onAddComment, onSelectLinked, onSelectEvent}) {
+function Panel({item, items, events, areas, themes, admin, onClose, onApprove, onEdit, onAddComment, onSelectLinked, onSelectEvent, backTo, onBack}) {
   const [actionMode, setActionMode] = useState(null); // null | "approve" | "reject"
   const [draft, setDraft] = useState("");
   const [commentDraft, setCommentDraft] = useState("");
+  const scrollRef = useRef(null);
 
-  useEffect(()=>{ setActionMode(null); setDraft(""); setCommentDraft(""); }, [item?.id]);
+  useEffect(()=>{ setActionMode(null); setDraft(""); setCommentDraft(""); if(scrollRef.current) scrollRef.current.scrollTop = 0; }, [item?.id]);
 
   if(!item) return null;
   const a = (areas||{})[item.area]||{color:R.dark};
@@ -544,6 +560,9 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
   return (
     <div style={{position:"fixed",top:0,right:0,bottom:0,width:360,background:R.white,borderLeft:`1px solid ${R.mid}`,boxShadow:"-8px 0 32px rgba(0,0,0,.08)",zIndex:100,display:"flex",flexDirection:"column"}}>
       <div style={{padding:"16px 20px 12px",borderBottom:`1px solid ${R.mid}`}}>
+        {backTo && (
+          <button onClick={onBack} style={{display:"flex",alignItems:"center",gap:4,background:"none",border:"none",cursor:"pointer",padding:0,marginBottom:8,fontSize:11,fontWeight:600,color:R.dark}}>← Back to {backTo}</button>
+        )}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
           <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap",alignItems:"center"}}>
             <ATag a={item.area} areas={areas}/>
@@ -553,7 +572,7 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
         </div>
         <h3 style={{fontSize:15,fontWeight:700,color:R.black,margin:0,lineHeight:1.3}}>{item.title}</h3>
       </div>
-      <div style={{flex:1,overflow:"auto",padding:"16px 20px"}}>
+      <div ref={scrollRef} style={{flex:1,overflow:"auto",padding:"16px 20px"}}>
         <div style={{marginBottom:14,display:"flex",gap:8,alignItems:"center"}}>
           <SBadge s={item.state}/>
           {admin&&(<button onClick={()=>onEdit(item)} style={{fontSize:10,color:R.dark,background:R.grey,border:"none",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontWeight:600}}>Edit</button>)}
@@ -632,9 +651,10 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
 /* ══════════════════════════════════════════════
    CALENDAR
    ══════════════════════════════════════════════ */
-function CalView({items, areas, fArea, fCh, onSelect, sel, admin, onAdd}) {
+function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, admin, onAdd, onSelectEvent}) {
   const g=mkGrid(2026,7), today="2026-08-06";
   const [hoverId, setHoverId] = useState(null);
+  const showKeyDates = fTypes.length===0 || fTypes.includes("keydates");
   return (
     <div>
       {admin&&(
@@ -649,32 +669,49 @@ function CalView({items, areas, fArea, fCh, onSelect, sel, admin, onAdd}) {
         {g.map((day,i)=>{
           if(!day) return (<div key={i} style={{minHeight:96,background:"#f0f0f0",borderRadius:10}}/>);
           const ds=fd(2026,7,day),isT=ds===today;
-          const di=items.filter(it=>it.date===ds&&(!fArea||it.area===fArea)&&(!fCh||it.ch===fCh));
+          const di=items.filter(it=>it.date===ds&&(!fArea||it.area===fArea)&&(fTypes.length===0||fTypes.includes(it.ch))&&(fStates.length===0||fStates.includes(it.state)));
+          const dEvents = showKeyDates ? events.filter(ev=>ev.start===ds&&(!fArea||ev.areas.includes(fArea))) : [];
           return (
-            <div key={i} style={{minHeight:96,background:isT?"#f5f3ff":R.white,borderRadius:10,padding:4,border:isT?`2px solid ${R.lime}`:`1px solid ${R.mid}`,overflow:"hidden"}}>
+            <div key={i} style={{minHeight:96,background:isT?"#f5f3ff":R.white,borderRadius:10,padding:4,border:isT?`2px solid ${R.lime}`:`1px solid ${R.mid}`}}>
               <div style={{fontSize:11,fontWeight:isT?800:400,color:isT?R.black:R.dark,paddingLeft:2,marginBottom:3}}>{day}</div>
+              {dEvents.map(ev=>{
+                const spansDays = ev.end !== ev.start;
+                return (
+                  <button key={`ev-${ev.id}`} onClick={()=>onSelectEvent(ev)} title={spansDays?`${ev.title} (through ${new Date(ev.end).toLocaleDateString("en-GB",{day:"numeric",month:"short"})})`:ev.title} style={{display:"flex",alignItems:"center",gap:4,width:"100%",background:R.black,color:R.white,borderRadius:4,padding:"3px 5px",marginBottom:2,fontSize:9,fontWeight:700,border:"none",cursor:"pointer",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>
+                    <span style={{flexShrink:0}}>📅</span><span style={{overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{ev.title}</span>
+                    {spansDays && <span style={{flexShrink:0,opacity:.6}}>→</span>}
+                  </button>
+                );
+              })}
               {di.map(item=>{
                 const wip=item.state==="wip",rev=item.state==="review",inp=item.state==="input";
                 const needsAttn = rev||inp;
                 const ac=(areas[item.area]||{color:R.dark}).color;
                 const hovered = hoverId===item.id;
-                const typeInfo = CH[item.ch]||{tag:item.ch?.slice(0,3).toUpperCase()};
+                const typeInfo = CH[item.ch]||{i:"•",l:item.ch};
+                const stateInfo = ST[item.state]||{};
                 return (
                   <button key={item.id} onClick={()=>onSelect(sel?.id===item.id?null:item)}
                     onMouseEnter={()=>setHoverId(item.id)} onMouseLeave={()=>setHoverId(h=>h===item.id?null:h)}
                     style={{
                     position:"relative",
                     display:"flex",alignItems:"center",gap:4,background:wip?R.grey:ac+"0c",
-                    borderLeft:`3px solid ${ac}`,borderRadius:4,padding:"3px 5px 3px 6px",cursor:"pointer",
+                    borderLeft:wip?`3px dashed ${ac}`:`3px solid ${ac}`,borderRadius:4,padding:"3px 5px 3px 6px",cursor:"pointer",
                     boxShadow:sel?.id===item.id?`0 0 0 1.5px ${ac} inset`:"none",
-                    fontSize:9,color:wip?"#a1a1aa":R.black,textAlign:"left",width:"100%",
-                    fontWeight:500,lineHeight:1.2,marginBottom:2,opacity:wip?.55:1,
+                    fontSize:9,color:wip?R.dark:R.black,textAlign:"left",width:"100%",
+                    fontWeight:500,lineHeight:1.2,marginBottom:2,
                     overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis",
                   }}>
-                    <span style={{fontSize:typeInfo.tag===typeInfo.i?10:7,fontWeight:800,color:ac,flexShrink:0,letterSpacing:.2}}>{typeInfo.tag}</span>
+                    <span style={{fontSize:11,lineHeight:1,flexShrink:0}}>{typeInfo.i}</span>
                     <span style={{overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{item.title}</span>
-                    {needsAttn && hovered && (<span style={{flexShrink:0,fontSize:7,fontWeight:800,background:rev?"#f59e42":"#ef4444",color:R.white,padding:"1px 4px",borderRadius:3,letterSpacing:.3}}>{rev?"REVIEW":"ACTION"}</span>)}
-                    {needsAttn && !hovered && (<span title={rev?"Ready for review":"Awaiting client input"} style={{flexShrink:0,width:6,height:6,borderRadius:"50%",background:rev?"#f59e42":"#ef4444"}}/>)}
+                    {needsAttn && (<span title={rev?"Ready for review":"Awaiting client input"} style={{flexShrink:0,width:6,height:6,borderRadius:"50%",background:rev?"#f59e42":"#ef4444"}}/>)}
+                    {hovered && (
+                      <div style={{position:"absolute",top:"100%",left:0,marginTop:3,zIndex:60,background:R.black,color:R.white,padding:"8px 10px",borderRadius:8,minWidth:170,maxWidth:230,boxShadow:"0 8px 20px rgba(0,0,0,.3)",pointerEvents:"none"}}>
+                        <div style={{fontSize:11,fontWeight:700,marginBottom:4,whiteSpace:"normal",lineHeight:1.3}}>{item.title}</div>
+                        <div style={{fontSize:9,opacity:.75,marginBottom:3}}>{typeInfo.i} {typeInfo.l}{item.platform?` · ${item.platform}`:""}</div>
+                        <div style={{fontSize:9,fontWeight:700,color:stateInfo.c||"#fff"}}>{stateInfo.l||item.state}</div>
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -722,8 +759,10 @@ export default function Portal() {
 
   const [tab, setTab] = useState("calendar");
   const [fArea, setFA] = useState(null);
-  const [fCh, setFC] = useState(null);
+  const [fTypes, setFTypes] = useState([]);
+  const [fStates, setFStates] = useState([]);
   const [sel, setSel] = useState(null);
+  const [selStack, setSelStack] = useState([]);
   const [selEvent, setSelEvent] = useState(null);
   const [modal, setModal] = useState(null); // null | "add" | {editing: item} | "addStrategy" | {editingStrategy: s}
 
@@ -783,7 +822,7 @@ export default function Portal() {
 
   function handleDeleteItem(id) {
     updateItems(items.filter(i=>i.id!==id));
-    setSel(null);
+    closePanel();
     setModal(null);
   }
 
@@ -801,8 +840,12 @@ export default function Portal() {
     setModal(null);
   }
 
-  function selectLinked(li) { setSelEvent(null); setSel(li); }
-  function selectEventFromItem(ev) { setSel(null); setSelEvent(ev); }
+  function openItem(it) { setSelEvent(null); setSelStack([]); setSel(it); }
+  function selectLinked(li) { setSelEvent(null); setSelStack(s => sel ? [...s, sel] : s); setSel(li); }
+  function panelBack() { setSelStack(s => { if(!s.length) return s; setSel(s[s.length-1]); return s.slice(0,-1); }); }
+  function closePanel() { setSel(null); setSelStack([]); }
+  function selectEventFromItem(ev) { setSel(null); setSelStack([]); setSelEvent(ev); }
+  function toggleFState(k) { setFStates(s => s.includes(k) ? s.filter(x=>x!==k) : [...s,k]); }
 
   const rc = useMemo(()=>items.filter(i=>i.state==="review").length,[items]);
   const ic = useMemo(()=>items.filter(i=>i.state==="input").length,[items]);
@@ -837,7 +880,7 @@ export default function Portal() {
         {/* Tabs */}
         <div style={{display:"flex",gap:0,overflowX:"auto"}}>
           {[{k:"strategy",l:"Strategy"},{k:"dates",l:"Key Dates"},{k:"calendar",l:"Calendar"},{k:"approvals",l:"Approvals",count:rc+ic},{k:"reporting",l:"Reporting"}].map(t=>(
-            <button key={t.k} onClick={()=>{setTab(t.k);setSel(null);setSelEvent(null);}} style={{
+            <button key={t.k} onClick={()=>{setTab(t.k);closePanel();setSelEvent(null);}} style={{
               background:"none",border:"none",cursor:"pointer",padding:"10px 16px",fontSize:11,fontWeight:600,
               color:tab===t.k?R.lime:"#666",borderBottom:tab===t.k?`2px solid ${R.lime}`:"2px solid transparent",
               display:"flex",alignItems:"center",gap:5,
@@ -851,27 +894,35 @@ export default function Portal() {
 
       {/* FILTERS */}
       {showFilters&&(
-        <div style={{background:R.white,padding:"10px 24px",borderBottom:`1px solid ${R.mid}`,display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+        <div style={{background:R.white,padding:"10px 24px",borderBottom:tab==="calendar"?"none":`1px solid ${R.mid}`,display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
           <button onClick={()=>setFA(null)} style={{padding:"5px 12px",borderRadius:8,fontSize:10,fontWeight:700,cursor:"pointer",background:!fArea?R.black:R.white,color:!fArea?R.white:R.dark,border:`1px solid ${!fArea?R.black:R.mid}`}}>All brands</button>
           {Object.entries(areas).map(([k,a])=>(
             <button key={k} onClick={()=>setFA(fArea===k?null:k)} style={{padding:"5px 12px",borderRadius:8,fontSize:10,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:5,background:fArea===k?a.color+"14":R.white,color:fArea===k?a.color:R.dark,border:`1px solid ${fArea===k?a.color+"40":R.mid}`}}><Dot c={a.color} s={6}/>{a.label}</button>
           ))}
-          {tab==="calendar"&&(<><div style={{flex:1}}/><ChDrop value={fCh} onChange={setFC}/></>)}
+          {tab==="calendar"&&(<><div style={{flex:1}}/><ChDrop value={fTypes} onChange={setFTypes}/></>)}
+        </div>
+      )}
+      {tab==="calendar"&&(
+        <div style={{background:R.white,padding:"0 24px 10px",borderBottom:`1px solid ${R.mid}`,display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+          <button onClick={()=>setFStates([])} style={{padding:"4px 10px",borderRadius:8,fontSize:9,fontWeight:700,cursor:"pointer",background:!fStates.length?R.black:R.white,color:!fStates.length?R.white:R.dark,border:`1px solid ${!fStates.length?R.black:R.mid}`}}>All statuses</button>
+          {Object.entries(ST).map(([k,v])=>(
+            <button key={k} onClick={()=>toggleFState(k)} style={{padding:"4px 10px",borderRadius:8,fontSize:9,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:5,background:fStates.includes(k)?v.c+"14":R.white,color:fStates.includes(k)?v.c:R.dark,border:`1px solid ${fStates.includes(k)?v.c+"40":R.mid}`}}><Dot c={v.c} s={6}/>{v.l}</button>
+          ))}
         </div>
       )}
 
       {/* CONTENT */}
       <div style={{padding:"20px 24px 48px",marginRight:(sel||selEvent)?360:0,transition:"margin-right .2s"}}>
         {tab==="strategy"&&(<StrategyView strategies={strategies} areas={areas} fArea={fArea} admin={admin} monthSummary={monthSummary} onToggleSummary={(v)=>updateMonthSummary({...monthSummary,enabled:v})} onEditSummary={(text)=>updateMonthSummary({...monthSummary,text})} onOpenForm={(s)=>setModal(s?{editingStrategy:s}:"addStrategy")}/>)}
-        {tab==="dates"&&(<KeyDatesView events={events} areas={areas} onSelect={(ev)=>{setSel(null);setSelEvent(ev);}}/>)}
-        {tab==="calendar"&&(<CalView items={items} areas={areas} fArea={fArea} fCh={fCh} onSelect={(it)=>{setSelEvent(null);setSel(it);}} sel={sel} admin={admin} onAdd={()=>setModal("add")}/>)}
-        {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onSelect={(it)=>{setSelEvent(null);setSel(it);}}/>)}
+        {tab==="dates"&&(<KeyDatesView events={events} areas={areas} onSelect={(ev)=>{closePanel();setSelEvent(ev);}}/>)}
+        {tab==="calendar"&&(<CalView items={items} events={events} areas={areas} fArea={fArea} fTypes={fTypes} fStates={fStates} onSelect={(it)=>{setSelEvent(null);openItem(it);}} onSelectEvent={(ev)=>{closePanel();setSelEvent(ev);}} sel={sel} admin={admin} onAdd={()=>setModal("add")}/>)}
+        {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onSelect={(it)=>{setSelEvent(null);openItem(it);}}/>)}
         {tab==="reporting"&&(<ReportingView/>)}
       </div>
 
       {/* SIDE PANELS */}
-      <Panel item={sel} items={items} events={events} areas={areas} themes={themes} admin={admin} onClose={()=>setSel(null)} onApprove={approve} onEdit={(it)=>setModal({editing:it})} onAddComment={addComment} onSelectLinked={selectLinked} onSelectEvent={selectEventFromItem}/>
-      <EventPanel event={selEvent} items={items} areas={areas} themes={themes} onClose={()=>setSelEvent(null)} onSelectItem={(it)=>{setSelEvent(null);setSel(it);}}/>
+      <Panel item={sel} items={items} events={events} areas={areas} themes={themes} admin={admin} onClose={closePanel} onApprove={approve} onEdit={(it)=>setModal({editing:it})} onAddComment={addComment} onSelectLinked={selectLinked} onSelectEvent={selectEventFromItem} backTo={selStack.length?selStack[selStack.length-1].title:null} onBack={panelBack}/>
+      <EventPanel event={selEvent} items={items} areas={areas} themes={themes} onClose={()=>setSelEvent(null)} onSelectItem={(it)=>{setSelEvent(null);openItem(it);}}/>
 
       {/* MODALS */}
       <Modal open={modal==="add"} onClose={()=>setModal(null)} title="Add Content Item">

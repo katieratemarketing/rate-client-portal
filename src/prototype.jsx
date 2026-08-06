@@ -14,7 +14,20 @@ const DEFAULT_AREAS = {
   trade:{label:"Trade",color:"#6b7280",short:"TRD"},
 };
 
-const CH = {social:{l:"Social",i:"📱"},email:{l:"Email",i:"✉️"},blog:{l:"Blog",i:"📝"},campaign:{l:"Campaign",i:"🚀"},pr:{l:"PR",i:"📰"},web:{l:"Web",i:"🌐"}};
+const CH = {
+  social:{l:"Social",i:"📱",tag:"SOC"},
+  email:{l:"Email",i:"✉️",tag:"EML"},
+  blog:{l:"Blog",i:"📝",tag:"BLG"},
+  campaign:{l:"Campaign",i:"🚀",tag:"CMP"},
+  pr:{l:"PR",i:"📰",tag:"PR"},
+  web:{l:"Web",i:"🌐",tag:"WEB"},
+  paid:{l:"Paid",i:"📢",tag:"ADS"},
+  shoot:{l:"Shoot",i:"🎬",tag:"🎬"},
+  event:{l:"Event",i:"📅",tag:"EVT"},
+  strategy:{l:"Strategy",i:"🎯",tag:"STR"},
+  report:{l:"Report",i:"📊",tag:"RPT"},
+  design:{l:"Design",i:"🎨",tag:"DSN"},
+};
 
 const ST = {
   wip:{l:"In Progress",c:"#a1a1aa",bg:"#f4f4f5"},
@@ -25,43 +38,48 @@ const ST = {
 };
 
 const DEFAULT_THEMES = {
-  christie:{l:"Agatha Christie Exhibition",c:"#7c3aed"},
-  booklovers:{l:"National Book Lovers Day",c:"#ec4899"},
-  b2s:{l:"Back to School",c:"#06b6d4"},
-  newrelease:{l:"August New Releases",c:"#f97316"},
+  christie:{l:"Agatha Christie Exhibition",c:"#7c3aed",brief:"Major tentpole tied to the London Museum exhibition (Aug–Oct). Coordinated across Ulverscroft and Trade — social series, blog content and trade press outreach spotlighting large-print Christie titles."},
+  booklovers:{l:"National Book Lovers Day",c:"#ec4899",brief:"Cross-brand awareness day (9 Aug). Pre-scheduled content across Ulverscroft, uLibrary and The Reading House — must be ready by the 7th."},
+  b2s:{l:"Back to School",c:"#06b6d4",brief:"Education-sector push targeting school librarians ahead of the new term. uLibrary-led, with Reading House support."},
+  newrelease:{l:"August New Releases",c:"#f97316",brief:"Rolling spotlight on new large-print and audio titles released in August."},
 };
 
 const DEFAULT_EVENTS = [
-  {id:"k1",title:"Agatha Christie — London Museum",start:"2026-08-01",end:"2026-10-31",areas:["ulverscroft","trade"],notes:"Major tentpole. Social series, blog, trade press."},
-  {id:"k2",title:"National Book Lovers Day",start:"2026-08-09",end:"2026-08-09",areas:["ulverscroft","readinghouse","ulibrary"],notes:"Cross-brand. Pre-schedule by 7th."},
-  {id:"k3",title:"Spark Expo Australia",start:"2026-08-04",end:"2026-08-06",areas:["ulibrary","trade"],notes:"Trade event. uLibrary demo."},
-  {id:"k4",title:"Back to School window",start:"2026-08-17",end:"2026-08-31",areas:["ulibrary","readinghouse"],notes:"Target schools and libraries."},
+  {id:"k1",title:"Agatha Christie — London Museum",start:"2026-08-01",end:"2026-10-31",areas:["ulverscroft","trade"],notes:"Major tentpole. Social series, blog, trade press.",theme:"christie",venue:"London Museum",links:[{label:"Exhibition site",url:"https://example.com/christie-exhibition"}]},
+  {id:"k2",title:"National Book Lovers Day",start:"2026-08-09",end:"2026-08-09",areas:["ulverscroft","readinghouse","ulibrary"],notes:"Cross-brand. Pre-schedule by 7th.",theme:"booklovers",venue:"",links:[]},
+  {id:"k3",title:"Spark Expo Australia",start:"2026-08-04",end:"2026-08-06",areas:["ulibrary","trade"],notes:"Trade event. uLibrary demo.",theme:"",venue:"Sydney Exhibition Centre",links:[{label:"Event website",url:"https://example.com/spark-expo"}]},
+  {id:"k4",title:"Back to School window",start:"2026-08-17",end:"2026-08-31",areas:["ulibrary","readinghouse"],notes:"Target schools and libraries.",theme:"b2s",venue:"",links:[]},
 ];
 
-const DEFAULT_STRAT = {
-  ulverscroft:{focus:"Leverage the Agatha Christie exhibition as a tentpole moment. Spotlight new releases through weekly social features.",audience:"Library authorities, general readers (50+), visually impaired readers",kpis:["Social engagement +15% vs July","Email open rate >30%","Blog traffic +20%"],channels:"Instagram, Facebook, X, Kit, Website blog",tone:"Warm, accessible, trusted.",msg:"The world's best stories, made accessible to everyone."},
-  ulibrary:{focus:"Drive retention through Book Club engagement. Launch Back to School campaign targeting education sector.",audience:"School librarians, education buyers, digital subscribers",kpis:["Newsletter opens >35%","Back to School: 50 trial sign-ups","Retention >85%"],channels:"LinkedIn, Instagram, Kit, Landing pages",tone:"Modern, digital-first, practical.",msg:"The digital library that readers actually use."},
-  readinghouse:{focus:"Build consistent social presence with behind-the-scenes content. Monthly digest for footfall.",audience:"Local readers, gift buyers, community book lovers",kpis:["Social following +200","Email list +50","Reel views avg >1k"],channels:"Instagram, TikTok, Facebook, Kit",tone:"Friendly, personal, cosy.",msg:"Your local bookshop, with something for everyone."},
-  trade:{focus:"Autumn catalogue distribution. Pitch Christie exhibition angle to The Bookseller.",audience:"Audible, Bolinda, W.F. Howes, trade press",kpis:["1 feature in The Bookseller","Catalogue to all partners","2 new enquiries"],channels:"Email (direct), Trade press",tone:"Professional, concise, industry-fluent.",msg:"The partner publishers choose for accessible formats."},
+const DEFAULT_STRATEGIES = [
+  {id:"s1",name:"Ulverscroft Content Strategy",brands:["ulverscroft"],startDate:"2026-08-01",endDate:"2026-08-31",b2b:"B2C",productFocus:"Large print & audio backlist, new releases",purpose:"Leverage the Agatha Christie exhibition as a tentpole moment to reach library authorities and general readers.",goal:"Grow engaged readership and strengthen library authority relationships ahead of Q4 renewals.",kpis:["Social engagement +15% vs July","Email open rate >30%","Blog traffic +20%"],audience:"Library authorities, general readers (50+), visually impaired readers",tone:"Warm, accessible, trusted.",message:"The world's best stories, made accessible to everyone.",channels:"Instagram, Facebook, X, Kit, Website blog",frequency:"3–4 posts per week",cta:"Browse the catalogue",budget:"",hashtags:"#Ulverscroft #LargePrint"},
+  {id:"s2",name:"uLibrary Growth Strategy",brands:["ulibrary"],startDate:"2026-08-01",endDate:"2026-08-31",b2b:"Both",productFocus:"Digital library subscriptions, Book Club",purpose:"Drive retention through Book Club engagement while opening a new education-sector channel.",goal:"Grow school/library sign-ups and lift subscriber retention above 85%.",kpis:["Newsletter opens >35%","Back to School: 50 trial sign-ups","Retention >85%"],audience:"School librarians, education buyers, digital subscribers",tone:"Modern, digital-first, practical.",message:"The digital library that readers actually use.",channels:"LinkedIn, Instagram, Kit, Landing pages",frequency:"2 posts per week + monthly newsletter",cta:"Start a free trial",budget:"£350",hashtags:"#uLibrary #BackToSchool"},
+  {id:"s3",name:"The Reading House — Community Strategy",brands:["readinghouse"],startDate:"2026-08-01",endDate:"2026-08-31",b2b:"B2C",productFocus:"In-store experience, local events",purpose:"Build consistent social presence with behind-the-scenes content to drive footfall.",goal:"Increase local awareness and repeat footfall through community-first content.",kpis:["Social following +200","Email list +50","Reel views avg >1k"],audience:"Local readers, gift buyers, community book lovers",tone:"Friendly, personal, cosy.",message:"Your local bookshop, with something for everyone.",channels:"Instagram, TikTok, Facebook, Kit",frequency:"4–5 posts per week",cta:"Visit us in store",budget:"",hashtags:"#ReadingHouse #ShopLocal"},
+  {id:"s4",name:"Trade — Autumn Catalogue Push",brands:["trade"],startDate:"2026-08-01",endDate:"2026-09-30",b2b:"B2B",productFocus:"Autumn catalogue, Christie large-print range",purpose:"Distribute the autumn catalogue and pitch the Christie exhibition angle to trade press.",goal:"Land trade press coverage and generate new partner enquiries.",kpis:["1 feature in The Bookseller","Catalogue to all partners","2 new enquiries"],audience:"Audible, Bolinda, W.F. Howes, trade press",tone:"Professional, concise, industry-fluent.",message:"The partner publishers choose for accessible formats.",channels:"Email (direct), Trade press",frequency:"Monthly",cta:"Request the catalogue",budget:"",hashtags:""},
+];
+
+const DEFAULT_MONTH_SUMMARY = {
+  enabled:true,
+  text:"Leverage the Agatha Christie exhibition as a tentpole across Ulverscroft and Trade. Drive uLibrary retention through Book Club engagement. Build consistent social presence for The Reading House.",
 };
 
 const DEFAULT_ITEMS = [
-  {id:1,date:"2026-08-03",area:"ulverscroft",ch:"social",title:"Shadow of the Wind – carousel",state:"approved",platform:"IG / FB",notes:"Cover art + pull quotes",theme:"newrelease",url:""},
-  {id:2,date:"2026-08-05",area:"ulibrary",ch:"email",title:"August Book Club newsletter",state:"review",platform:"Kit",notes:"Black History Month feature",theme:"",url:""},
-  {id:3,date:"2026-08-06",area:"ulibrary",ch:"social",title:"Library of the Month announcement",state:"input",platform:"IG / LinkedIn",notes:"Need title confirmation from Daniel",theme:"",url:""},
-  {id:4,date:"2026-08-07",area:"ulverscroft",ch:"social",title:"Christie LP spotlight",state:"review",platform:"IG / X",notes:"Large print editions tie-in",theme:"christie",url:""},
-  {id:5,date:"2026-08-07",area:"ulverscroft",ch:"blog",title:"Christie — reading guide",state:"wip",platform:"Website",notes:"Curated LP Christie titles",theme:"christie",url:""},
-  {id:6,date:"2026-08-09",area:"readinghouse",ch:"social",title:"Book Lovers Day — staff picks reel",state:"review",platform:"IG / TikTok",notes:"Team picks filmed in-store",theme:"booklovers",url:""},
-  {id:7,date:"2026-08-09",area:"ulverscroft",ch:"email",title:"Book Lovers Day — reader email",state:"wip",platform:"Kit",notes:"Curated list + offer code",theme:"booklovers",url:""},
-  {id:8,date:"2026-08-11",area:"ulibrary",ch:"email",title:"uLibrary Monthly Update",state:"wip",platform:"Kit",notes:"Usage stats, retention",theme:"",url:""},
-  {id:9,date:"2026-08-13",area:"trade",ch:"email",title:"Trade catalogue — Autumn titles",state:"approved",platform:"Email",notes:"Sent to Audible, Bolinda",theme:"",url:""},
-  {id:10,date:"2026-08-18",area:"ulverscroft",ch:"social",title:"Land by Maggie O'Farrell",state:"wip",platform:"IG / FB",notes:"Review quote post",theme:"newrelease",url:""},
-  {id:11,date:"2026-08-25",area:"ulibrary",ch:"campaign",title:"Back to School — outreach",state:"review",platform:"Email + LP",notes:"School librarians, free trial",theme:"b2s",url:""},
-  {id:12,date:"2026-08-28",area:"ulverscroft",ch:"email",title:"Book of the Week — Honesty",state:"review",platform:"Kit",notes:"Carried from July series",theme:"",url:""},
+  {id:1,date:"2026-08-03",area:"ulverscroft",ch:"social",title:"Shadow of the Wind – carousel",state:"approved",platform:"IG / FB",notes:"Cover art + pull quotes",theme:"newrelease",url:"",comments:[],history:[]},
+  {id:2,date:"2026-08-05",area:"ulibrary",ch:"email",title:"August Book Club newsletter",state:"review",platform:"Kit",notes:"Black History Month feature",theme:"",url:"",comments:[],history:[]},
+  {id:3,date:"2026-08-06",area:"ulibrary",ch:"social",title:"Library of the Month announcement",state:"input",platform:"IG / LinkedIn",notes:"Need title confirmation from Daniel",theme:"",url:"",comments:[{id:"c1",author:"Rate Team",ts:"2026-08-05T10:12:00Z",text:"Can you confirm the library name before we schedule this?"}],history:[{id:"h1",ts:"2026-08-05T10:12:00Z",from:"review",to:"input",by:"Rate Team"}]},
+  {id:4,date:"2026-08-07",area:"ulverscroft",ch:"social",title:"Christie LP spotlight",state:"review",platform:"IG / X",notes:"Large print editions tie-in",theme:"christie",url:"",comments:[],history:[]},
+  {id:5,date:"2026-08-07",area:"ulverscroft",ch:"blog",title:"Christie — reading guide",state:"wip",platform:"Website",notes:"Curated LP Christie titles",theme:"christie",url:"",comments:[],history:[]},
+  {id:6,date:"2026-08-09",area:"readinghouse",ch:"social",title:"Book Lovers Day — staff picks reel",state:"review",platform:"IG / TikTok",notes:"Team picks filmed in-store",theme:"booklovers",url:"",comments:[],history:[]},
+  {id:7,date:"2026-08-09",area:"ulverscroft",ch:"email",title:"Book Lovers Day — reader email",state:"wip",platform:"Kit",notes:"Curated list + offer code",theme:"booklovers",url:"",comments:[],history:[]},
+  {id:8,date:"2026-08-11",area:"ulibrary",ch:"email",title:"uLibrary Monthly Update",state:"wip",platform:"Kit",notes:"Usage stats, retention",theme:"",url:"",comments:[],history:[]},
+  {id:9,date:"2026-08-13",area:"trade",ch:"email",title:"Trade catalogue — Autumn titles",state:"approved",platform:"Email",notes:"Sent to Audible, Bolinda",theme:"",url:"",comments:[],history:[]},
+  {id:10,date:"2026-08-18",area:"ulverscroft",ch:"social",title:"Land by Maggie O'Farrell",state:"wip",platform:"IG / FB",notes:"Review quote post",theme:"newrelease",url:"",comments:[],history:[]},
+  {id:11,date:"2026-08-25",area:"ulibrary",ch:"campaign",title:"Back to School — outreach",state:"review",platform:"Email + LP",notes:"School librarians, free trial",theme:"b2s",url:"",comments:[],history:[]},
+  {id:12,date:"2026-08-28",area:"ulverscroft",ch:"email",title:"Book of the Week — Honesty",state:"review",platform:"Kit",notes:"Carried from July series",theme:"",url:"",comments:[],history:[]},
 ];
 
 /* ══════════════════════════════════════════════
-   STORAGE (shared = true → single source of truth)
+   STORAGE
    ══════════════════════════════════════════════ */
 const STORAGE_KEY = "rate-portal-ulverscroft";
 
@@ -84,6 +102,8 @@ const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec
 function mkGrid(y,m){const f=new Date(y,m,1),l=new Date(y,m+1,0);let s=f.getDay()===0?6:f.getDay()-1;const d=[];for(let i=0;i<s;i++)d.push(null);for(let i=1;i<=l.getDate();i++)d.push(i);while(d.length%7)d.push(null);return d;}
 function fd(y,m,d){return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;}
 function nextId(items){return items.length?Math.max(...items.map(i=>i.id))+1:1;}
+function nextStrId(list,prefix){let n=list.length+1;while(list.some(x=>x.id===`${prefix}${n}`))n++;return `${prefix}${n}`;}
+function fmtTs(ts){ try { return new Date(ts).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); } catch(e){ return ts; } }
 
 /* ══════════════════════════════════════════════
    MICRO COMPONENTS
@@ -99,22 +119,51 @@ function SBadge({s}) {
   const v = ST[s]; if(!v) return null;
   return (<span style={{display:"inline-flex",alignItems:"center",gap:5,background:v.bg,color:v.c,padding:"3px 10px",borderRadius:8,fontSize:10,fontWeight:600}}><span style={{width:7,height:7,borderRadius:"50%",background:v.c}}/>{v.l}</span>);
 }
+function SDot({s}) {
+  const v = ST[s]; if(!v) return null;
+  return (<span title={v.l} style={{width:7,height:7,borderRadius:"50%",background:v.c,flexShrink:0}}/>);
+}
 function TTag({t, themes}) {
   if (!t) return null; const v = (themes||DEFAULT_THEMES)[t]; if(!v) return null;
   return (<span style={{display:"inline-flex",alignItems:"center",gap:4,background:v.c+"10",color:v.c,padding:"2px 8px",borderRadius:6,fontSize:9,fontWeight:600,border:`1px dashed ${v.c}30`}}><span style={{width:4,height:4,borderRadius:"50%",background:v.c}}/>{v.l}</span>);
+}
+function TypeTag({ch}) {
+  const v = CH[ch]; if(!v) return null;
+  const isEmoji = v.tag === v.i;
+  return (<span style={{display:"inline-flex",alignItems:"center",fontSize:isEmoji?11:9,fontWeight:800,color:R.dark,letterSpacing:.3,flexShrink:0}}>{v.tag}</span>);
 }
 function Eyebrow({children}) {
   return (<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}><span style={{width:20,height:2,background:R.lime,borderRadius:1}}/><span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:R.dark}}>{children}</span></div>);
 }
 
 /* ══════════════════════════════════════════════
+   LINKED CONTENT LIST (reusable)
+   ══════════════════════════════════════════════ */
+function LinkedContentList({items, areas, onSelect, title}) {
+  if (!items || !items.length) return null;
+  return (
+    <div style={{marginTop:10}}>
+      <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>{title||"Linked content"}</div>
+      {items.map(li=>(
+        <button key={li.id} onClick={()=>onSelect(li)} style={{display:"flex",width:"100%",alignItems:"center",gap:7,padding:"7px 10px",background:R.grey,border:"none",borderRadius:8,marginBottom:4,fontSize:11,color:R.black,cursor:"pointer",textAlign:"left"}}>
+          <TypeTag ch={li.ch}/>
+          <span style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{li.title}</span>
+          <ATag a={li.area} areas={areas} sm/>
+          <SDot s={li.state}/>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
    MODAL WRAPPER
    ══════════════════════════════════════════════ */
-function Modal({open, onClose, title, children}) {
+function Modal({open, onClose, title, children, wide}) {
   if (!open) return null;
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={onClose}>
-      <div style={{background:R.white,borderRadius:16,width:"100%",maxWidth:480,maxHeight:"85vh",overflow:"auto",padding:24}} onClick={e=>e.stopPropagation()}>
+      <div style={{background:R.white,borderRadius:16,width:"100%",maxWidth:wide?640:480,maxHeight:"85vh",overflow:"auto",padding:24}} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
           <h2 style={{fontSize:16,fontWeight:800,margin:0,color:R.black}}>{title}</h2>
           <button onClick={onClose} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",color:R.dark}}>×</button>
@@ -143,7 +192,7 @@ const selectStyle = {...inputStyle, background:R.white};
    ITEM FORM (add + edit)
    ══════════════════════════════════════════════ */
 function ItemForm({item, areas, themes, onSave, onDelete, onCancel}) {
-  const [f, setF] = useState(item || {title:"",date:"2026-08-15",area:Object.keys(areas)[0],ch:"social",state:"wip",platform:"",notes:"",theme:"",url:""});
+  const [f, setF] = useState(item || {title:"",date:"2026-08-15",area:Object.keys(areas)[0],ch:"social",state:"wip",platform:"",notes:"",theme:"",url:"",comments:[],history:[]});
   const upd = (k,v) => setF(p=>({...p,[k]:v}));
 
   return (
@@ -163,7 +212,7 @@ function ItemForm({item, areas, themes, onSave, onDelete, onCancel}) {
             {Object.entries(areas).map(([k,v])=>(<option key={k} value={k}>{v.label}</option>))}
           </select>
         </Field>
-        <Field label="Channel">
+        <Field label="Activity Type">
           <select style={selectStyle} value={f.ch} onChange={e=>upd("ch",e.target.value)}>
             {Object.entries(CH).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
           </select>
@@ -172,7 +221,7 @@ function ItemForm({item, areas, themes, onSave, onDelete, onCancel}) {
       <Field label="Platform"><input style={inputStyle} value={f.platform} onChange={e=>upd("platform",e.target.value)} placeholder="e.g. IG / Facebook"/></Field>
       <Field label="Notes"><textarea style={{...inputStyle,minHeight:60,resize:"vertical"}} value={f.notes} onChange={e=>upd("notes",e.target.value)}/></Field>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        <Field label="Theme (optional)">
+        <Field label="Theme / Campaign (optional)">
           <select style={selectStyle} value={f.theme||""} onChange={e=>upd("theme",e.target.value)}>
             <option value="">None</option>
             {Object.entries(themes).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
@@ -181,7 +230,7 @@ function ItemForm({item, areas, themes, onSave, onDelete, onCancel}) {
         <Field label="Output URL"><input style={inputStyle} value={f.url||""} onChange={e=>upd("url",e.target.value)} placeholder="https://..."/></Field>
       </div>
       <div style={{display:"flex",gap:8,marginTop:16}}>
-        <button onClick={()=>onSave(f)} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"10px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>{item?"Save Changes":"Add Item"}</button>
+        <button onClick={()=>onSave({...f,comments:f.comments||[],history:f.history||[]})} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"10px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>{item?"Save Changes":"Add Item"}</button>
         <button onClick={onCancel} style={{padding:"10px 16px",background:R.white,color:R.dark,border:`1px solid ${R.mid}`,borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer"}}>Cancel</button>
         {item && onDelete && (<button onClick={()=>onDelete(item.id)} style={{padding:"10px 16px",background:R.white,color:"#ef4444",border:"1px solid #ef4444",borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer"}}>Delete</button>)}
       </div>
@@ -196,15 +245,15 @@ function ChDrop({value, onChange}) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
-  const label = value ? `${CH[value].i} ${CH[value].l}` : "All channels";
+  const label = value ? `${CH[value].i} ${CH[value].l}` : "All types";
   return (
     <div ref={ref} style={{position:"relative"}}>
       <button onClick={()=>setOpen(!open)} style={{padding:"5px 12px",borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer",background:R.white,color:value?R.black:R.dark,border:`1px solid ${R.mid}`,display:"flex",alignItems:"center",gap:4}}>
         {label} <span style={{fontSize:8,marginLeft:2}}>▾</span>
       </button>
       {open&&(
-        <div style={{position:"absolute",top:"100%",left:0,marginTop:4,zIndex:50,background:R.white,borderRadius:12,border:`1px solid ${R.mid}`,boxShadow:"0 8px 24px rgba(0,0,0,.1)",overflow:"hidden",minWidth:160}}>
-          <button onClick={()=>{onChange(null);setOpen(false);}} style={{display:"block",width:"100%",padding:"8px 14px",border:"none",cursor:"pointer",background:!value?R.grey:R.white,fontSize:11,fontWeight:600,color:R.black,textAlign:"left"}}>All channels</button>
+        <div style={{position:"absolute",top:"100%",right:0,marginTop:4,zIndex:50,background:R.white,borderRadius:12,border:`1px solid ${R.mid}`,boxShadow:"0 8px 24px rgba(0,0,0,.1)",overflow:"hidden",minWidth:170,maxHeight:280,overflowY:"auto"}}>
+          <button onClick={()=>{onChange(null);setOpen(false);}} style={{display:"block",width:"100%",padding:"8px 14px",border:"none",cursor:"pointer",background:!value?R.grey:R.white,fontSize:11,fontWeight:600,color:R.black,textAlign:"left"}}>All types</button>
           {Object.entries(CH).map(([k,c])=>(
             <button key={k} onClick={()=>{onChange(k);setOpen(false);}} style={{display:"block",width:"100%",padding:"8px 14px",border:"none",cursor:"pointer",background:value===k?R.grey:R.white,fontSize:11,fontWeight:500,color:R.black,textAlign:"left"}}>{c.i}  {c.l}</button>
           ))}
@@ -215,63 +264,128 @@ function ChDrop({value, onChange}) {
 }
 
 /* ══════════════════════════════════════════════
-   STRATEGY VIEW
+   STRATEGY FORM (add + edit)
    ══════════════════════════════════════════════ */
-function StrategyView({strat, areas, fArea, admin, onEditStrat}) {
-  const areaKeys = fArea ? [fArea] : Object.keys(strat);
-  const [editing, setEditing] = useState(null);
-  const [editData, setEditData] = useState(null);
-
-  function startEdit(ak) {
-    setEditing(ak);
-    setEditData({...strat[ak], kpis: [...strat[ak].kpis]});
-  }
-  function saveEdit() {
-    onEditStrat(editing, editData);
-    setEditing(null);
-  }
+function StrategyForm({strategy, areas, onSave, onDelete, onCancel}) {
+  const [f, setF] = useState(strategy || {name:"",brands:[],startDate:"2026-08-01",endDate:"2026-08-31",b2b:"B2C",productFocus:"",purpose:"",goal:"",kpis:[],audience:"",tone:"",message:"",channels:"",frequency:"",cta:"",budget:"",hashtags:""});
+  const upd = (k,v) => setF(p=>({...p,[k]:v}));
+  const toggleBrand = (k) => setF(p=>({...p,brands:p.brands.includes(k)?p.brands.filter(b=>b!==k):[...p.brands,k]}));
 
   return (
-    <div style={{maxWidth:720}}>
-      <div style={{background:R.black,borderRadius:16,padding:"20px 24px",marginBottom:24,color:R.white}}>
-        <Eyebrow>This Month</Eyebrow>
-        <p style={{fontSize:13,lineHeight:1.7,margin:0,color:"#bbb"}}>
-          Leverage the Agatha Christie exhibition as a tentpole across Ulverscroft and Trade. Drive uLibrary retention through Book Club engagement. Build consistent social presence for The Reading House.
-        </p>
+    <div>
+      <Field label="Campaign / Strategy Name"><input style={inputStyle} value={f.name} onChange={e=>upd("name",e.target.value)} placeholder="e.g. Q3 Content Strategy"/></Field>
+      <Field label="Brand(s)">
+        <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+          {Object.entries(areas).map(([k,a])=>(
+            <button key={k} type="button" onClick={()=>toggleBrand(k)} style={{padding:"5px 10px",borderRadius:8,fontSize:10,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:5,background:f.brands.includes(k)?a.color+"14":R.white,color:f.brands.includes(k)?a.color:R.dark,border:`1px solid ${f.brands.includes(k)?a.color+"40":R.mid}`}}><Dot c={a.color} s={6}/>{a.label}</button>
+          ))}
+        </div>
+      </Field>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Field label="Start Date"><input type="date" style={inputStyle} value={f.startDate} onChange={e=>upd("startDate",e.target.value)}/></Field>
+        <Field label="End Date"><input type="date" style={inputStyle} value={f.endDate} onChange={e=>upd("endDate",e.target.value)}/></Field>
       </div>
-      {areaKeys.map(ak=>{
-        const a=areas[ak],s=strat[ak]; if(!a||!s) return null;
-        const isEditing = editing === ak;
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Field label="B2B or B2C">
+          <select style={selectStyle} value={f.b2b} onChange={e=>upd("b2b",e.target.value)}>
+            <option value="B2B">B2B</option><option value="B2C">B2C</option><option value="Both">Both</option>
+          </select>
+        </Field>
+        <Field label="Product / Service Focus"><input style={inputStyle} value={f.productFocus} onChange={e=>upd("productFocus",e.target.value)}/></Field>
+      </div>
+      <Field label="Purpose"><textarea style={{...inputStyle,minHeight:50,resize:"vertical"}} value={f.purpose} onChange={e=>upd("purpose",e.target.value)} placeholder="Why this campaign/strategy exists"/></Field>
+      <Field label="Ultimate Goal"><textarea style={{...inputStyle,minHeight:50,resize:"vertical"}} value={f.goal} onChange={e=>upd("goal",e.target.value)} placeholder="The business outcome we're driving"/></Field>
+      <Field label="KPIs (one per line)"><textarea style={{...inputStyle,minHeight:60,resize:"vertical"}} value={(f.kpis||[]).join("\n")} onChange={e=>upd("kpis",e.target.value.split("\n"))}/></Field>
+      <Field label="Target Audience"><textarea style={{...inputStyle,minHeight:50,resize:"vertical"}} value={f.audience} onChange={e=>upd("audience",e.target.value)}/></Field>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Field label="Campaign Tone"><input style={inputStyle} value={f.tone} onChange={e=>upd("tone",e.target.value)}/></Field>
+        <Field label="Frequency"><input style={inputStyle} value={f.frequency} onChange={e=>upd("frequency",e.target.value)} placeholder="e.g. 2 posts per week"/></Field>
+      </div>
+      <Field label="Key Message"><textarea style={{...inputStyle,minHeight:50,resize:"vertical"}} value={f.message} onChange={e=>upd("message",e.target.value)}/></Field>
+      <Field label="Channels"><input style={inputStyle} value={f.channels} onChange={e=>upd("channels",e.target.value)} placeholder="e.g. Instagram, Kit, Website blog"/></Field>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Field label="CTA"><input style={inputStyle} value={f.cta} onChange={e=>upd("cta",e.target.value)}/></Field>
+        <Field label="Budget (ad spend)"><input style={inputStyle} value={f.budget} onChange={e=>upd("budget",e.target.value)} placeholder="e.g. £350"/></Field>
+      </div>
+      <Field label="Hashtags"><input style={inputStyle} value={f.hashtags} onChange={e=>upd("hashtags",e.target.value)}/></Field>
+      <div style={{display:"flex",gap:8,marginTop:16}}>
+        <button onClick={()=>onSave({...f,kpis:(f.kpis||[]).filter(k=>k.trim())})} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"10px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>{strategy?"Save Changes":"Add Strategy"}</button>
+        <button onClick={onCancel} style={{padding:"10px 16px",background:R.white,color:R.dark,border:`1px solid ${R.mid}`,borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer"}}>Cancel</button>
+        {strategy && onDelete && (<button onClick={()=>onDelete(strategy.id)} style={{padding:"10px 16px",background:R.white,color:"#ef4444",border:"1px solid #ef4444",borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer"}}>Delete</button>)}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   STRATEGY VIEW
+   ══════════════════════════════════════════════ */
+function StrategyView({strategies, areas, fArea, admin, monthSummary, onToggleSummary, onEditSummary, onOpenForm}) {
+  const [editingSummary, setEditingSummary] = useState(false);
+  const [summaryDraft, setSummaryDraft] = useState(monthSummary.text);
+  const visible = strategies.filter(s => !fArea || s.brands.includes(fArea));
+
+  return (
+    <div style={{maxWidth:760}}>
+      {admin && (
+        <div style={{display:"flex",justifyContent:"flex-end",marginBottom:12,gap:8}}>
+          <label style={{display:"flex",alignItems:"center",gap:6,fontSize:10,color:R.dark,fontWeight:600}}>
+            <input type="checkbox" checked={monthSummary.enabled} onChange={e=>onToggleSummary(e.target.checked)}/> Show "This Month" summary
+          </label>
+          <button onClick={()=>onOpenForm(null)} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"6px 14px",fontSize:11,fontWeight:700,cursor:"pointer"}}>+ New Strategy</button>
+        </div>
+      )}
+      {monthSummary.enabled && (
+        <div style={{background:R.black,borderRadius:16,padding:"20px 24px",marginBottom:24,color:R.white}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+            <Eyebrow>This Month</Eyebrow>
+            {admin && !editingSummary && (<button onClick={()=>{setSummaryDraft(monthSummary.text);setEditingSummary(true);}} style={{background:"rgba(255,255,255,.15)",color:R.white,border:"none",borderRadius:6,padding:"3px 9px",fontSize:9,fontWeight:600,cursor:"pointer"}}>Edit</button>)}
+          </div>
+          {editingSummary ? (
+            <div>
+              <textarea style={{...inputStyle,minHeight:70,resize:"vertical",background:"#222",color:R.white,border:"1px solid #444"}} value={summaryDraft} onChange={e=>setSummaryDraft(e.target.value)}/>
+              <div style={{display:"flex",gap:8,marginTop:8}}>
+                <button onClick={()=>{onEditSummary(summaryDraft);setEditingSummary(false);}} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"6px 14px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Save</button>
+                <button onClick={()=>setEditingSummary(false)} style={{background:"rgba(255,255,255,.1)",color:R.white,border:"none",borderRadius:8,padding:"6px 14px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <p style={{fontSize:13,lineHeight:1.7,margin:0,color:"#bbb"}}>{monthSummary.text}</p>
+          )}
+        </div>
+      )}
+      {visible.length===0 && (<div style={{fontSize:12,color:R.dark,padding:24,textAlign:"center",background:R.white,borderRadius:12,border:`1px solid ${R.mid}`}}>No strategies for this brand yet.</div>)}
+      {visible.map(s=>{
+        const primary = areas[s.brands[0]] || {color:R.dark};
+        const rows = [
+          ["Product Focus",s.productFocus],["Purpose",s.purpose],["Ultimate Goal",s.goal],
+          ["Audience",s.audience],["Tone",s.tone],["Key Message",s.message],["Channels",s.channels],
+          ["Frequency",s.frequency],["CTA",s.cta],["Budget",s.budget],["Hashtags",s.hashtags],
+        ].filter(([,v])=>v);
         return (
-          <div key={ak} style={{background:R.white,borderRadius:16,marginBottom:16,border:`1px solid ${R.mid}`,overflow:"hidden"}}>
-            <div style={{background:a.color,padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <span style={{fontSize:15,fontWeight:800,color:R.white}}>{a.label}</span>
-              {admin&&!isEditing&&(<button onClick={()=>startEdit(ak)} style={{background:"rgba(255,255,255,.2)",color:R.white,border:"none",borderRadius:6,padding:"4px 10px",fontSize:10,fontWeight:600,cursor:"pointer"}}>Edit</button>)}
+          <div key={s.id} style={{background:R.white,borderRadius:16,marginBottom:16,border:`1px solid ${R.mid}`,overflow:"hidden"}}>
+            <div style={{background:primary.color,padding:"14px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:800,color:R.white,marginBottom:4}}>{s.name}</div>
+                <div style={{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}}>
+                  {s.brands.map(b=>(<span key={b} style={{fontSize:9,fontWeight:700,color:R.white,background:"rgba(255,255,255,.22)",padding:"1px 7px",borderRadius:5}}>{(areas[b]||{}).short||b}</span>))}
+                  <span style={{fontSize:9,fontWeight:700,color:R.white,background:"rgba(255,255,255,.22)",padding:"1px 7px",borderRadius:5}}>{s.b2b}</span>
+                  <span style={{fontSize:9,color:"rgba(255,255,255,.8)"}}>{s.startDate} – {s.endDate}</span>
+                </div>
+              </div>
+              {admin && (<button onClick={()=>onOpenForm(s)} style={{background:"rgba(255,255,255,.2)",color:R.white,border:"none",borderRadius:6,padding:"4px 10px",fontSize:10,fontWeight:600,cursor:"pointer"}}>Edit</button>)}
             </div>
             <div style={{padding:"18px 20px"}}>
-              {isEditing ? (
-                <div>
-                  {[["focus","Focus"],["audience","Audience"],["tone","Tone"],["msg","Key Message"],["channels","Channels"]].map(([k,l])=>(
-                    <Field key={k} label={l}><textarea style={{...inputStyle,minHeight:k==="focus"?60:36,resize:"vertical"}} value={editData[k]} onChange={e=>setEditData(p=>({...p,[k]:e.target.value}))}/></Field>
+              <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                <tbody>
+                  {rows.map(([l,v])=>(
+                    <tr key={l}><td style={{fontWeight:700,color:R.black,padding:"8px 16px 8px 0",verticalAlign:"top",width:130,borderBottom:`1px solid ${R.grey}`}}>{l}</td><td style={{color:R.dark,padding:"8px 0",lineHeight:1.6,borderBottom:`1px solid ${R.grey}`}}>{v}</td></tr>
                   ))}
-                  <Field label="KPIs (one per line)">
-                    <textarea style={{...inputStyle,minHeight:60,resize:"vertical"}} value={editData.kpis.join("\n")} onChange={e=>setEditData(p=>({...p,kpis:e.target.value.split("\n")}))}/>
-                  </Field>
-                  <div style={{display:"flex",gap:8,marginTop:8}}>
-                    <button onClick={saveEdit} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"8px 16px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Save</button>
-                    <button onClick={()=>setEditing(null)} style={{background:R.white,color:R.dark,border:`1px solid ${R.mid}`,borderRadius:8,padding:"8px 16px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Cancel</button>
-                  </div>
-                </div>
-              ) : (
-                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-                  <tbody>
-                    {[["Focus",s.focus],["Audience",s.audience],["Tone",s.tone],["Key Message",s.msg],["Channels",s.channels]].map(([l,v])=>(
-                      <tr key={l}><td style={{fontWeight:700,color:R.black,padding:"8px 16px 8px 0",verticalAlign:"top",width:110,borderBottom:`1px solid ${R.grey}`}}>{l}</td><td style={{color:R.dark,padding:"8px 0",lineHeight:1.6,borderBottom:`1px solid ${R.grey}`}}>{v}</td></tr>
-                    ))}
-                    <tr><td style={{fontWeight:700,color:R.black,padding:"8px 16px 8px 0",verticalAlign:"top"}}>KPIs</td><td style={{padding:"8px 0"}}>{s.kpis.map((k,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4,fontSize:12,color:R.dark}}><Dot c={a.color} s={6}/>{k}</div>))}</td></tr>
-                  </tbody>
-                </table>
-              )}
+                  {s.kpis && s.kpis.length>0 && (
+                    <tr><td style={{fontWeight:700,color:R.black,padding:"8px 16px 8px 0",verticalAlign:"top"}}>KPIs</td><td style={{padding:"8px 0"}}>{s.kpis.map((k,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4,fontSize:12,color:R.dark}}><Dot c={primary.color} s={6}/>{k}</div>))}</td></tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         );
@@ -283,7 +397,7 @@ function StrategyView({strat, areas, fArea, admin, onEditStrat}) {
 /* ══════════════════════════════════════════════
    KEY DATES
    ══════════════════════════════════════════════ */
-function KeyDatesView({events, areas}) {
+function KeyDatesView({events, areas, onSelect}) {
   return (
     <div style={{maxWidth:680}}>
       <Eyebrow>Key Dates</Eyebrow>
@@ -291,7 +405,7 @@ function KeyDatesView({events, areas}) {
       {[...events].sort((a,b)=>new Date(a.start)-new Date(b.start)).map(ev=>{
         const s=new Date(ev.start),e=new Date(ev.end),same=ev.start===ev.end;
         return (
-          <div key={ev.id} style={{display:"flex",gap:14,padding:"16px 0",borderBottom:`1px solid ${R.mid}`}}>
+          <button key={ev.id} onClick={()=>onSelect(ev)} style={{display:"flex",gap:14,padding:"16px 0",borderBottom:`1px solid ${R.mid}`,width:"100%",background:"none",border:"none",borderBottomStyle:"solid",cursor:"pointer",textAlign:"left"}}>
             <div style={{minWidth:50,background:R.black,color:R.white,borderRadius:10,padding:"8px 10px",textAlign:"center",alignSelf:"flex-start"}}>
               <div style={{fontSize:8,fontWeight:600,opacity:.5,letterSpacing:.5}}>{same?DAYS[(s.getDay()||7)-1].toUpperCase():"FROM"}</div>
               <div style={{fontSize:20,fontWeight:800}}>{s.getDate()}</div>
@@ -303,7 +417,7 @@ function KeyDatesView({events, areas}) {
               <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:4}}>{ev.areas.map(a=>(<ATag key={a} a={a} areas={areas} sm/>))}</div>
               <div style={{fontSize:11,color:R.dark,lineHeight:1.5}}>{ev.notes}</div>
             </div>
-          </div>
+          </button>
         );
       })}
     </div>
@@ -311,9 +425,60 @@ function KeyDatesView({events, areas}) {
 }
 
 /* ══════════════════════════════════════════════
+   KEY DATE / EVENT DETAIL PANEL
+   ══════════════════════════════════════════════ */
+function EventPanel({event, items, areas, themes, onClose, onSelectItem}) {
+  if (!event) return null;
+  const theme = event.theme ? themes[event.theme] : null;
+  const linked = event.theme ? items.filter(i=>i.theme===event.theme) : [];
+  const s=new Date(event.start), e=new Date(event.end), same=event.start===event.end;
+
+  return (
+    <div style={{position:"fixed",top:0,right:0,bottom:0,width:360,background:R.white,borderLeft:`1px solid ${R.mid}`,boxShadow:"-8px 0 32px rgba(0,0,0,.08)",zIndex:100,display:"flex",flexDirection:"column"}}>
+      <div style={{padding:"16px 20px 12px",borderBottom:`1px solid ${R.mid}`}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <span style={{fontSize:9,fontWeight:700,color:R.dark,textTransform:"uppercase",letterSpacing:.5}}>Key Date</span>
+          <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:22,color:R.dark,padding:0,lineHeight:1}}>×</button>
+        </div>
+        <h3 style={{fontSize:15,fontWeight:700,color:R.black,margin:"6px 0 0",lineHeight:1.3}}>{event.title}</h3>
+      </div>
+      <div style={{flex:1,overflow:"auto",padding:"16px 20px"}}>
+        <div style={{fontSize:12,color:R.dark,marginBottom:14}}>
+          {same?s.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}):`${s.toLocaleDateString("en-GB",{day:"numeric",month:"long"})} – ${e.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}`}
+        </div>
+        <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>{event.areas.map(a=>(<ATag key={a} a={a} areas={areas}/>))}</div>
+        <div style={{marginBottom:14}}>
+          <div style={{fontWeight:700,color:R.black,marginBottom:4,fontSize:11,textTransform:"uppercase",letterSpacing:.5}}>Notes</div>
+          <div style={{fontSize:12,color:R.dark,lineHeight:1.6}}>{event.notes}</div>
+        </div>
+        {event.venue && (
+          <div style={{marginBottom:14}}>
+            <div style={{fontWeight:700,color:R.black,marginBottom:4,fontSize:11,textTransform:"uppercase",letterSpacing:.5}}>Venue</div>
+            <div style={{fontSize:12,color:R.dark}}>{event.venue}</div>
+          </div>
+        )}
+        {event.links && event.links.length>0 && (
+          <div style={{marginBottom:14}}>
+            <div style={{fontWeight:700,color:R.black,marginBottom:4,fontSize:11,textTransform:"uppercase",letterSpacing:.5}}>External Links</div>
+            {event.links.map((l,i)=>(<div key={i}><a href={l.url} target="_blank" rel="noreferrer" style={{fontSize:11,color:R.lime==="#c8e63e"?"#7c9a1e":R.dark}}>{l.label}</a></div>))}
+          </div>
+        )}
+        {theme && (
+          <div style={{marginBottom:6}}>
+            <TTag t={event.theme} themes={themes}/>
+            <p style={{fontSize:11,color:R.dark,lineHeight:1.6,marginTop:8}}>{theme.brief}</p>
+          </div>
+        )}
+        <LinkedContentList items={linked} areas={areas} onSelect={onSelectItem}/>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
    APPROVALS
    ══════════════════════════════════════════════ */
-function ApprovalsView({items, areas, themes, onApprove}) {
+function ApprovalsView({items, areas, themes, onSelect}) {
   const rv=items.filter(i=>i.state==="review"), ip=items.filter(i=>i.state==="input");
   return (
     <div style={{maxWidth:680}}>
@@ -322,10 +487,10 @@ function ApprovalsView({items, areas, themes, onApprove}) {
           <Eyebrow>Action Required</Eyebrow>
           <h3 style={{fontSize:15,fontWeight:700,color:"#ef4444",margin:"0 0 12px"}}>Awaiting your input ({ip.length})</h3>
           {ip.map(item=>(
-            <div key={item.id} style={{background:"#fef2f2",borderRadius:12,padding:"14px 16px",marginBottom:8,borderLeft:"3px solid #ef4444",display:"flex",alignItems:"center",gap:10}}>
+            <button key={item.id} onClick={()=>onSelect(item)} style={{display:"flex",width:"100%",alignItems:"center",gap:10,background:"#fef2f2",borderRadius:12,padding:"14px 16px",marginBottom:8,borderLeft:"3px solid #ef4444",cursor:"pointer",textAlign:"left"}}>
               <div style={{flex:1}}><div style={{fontSize:12,fontWeight:600,color:R.black}}>{item.title}</div><div style={{fontSize:10,color:R.dark,marginTop:2}}>{item.notes}</div></div>
               <ATag a={item.area} areas={areas} sm/>
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -333,21 +498,17 @@ function ApprovalsView({items, areas, themes, onApprove}) {
       <h3 style={{fontSize:15,fontWeight:700,color:R.black,margin:"0 0 12px"}}>Ready for sign-off ({rv.length})</h3>
       {rv.length===0&&(<div style={{fontSize:12,color:R.dark,padding:24,textAlign:"center",background:R.white,borderRadius:12}}>All caught up — nothing to review.</div>)}
       {rv.map(item=>(
-        <div key={item.id} style={{background:R.white,borderRadius:12,padding:"16px 18px",marginBottom:10,border:`1px solid ${R.mid}`,borderLeft:`3px solid ${(areas[item.area]||{}).color||R.dark}`}}>
+        <button key={item.id} onClick={()=>onSelect(item)} style={{display:"block",width:"100%",background:R.white,borderRadius:12,padding:"16px 18px",marginBottom:10,border:`1px solid ${R.mid}`,borderLeft:`3px solid ${(areas[item.area]||{}).color||R.dark}`,cursor:"pointer",textAlign:"left"}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
             <div>
               <div style={{fontSize:13,fontWeight:600,color:R.black,marginBottom:4}}>{item.title}</div>
-              <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}><ATag a={item.area} areas={areas} sm/><span style={{fontSize:10,color:R.dark}}>{(CH[item.ch]||{}).i} {(CH[item.ch]||{}).l}</span><TTag t={item.theme} themes={themes}/></div>
+              <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}><ATag a={item.area} areas={areas} sm/><TypeTag ch={item.ch}/><TTag t={item.theme} themes={themes}/></div>
             </div>
             <span style={{fontSize:10,color:R.dark,whiteSpace:"nowrap"}}>{new Date(item.date).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}</span>
           </div>
           <div style={{fontSize:11,color:R.dark,marginBottom:4}}><strong>Platform:</strong> {item.platform}</div>
-          <div style={{fontSize:11,color:R.dark,marginBottom:12}}><strong>Notes:</strong> {item.notes}</div>
-          <div style={{display:"flex",gap:8}}>
-            <button onClick={()=>onApprove(item.id,"approved")} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"8px 16px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Approve</button>
-            <button onClick={()=>onApprove(item.id,"input")} style={{background:R.white,color:"#ef4444",border:"1px solid #ef4444",borderRadius:8,padding:"8px 16px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Request Changes</button>
-          </div>
-        </div>
+          <div style={{fontSize:11,color:R.dark}}><strong>Notes:</strong> {item.notes}</div>
+        </button>
       ))}
     </div>
   );
@@ -356,10 +517,29 @@ function ApprovalsView({items, areas, themes, onApprove}) {
 /* ══════════════════════════════════════════════
    SIDE PANEL
    ══════════════════════════════════════════════ */
-function Panel({item, items, areas, themes, admin, onClose, onApprove, onEdit}) {
+function Panel({item, items, events, areas, themes, admin, onClose, onApprove, onEdit, onAddComment, onSelectLinked, onSelectEvent}) {
+  const [actionMode, setActionMode] = useState(null); // null | "approve" | "reject"
+  const [draft, setDraft] = useState("");
+  const [commentDraft, setCommentDraft] = useState("");
+
+  useEffect(()=>{ setActionMode(null); setDraft(""); setCommentDraft(""); }, [item?.id]);
+
   if(!item) return null;
   const a = (areas||{})[item.area]||{color:R.dark};
   const linked = item.theme ? items.filter(i=>i.theme===item.theme&&i.id!==item.id) : [];
+  const relatedEvent = item.theme ? (events||[]).find(e=>e.theme===item.theme) : null;
+  const comments = item.comments || [];
+  const history = item.history || [];
+
+  function submitAction() {
+    onApprove(item.id, actionMode==="approve"?"approved":"input", draft.trim());
+    setActionMode(null); setDraft("");
+  }
+  function submitComment() {
+    if (!commentDraft.trim()) return;
+    onAddComment(item.id, commentDraft.trim());
+    setCommentDraft("");
+  }
 
   return (
     <div style={{position:"fixed",top:0,right:0,bottom:0,width:360,background:R.white,borderLeft:`1px solid ${R.mid}`,boxShadow:"-8px 0 32px rgba(0,0,0,.08)",zIndex:100,display:"flex",flexDirection:"column"}}>
@@ -367,7 +547,7 @@ function Panel({item, items, areas, themes, admin, onClose, onApprove, onEdit}) 
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
           <div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap",alignItems:"center"}}>
             <ATag a={item.area} areas={areas}/>
-            <span style={{fontSize:10,color:R.dark}}>{(CH[item.ch]||{}).i} {(CH[item.ch]||{}).l}</span>
+            <span style={{fontSize:10,color:R.dark,display:"flex",alignItems:"center",gap:4}}><TypeTag ch={item.ch}/> {(CH[item.ch]||{}).l}</span>
           </div>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:22,color:R.dark,padding:0,lineHeight:1}}>×</button>
         </div>
@@ -383,33 +563,67 @@ function Panel({item, items, areas, themes, admin, onClose, onApprove, onEdit}) 
         ))}
         {item.theme&&(
           <div style={{marginBottom:16}}>
-            <TTag t={item.theme} themes={themes}/>
-            {linked.length>0&&(
-              <div style={{marginTop:10}}>
-                <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>Linked content</div>
-                {linked.map(li=>(
-                  <div key={li.id} style={{display:"flex",alignItems:"center",gap:6,padding:"7px 10px",background:R.grey,borderRadius:8,marginBottom:4,fontSize:11,color:R.black}}>
-                    <span>{(CH[li.ch]||{}).i}</span>
-                    <span style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{li.title}</span>
-                    <ATag a={li.area} areas={areas} sm/>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+              <TTag t={item.theme} themes={themes}/>
+              {relatedEvent && (<button onClick={()=>onSelectEvent(relatedEvent)} style={{fontSize:9,color:R.dark,background:R.grey,border:"none",borderRadius:6,padding:"2px 7px",cursor:"pointer",fontWeight:600}}>View key date →</button>)}
+            </div>
+            <LinkedContentList items={linked} areas={areas} onSelect={onSelectLinked}/>
           </div>
         )}
         <div style={{marginBottom:16}}>
           <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>Output link</div>
           {item.url?(<a href={item.url} target="_blank" rel="noreferrer" style={{fontSize:11,color:a.color,wordBreak:"break-all"}}>{item.url}</a>):(<span style={{fontSize:11,color:"#ccc",fontStyle:"italic"}}>Not yet published</span>)}
         </div>
-        {item.state==="review"&&(
+
+        {item.state==="review" && actionMode===null && (
           <div style={{display:"flex",gap:8,marginTop:12}}>
-            <button onClick={()=>onApprove(item.id,"approved")} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"12px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>Approve</button>
-            <button onClick={()=>onApprove(item.id,"input")} style={{flex:1,background:R.white,color:"#ef4444",border:"1px solid #ef4444",borderRadius:10,padding:"12px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>Request Changes</button>
+            <button onClick={()=>setActionMode("approve")} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"12px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>Approve</button>
+            <button onClick={()=>setActionMode("reject")} style={{flex:1,background:R.white,color:"#ef4444",border:"1px solid #ef4444",borderRadius:10,padding:"12px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>Request Changes</button>
           </div>
         )}
-        {item.state==="input"&&(<div style={{background:"#fef2f2",borderRadius:10,padding:14,marginTop:12,fontSize:11,color:"#ef4444",fontWeight:600}}>We're waiting on your input for this item</div>)}
+        {actionMode!==null && (
+          <div style={{marginTop:12,background:R.grey,borderRadius:10,padding:12}}>
+            <div style={{fontSize:10,fontWeight:700,color:R.black,marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>
+              {actionMode==="approve"?"Comment (optional)":"What needs to change? (required)"}
+            </div>
+            <textarea autoFocus style={{...inputStyle,minHeight:60,resize:"vertical",background:R.white}} value={draft} onChange={e=>setDraft(e.target.value)} placeholder={actionMode==="approve"?"Looks great...":"Explain what needs changing..."}/>
+            <div style={{display:"flex",gap:8,marginTop:8}}>
+              <button onClick={submitAction} disabled={actionMode==="reject"&&!draft.trim()} style={{flex:1,background:(actionMode==="reject"&&!draft.trim())?R.mid:R.lime,color:R.black,border:"none",borderRadius:8,padding:"9px 0",fontSize:11,fontWeight:700,cursor:(actionMode==="reject"&&!draft.trim())?"not-allowed":"pointer"}}>{actionMode==="approve"?"Confirm Approval":"Submit"}</button>
+              <button onClick={()=>{setActionMode(null);setDraft("");}} style={{padding:"9px 14px",background:R.white,color:R.dark,border:`1px solid ${R.mid}`,borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer"}}>Cancel</button>
+            </div>
+          </div>
+        )}
+        {item.state==="input"&&actionMode===null&&(<div style={{background:"#fef2f2",borderRadius:10,padding:14,marginTop:12,fontSize:11,color:"#ef4444",fontWeight:600}}>We're waiting on your input for this item</div>)}
         {item.state==="approved"&&(<div style={{background:"#f0fdf4",borderRadius:10,padding:14,marginTop:12,fontSize:11,color:"#22c55e",fontWeight:600}}>Approved</div>)}
+
+        <div style={{marginTop:24,paddingTop:16,borderTop:`1px solid ${R.mid}`}}>
+          <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Comments ({comments.length})</div>
+          {comments.length===0 && (<div style={{fontSize:11,color:"#ccc",fontStyle:"italic",marginBottom:10}}>No comments yet</div>)}
+          {comments.map(c=>(
+            <div key={c.id} style={{marginBottom:10,background:R.grey,borderRadius:8,padding:"8px 10px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                <span style={{fontSize:10,fontWeight:700,color:R.black}}>{c.author}</span>
+                <span style={{fontSize:9,color:R.dark}}>{fmtTs(c.ts)}</span>
+              </div>
+              <div style={{fontSize:11,color:R.dark,lineHeight:1.5}}>{c.text}</div>
+            </div>
+          ))}
+          <div style={{display:"flex",gap:6,marginTop:8}}>
+            <input style={{...inputStyle,flex:1}} value={commentDraft} onChange={e=>setCommentDraft(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")submitComment();}} placeholder={admin?"Comment as Rate Team...":"Comment as Client..."}/>
+            <button onClick={submitComment} style={{background:R.black,color:R.white,border:"none",borderRadius:8,padding:"0 14px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Send</button>
+          </div>
+        </div>
+
+        {history.length>0 && (
+          <div style={{marginTop:20,paddingTop:16,borderTop:`1px solid ${R.mid}`}}>
+            <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Activity</div>
+            {[...history].reverse().map(h=>(
+              <div key={h.id} style={{fontSize:10,color:R.dark,marginBottom:6,lineHeight:1.5}}>
+                <strong style={{color:R.black}}>{h.by}</strong> moved this from <em>{(ST[h.from]||{}).l||h.from}</em> to <em>{(ST[h.to]||{}).l||h.to}</em> — {fmtTs(h.ts)}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -420,6 +634,7 @@ function Panel({item, items, areas, themes, admin, onClose, onApprove, onEdit}) 
    ══════════════════════════════════════════════ */
 function CalView({items, areas, fArea, fCh, onSelect, sel, admin, onAdd}) {
   const g=mkGrid(2026,7), today="2026-08-06";
+  const [hoverId, setHoverId] = useState(null);
   return (
     <div>
       {admin&&(
@@ -440,22 +655,26 @@ function CalView({items, areas, fArea, fCh, onSelect, sel, admin, onAdd}) {
               <div style={{fontSize:11,fontWeight:isT?800:400,color:isT?R.black:R.dark,paddingLeft:2,marginBottom:3}}>{day}</div>
               {di.map(item=>{
                 const wip=item.state==="wip",rev=item.state==="review",inp=item.state==="input";
+                const needsAttn = rev||inp;
                 const ac=(areas[item.area]||{color:R.dark}).color;
-                const itemBg=rev?"#fff8ee":inp?"#fef2f2":wip?"#f4f4f5":ac+"0c";
-                const itemBorder=rev?"#f59e42":inp?"#ef4444":wip?"#d4d4d8":ac;
+                const hovered = hoverId===item.id;
+                const typeInfo = CH[item.ch]||{tag:item.ch?.slice(0,3).toUpperCase()};
                 return (
-                  <button key={item.id} onClick={()=>onSelect(sel?.id===item.id?null:item)} style={{
-                    display:"flex",alignItems:"center",gap:3,background:itemBg,
-                    borderLeft:`3px solid ${itemBorder}`,borderRadius:4,padding:"3px 4px",cursor:"pointer",
-                    border:sel?.id===item.id?`1.5px solid ${ac}`:`1px solid ${rev?"#f5d9a8":inp?"#fcc":"transparent"}`,
-                    borderLeftWidth:3,borderLeftColor:itemBorder,
+                  <button key={item.id} onClick={()=>onSelect(sel?.id===item.id?null:item)}
+                    onMouseEnter={()=>setHoverId(item.id)} onMouseLeave={()=>setHoverId(h=>h===item.id?null:h)}
+                    style={{
+                    position:"relative",
+                    display:"flex",alignItems:"center",gap:4,background:wip?R.grey:ac+"0c",
+                    borderLeft:`3px solid ${ac}`,borderRadius:4,padding:"3px 5px 3px 6px",cursor:"pointer",
+                    boxShadow:sel?.id===item.id?`0 0 0 1.5px ${ac} inset`:"none",
                     fontSize:9,color:wip?"#a1a1aa":R.black,textAlign:"left",width:"100%",
-                    fontWeight:500,lineHeight:1.2,marginBottom:2,opacity:wip?.5:1,
+                    fontWeight:500,lineHeight:1.2,marginBottom:2,opacity:wip?.55:1,
                     overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis",
                   }}>
+                    <span style={{fontSize:typeInfo.tag===typeInfo.i?10:7,fontWeight:800,color:ac,flexShrink:0,letterSpacing:.2}}>{typeInfo.tag}</span>
                     <span style={{overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{item.title}</span>
-                    {rev&&(<span style={{flexShrink:0,fontSize:7,fontWeight:800,background:"#f59e42",color:R.white,padding:"1px 4px",borderRadius:3,letterSpacing:.3}}>REVIEW</span>)}
-                    {inp&&(<span style={{flexShrink:0,fontSize:7,fontWeight:800,background:"#ef4444",color:R.white,padding:"1px 4px",borderRadius:3,letterSpacing:.3}}>ACTION</span>)}
+                    {needsAttn && hovered && (<span style={{flexShrink:0,fontSize:7,fontWeight:800,background:rev?"#f59e42":"#ef4444",color:R.white,padding:"1px 4px",borderRadius:3,letterSpacing:.3}}>{rev?"REVIEW":"ACTION"}</span>)}
+                    {needsAttn && !hovered && (<span title={rev?"Ready for review":"Awaiting client input"} style={{flexShrink:0,width:6,height:6,borderRadius:"50%",background:rev?"#f59e42":"#ef4444"}}/>)}
                   </button>
                 );
               })}
@@ -495,7 +714,8 @@ export default function Portal() {
   const [showLogin, setShowLogin] = useState(false);
 
   const [items, setItems] = useState(DEFAULT_ITEMS);
-  const [strat, setStrat] = useState(DEFAULT_STRAT);
+  const [strategies, setStrategies] = useState(DEFAULT_STRATEGIES);
+  const [monthSummary, setMonthSummary] = useState(DEFAULT_MONTH_SUMMARY);
   const [events, setEvents] = useState(DEFAULT_EVENTS);
   const [areas] = useState(DEFAULT_AREAS);
   const [themes] = useState(DEFAULT_THEMES);
@@ -504,7 +724,8 @@ export default function Portal() {
   const [fArea, setFA] = useState(null);
   const [fCh, setFC] = useState(null);
   const [sel, setSel] = useState(null);
-  const [modal, setModal] = useState(null); // null | "add" | {editing: item}
+  const [selEvent, setSelEvent] = useState(null);
+  const [modal, setModal] = useState(null); // null | "add" | {editing: item} | "addStrategy" | {editingStrategy: s}
 
   // Load data
   useEffect(() => {
@@ -512,7 +733,8 @@ export default function Portal() {
       const data = await loadAll();
       if (data) {
         if (data.items) setItems(data.items);
-        if (data.strat) setStrat(data.strat);
+        if (data.strategies) setStrategies(data.strategies);
+        if (data.monthSummary) setMonthSummary(data.monthSummary);
         if (data.events) setEvents(data.events);
       }
       setLoading(false);
@@ -520,17 +742,31 @@ export default function Portal() {
   }, []);
 
   // Save on changes
-  const save = useCallback(async (newItems, newStrat, newEvents) => {
-    await saveAll({ items: newItems||items, strat: newStrat||strat, events: newEvents||events });
-  }, [items, strat, events]);
+  const save = useCallback(async (patch) => {
+    await saveAll({ items, strategies, monthSummary, events, ...patch });
+  }, [items, strategies, monthSummary, events]);
 
-  function updateItems(newItems) { setItems(newItems); save(newItems, null, null); }
-  function updateStrat(newStrat) { setStrat(newStrat); save(null, newStrat, null); }
+  function updateItems(newItems) { setItems(newItems); save({items:newItems}); }
+  function updateStrategies(ns) { setStrategies(ns); save({strategies:ns}); }
+  function updateMonthSummary(ns) { setMonthSummary(ns); save({monthSummary:ns}); }
 
-  function approve(id, ns) {
-    const ni = items.map(i => i.id===id ? {...i, state:ns} : i);
+  function approve(id, ns, commentText) {
+    const author = admin ? "Rate Team" : "Client";
+    const ni = items.map(i => {
+      if (i.id !== id) return i;
+      const histEntry = {id:`h${Date.now()}`, ts:new Date().toISOString(), from:i.state, to:ns, by:author};
+      const newComments = commentText ? [...(i.comments||[]), {id:`c${Date.now()}`, author, ts:new Date().toISOString(), text:commentText}] : (i.comments||[]);
+      return {...i, state:ns, history:[...(i.history||[]), histEntry], comments:newComments};
+    });
     updateItems(ni);
-    if (sel?.id===id) setSel(p=>({...p, state:ns}));
+    if (sel?.id===id) setSel(ni.find(i=>i.id===id));
+  }
+
+  function addComment(id, text) {
+    const author = admin ? "Rate Team" : "Client";
+    const ni = items.map(i => i.id===id ? {...i, comments:[...(i.comments||[]), {id:`c${Date.now()}`, author, ts:new Date().toISOString(), text}]} : i);
+    updateItems(ni);
+    if (sel?.id===id) setSel(ni.find(i=>i.id===id));
   }
 
   function handleSaveItem(formData) {
@@ -539,7 +775,7 @@ export default function Portal() {
       updateItems(ni);
       setSel({...formData, id:modal.editing.id});
     } else {
-      const ni = [...items, {...formData, id:nextId(items)}];
+      const ni = [...items, {...formData, id:nextId(items), comments:[], history:[]}];
       updateItems(ni);
     }
     setModal(null);
@@ -551,10 +787,22 @@ export default function Portal() {
     setModal(null);
   }
 
-  function handleEditStrat(areaKey, data) {
-    const ns = {...strat, [areaKey]: data};
-    updateStrat(ns);
+  function handleSaveStrategy(formData) {
+    if (modal && modal.editingStrategy) {
+      updateStrategies(strategies.map(s => s.id===modal.editingStrategy.id ? {...formData, id:modal.editingStrategy.id} : s));
+    } else {
+      updateStrategies([...strategies, {...formData, id:nextStrId(strategies,"s")}]);
+    }
+    setModal(null);
   }
+
+  function handleDeleteStrategy(id) {
+    updateStrategies(strategies.filter(s=>s.id!==id));
+    setModal(null);
+  }
+
+  function selectLinked(li) { setSelEvent(null); setSel(li); }
+  function selectEventFromItem(ev) { setSel(null); setSelEvent(ev); }
 
   const rc = useMemo(()=>items.filter(i=>i.state==="review").length,[items]);
   const ic = useMemo(()=>items.filter(i=>i.state==="input").length,[items]);
@@ -589,7 +837,7 @@ export default function Portal() {
         {/* Tabs */}
         <div style={{display:"flex",gap:0,overflowX:"auto"}}>
           {[{k:"strategy",l:"Strategy"},{k:"dates",l:"Key Dates"},{k:"calendar",l:"Calendar"},{k:"approvals",l:"Approvals",count:rc+ic},{k:"reporting",l:"Reporting"}].map(t=>(
-            <button key={t.k} onClick={()=>{setTab(t.k);setSel(null);}} style={{
+            <button key={t.k} onClick={()=>{setTab(t.k);setSel(null);setSelEvent(null);}} style={{
               background:"none",border:"none",cursor:"pointer",padding:"10px 16px",fontSize:11,fontWeight:600,
               color:tab===t.k?R.lime:"#666",borderBottom:tab===t.k?`2px solid ${R.lime}`:"2px solid transparent",
               display:"flex",alignItems:"center",gap:5,
@@ -613,16 +861,17 @@ export default function Portal() {
       )}
 
       {/* CONTENT */}
-      <div style={{padding:"20px 24px 48px",marginRight:sel?360:0,transition:"margin-right .2s"}}>
-        {tab==="strategy"&&(<StrategyView strat={strat} areas={areas} fArea={fArea} admin={admin} onEditStrat={handleEditStrat}/>)}
-        {tab==="dates"&&(<KeyDatesView events={events} areas={areas}/>)}
-        {tab==="calendar"&&(<CalView items={items} areas={areas} fArea={fArea} fCh={fCh} onSelect={setSel} sel={sel} admin={admin} onAdd={()=>setModal("add")}/>)}
-        {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onApprove={approve}/>)}
+      <div style={{padding:"20px 24px 48px",marginRight:(sel||selEvent)?360:0,transition:"margin-right .2s"}}>
+        {tab==="strategy"&&(<StrategyView strategies={strategies} areas={areas} fArea={fArea} admin={admin} monthSummary={monthSummary} onToggleSummary={(v)=>updateMonthSummary({...monthSummary,enabled:v})} onEditSummary={(text)=>updateMonthSummary({...monthSummary,text})} onOpenForm={(s)=>setModal(s?{editingStrategy:s}:"addStrategy")}/>)}
+        {tab==="dates"&&(<KeyDatesView events={events} areas={areas} onSelect={(ev)=>{setSel(null);setSelEvent(ev);}}/>)}
+        {tab==="calendar"&&(<CalView items={items} areas={areas} fArea={fArea} fCh={fCh} onSelect={(it)=>{setSelEvent(null);setSel(it);}} sel={sel} admin={admin} onAdd={()=>setModal("add")}/>)}
+        {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onSelect={(it)=>{setSelEvent(null);setSel(it);}}/>)}
         {tab==="reporting"&&(<ReportingView/>)}
       </div>
 
-      {/* SIDE PANEL */}
-      <Panel item={sel} items={items} areas={areas} themes={themes} admin={admin} onClose={()=>setSel(null)} onApprove={approve} onEdit={(it)=>setModal({editing:it})}/>
+      {/* SIDE PANELS */}
+      <Panel item={sel} items={items} events={events} areas={areas} themes={themes} admin={admin} onClose={()=>setSel(null)} onApprove={approve} onEdit={(it)=>setModal({editing:it})} onAddComment={addComment} onSelectLinked={selectLinked} onSelectEvent={selectEventFromItem}/>
+      <EventPanel event={selEvent} items={items} areas={areas} themes={themes} onClose={()=>setSelEvent(null)} onSelectItem={(it)=>{setSelEvent(null);setSel(it);}}/>
 
       {/* MODALS */}
       <Modal open={modal==="add"} onClose={()=>setModal(null)} title="Add Content Item">
@@ -630,6 +879,12 @@ export default function Portal() {
       </Modal>
       <Modal open={modal&&modal.editing} onClose={()=>setModal(null)} title="Edit Item">
         {modal&&modal.editing&&(<ItemForm item={modal.editing} areas={areas} themes={themes} onSave={handleSaveItem} onDelete={handleDeleteItem} onCancel={()=>setModal(null)}/>)}
+      </Modal>
+      <Modal open={modal==="addStrategy"} onClose={()=>setModal(null)} title="New Strategy" wide>
+        <StrategyForm areas={areas} onSave={handleSaveStrategy} onCancel={()=>setModal(null)}/>
+      </Modal>
+      <Modal open={modal&&modal.editingStrategy} onClose={()=>setModal(null)} title="Edit Strategy" wide>
+        {modal&&modal.editingStrategy&&(<StrategyForm strategy={modal.editingStrategy} areas={areas} onSave={handleSaveStrategy} onDelete={handleDeleteStrategy} onCancel={()=>setModal(null)}/>)}
       </Modal>
     </div>
   );

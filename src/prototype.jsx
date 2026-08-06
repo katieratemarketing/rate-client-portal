@@ -99,6 +99,8 @@ async function loadAll() {
    ══════════════════════════════════════════════ */
 const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MN_FULL=["January","February","March","April","May","June","July","August","September","October","November","December"];
+function todayISO(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
 function mkGrid(y,m){const f=new Date(y,m,1),l=new Date(y,m+1,0);let s=f.getDay()===0?6:f.getDay()-1;const d=[];for(let i=0;i<s;i++)d.push(null);for(let i=1;i<=l.getDate();i++)d.push(i);while(d.length%7)d.push(null);return d;}
 function fd(y,m,d){return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;}
 function nextId(items){return items.length?Math.max(...items.map(i=>i.id))+1:1;}
@@ -190,8 +192,8 @@ const selectStyle = {...inputStyle, background:R.white};
 /* ══════════════════════════════════════════════
    ITEM FORM (add + edit)
    ══════════════════════════════════════════════ */
-function ItemForm({item, areas, themes, onSave, onDelete, onCancel}) {
-  const [f, setF] = useState(item || {title:"",date:"2026-08-15",area:Object.keys(areas)[0],ch:"social",state:"wip",platform:"",notes:"",theme:"",url:"",comments:[],history:[]});
+function ItemForm({item, areas, themes, defaultDate, defaultArea, onSave, onDelete, onCancel}) {
+  const [f, setF] = useState(item || {title:"",date:defaultDate||todayISO(),area:defaultArea||Object.keys(areas)[0],ch:"social",state:"wip",platform:"",notes:"",theme:"",url:"",comments:[],history:[]});
   const upd = (k,v) => setF(p=>({...p,[k]:v}));
 
   return (
@@ -238,30 +240,57 @@ function ItemForm({item, areas, themes, onSave, onDelete, onCancel}) {
 }
 
 /* ══════════════════════════════════════════════
-   CHANNEL DROPDOWN
+   TOGGLE SWITCH
+   ══════════════════════════════════════════════ */
+function ToggleSwitch({on, onChange}) {
+  return (
+    <button type="button" onClick={onChange} style={{width:34,height:20,borderRadius:10,border:"none",cursor:"pointer",background:on?"#3b82f6":R.mid,position:"relative",flexShrink:0,padding:0}}>
+      <span style={{position:"absolute",top:2,left:on?16:2,width:16,height:16,borderRadius:"50%",background:R.white,transition:"left .15s",boxShadow:"0 1px 2px rgba(0,0,0,.25)"}}/>
+    </button>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   FILTER SETTINGS (type + status, cog panel)
    ══════════════════════════════════════════════ */
 const TYPE_FILTER_OPTIONS = [...Object.entries(CH).map(([k,c])=>({k,label:c.l,icon:c.i})), {k:"keydates",label:"Key Dates",icon:"📅"}];
 
-function ChDrop({value, onChange}) {
+function FilterSettings({fTypes, setFTypes, fStates, setFStates}) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
-  const toggle = (k) => onChange(value.includes(k) ? value.filter(x=>x!==k) : [...value,k]);
-  const label = value.length===0 ? "All types" : value.length===1 ? (TYPE_FILTER_OPTIONS.find(o=>o.k===value[0])||{}).label : `${value.length} types`;
+  const toggleType = (k) => setFTypes(fTypes.includes(k) ? fTypes.filter(x=>x!==k) : [...fTypes,k]);
+  const toggleState = (k) => setFStates(fStates.includes(k) ? fStates.filter(x=>x!==k) : [...fStates,k]);
+  const activeCount = fTypes.length + fStates.length;
   return (
     <div ref={ref} style={{position:"relative"}}>
-      <button onClick={()=>setOpen(!open)} style={{padding:"5px 12px",borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer",background:R.white,color:value.length?R.black:R.dark,border:`1px solid ${R.mid}`,display:"flex",alignItems:"center",gap:4}}>
-        {label} <span style={{fontSize:8,marginLeft:2}}>▾</span>
+      <button onClick={()=>setOpen(!open)} style={{padding:"6px 12px",borderRadius:8,fontSize:11,fontWeight:600,cursor:"pointer",background:activeCount?R.black:R.white,color:activeCount?R.white:R.dark,border:`1px solid ${activeCount?R.black:R.mid}`,display:"flex",alignItems:"center",gap:6}}>
+        <span aria-hidden>⚙</span> Filters{activeCount>0 && (<span style={{background:R.lime,color:R.black,fontSize:9,fontWeight:800,padding:"1px 6px",borderRadius:10}}>{activeCount}</span>)}
       </button>
       {open&&(
-        <div style={{position:"absolute",top:"100%",right:0,marginTop:4,zIndex:50,background:R.white,borderRadius:12,border:`1px solid ${R.mid}`,boxShadow:"0 8px 24px rgba(0,0,0,.1)",overflow:"hidden",minWidth:190,maxHeight:300,overflowY:"auto"}}>
-          <button onClick={()=>onChange([])} style={{display:"block",width:"100%",padding:"8px 14px",border:"none",borderBottom:`1px solid ${R.mid}`,cursor:"pointer",background:value.length===0?R.grey:R.white,fontSize:11,fontWeight:700,color:R.black,textAlign:"left"}}>All types</button>
-          {TYPE_FILTER_OPTIONS.map(o=>(
-            <label key={o.k} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"8px 14px",cursor:"pointer",background:value.includes(o.k)?R.grey:R.white,fontSize:11,fontWeight:500,color:R.black}}>
-              <input type="checkbox" checked={value.includes(o.k)} onChange={()=>toggle(o.k)} style={{margin:0}}/>
-              <span>{o.icon}</span><span>{o.label}</span>
-            </label>
-          ))}
+        <div style={{position:"absolute",top:"100%",right:0,marginTop:6,zIndex:50,background:R.white,borderRadius:14,border:`1px solid ${R.mid}`,boxShadow:"0 12px 32px rgba(0,0,0,.15)",overflow:"hidden",width:280,maxHeight:420,display:"flex",flexDirection:"column"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",borderBottom:`1px solid ${R.mid}`}}>
+            <span style={{fontSize:12,fontWeight:800,color:R.black}}>Filters</span>
+            {activeCount>0 && (<button onClick={()=>{setFTypes([]);setFStates([]);}} style={{background:"none",border:"none",cursor:"pointer",fontSize:10,fontWeight:700,color:R.dark}}>Clear all</button>)}
+          </div>
+          <div style={{overflowY:"auto",padding:"8px 0"}}>
+            <div style={{padding:"6px 16px",fontSize:9,fontWeight:800,color:R.dark,textTransform:"uppercase",letterSpacing:.6}}>Activity Type</div>
+            {TYPE_FILTER_OPTIONS.map(o=>(
+              <div key={o.k} style={{display:"flex",alignItems:"center",gap:10,padding:"7px 16px",fontSize:12,color:R.black}}>
+                <span style={{width:16,textAlign:"center",flexShrink:0}}>{o.icon}</span>
+                <span style={{flex:1}}>{o.label}</span>
+                <ToggleSwitch on={fTypes.includes(o.k)} onChange={()=>toggleType(o.k)}/>
+              </div>
+            ))}
+            <div style={{padding:"10px 16px 6px",fontSize:9,fontWeight:800,color:R.dark,textTransform:"uppercase",letterSpacing:.6,borderTop:`1px solid ${R.mid}`,marginTop:4}}>Status</div>
+            {Object.entries(ST).map(([k,v])=>(
+              <div key={k} style={{display:"flex",alignItems:"center",gap:10,padding:"7px 16px",fontSize:12,color:R.black}}>
+                <span style={{width:16,display:"flex",justifyContent:"center",flexShrink:0}}><Dot c={v.c} s={9}/></span>
+                <span style={{flex:1}}>{v.l}</span>
+                <ToggleSwitch on={fStates.includes(k)} onChange={()=>toggleState(k)}/>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -651,33 +680,46 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
 /* ══════════════════════════════════════════════
    CALENDAR
    ══════════════════════════════════════════════ */
-function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, admin, onAdd, onSelectEvent}) {
-  const g=mkGrid(2026,7), today="2026-08-06";
+function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, admin, onAdd, onAddOnDate, onSelectEvent, month, year, onPrevMonth, onNextMonth, onToday}) {
+  const g=mkGrid(year,month), today=todayISO();
   const [hoverId, setHoverId] = useState(null);
   const showKeyDates = fTypes.length===0 || fTypes.includes("keydates");
+  const navBtnStyle = {width:28,height:28,borderRadius:8,border:`1px solid ${R.mid}`,background:R.white,color:R.black,fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"};
   return (
     <div>
-      {admin&&(
-        <div style={{marginBottom:12}}>
-          <button onClick={onAdd} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"8px 16px",fontSize:11,fontWeight:700,cursor:"pointer"}}>+ Add item</button>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,flexWrap:"wrap",gap:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <button onClick={onPrevMonth} aria-label="Previous month" style={navBtnStyle}>‹</button>
+          <div style={{fontSize:16,fontWeight:800,color:R.black,minWidth:160,textAlign:"center"}}>{MN_FULL[month]} {year}</div>
+          <button onClick={onNextMonth} aria-label="Next month" style={navBtnStyle}>›</button>
+          <button onClick={onToday} style={{...navBtnStyle,width:"auto",padding:"0 12px",fontSize:11,fontWeight:700}}>Today</button>
         </div>
-      )}
+        {admin&&(<button onClick={onAdd} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"8px 16px",fontSize:11,fontWeight:700,cursor:"pointer"}}>+ Add item</button>)}
+      </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:2}}>
-        {DAYS.map(d=>(<div key={d} style={{textAlign:"center",fontSize:10,fontWeight:700,color:R.dark,padding:"6px 0",textTransform:"uppercase",letterSpacing:.5}}>{d}</div>))}
+        {DAYS.map(d=>(<div key={d} style={{textAlign:"center",fontSize:11,fontWeight:700,color:R.dark,padding:"6px 0",textTransform:"uppercase",letterSpacing:.5}}>{d}</div>))}
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
         {g.map((day,i)=>{
-          if(!day) return (<div key={i} style={{minHeight:96,background:"#f0f0f0",borderRadius:10}}/>);
-          const ds=fd(2026,7,day),isT=ds===today;
+          if(!day) return (<div key={i} style={{minHeight:100,background:"#f0f0f0",borderRadius:10}}/>);
+          const ds=fd(year,month,day),isT=ds===today;
           const di=items.filter(it=>it.date===ds&&(!fArea||it.area===fArea)&&(fTypes.length===0||fTypes.includes(it.ch))&&(fStates.length===0||fStates.includes(it.state)));
           const dEvents = showKeyDates ? events.filter(ev=>ev.start===ds&&(!fArea||ev.areas.includes(fArea))) : [];
           return (
-            <div key={i} style={{minHeight:96,background:isT?"#f5f3ff":R.white,borderRadius:10,padding:4,border:isT?`2px solid ${R.lime}`:`1px solid ${R.mid}`}}>
-              <div style={{fontSize:11,fontWeight:isT?800:400,color:isT?R.black:R.dark,paddingLeft:2,marginBottom:3}}>{day}</div>
+            <div key={i} style={{minHeight:100,background:isT?"#f5f3ff":R.white,borderRadius:10,padding:4,border:isT?`2px solid ${R.lime}`:`1px solid ${R.mid}`}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3,paddingLeft:2}}>
+                {admin ? (
+                  <button onClick={()=>onAddOnDate(ds)} title="Add item on this date" style={{display:"flex",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",padding:0,fontSize:12,fontWeight:isT?800:500,color:isT?R.black:R.dark}}>
+                    {day}<span style={{fontSize:12,color:"#8ab316",fontWeight:800}}>+</span>
+                  </button>
+                ) : (
+                  <span style={{fontSize:12,fontWeight:isT?800:400,color:isT?R.black:R.dark}}>{day}</span>
+                )}
+              </div>
               {dEvents.map(ev=>{
                 const spansDays = ev.end !== ev.start;
                 return (
-                  <button key={`ev-${ev.id}`} onClick={()=>onSelectEvent(ev)} title={spansDays?`${ev.title} (through ${new Date(ev.end).toLocaleDateString("en-GB",{day:"numeric",month:"short"})})`:ev.title} style={{display:"flex",alignItems:"center",gap:4,width:"100%",background:R.black,color:R.white,borderRadius:4,padding:"3px 5px",marginBottom:2,fontSize:9,fontWeight:700,border:"none",cursor:"pointer",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>
+                  <button key={`ev-${ev.id}`} onClick={()=>onSelectEvent(ev)} title={spansDays?`${ev.title} (through ${new Date(ev.end).toLocaleDateString("en-GB",{day:"numeric",month:"short"})})`:ev.title} style={{display:"flex",alignItems:"center",gap:4,width:"100%",background:R.black,color:R.white,borderRadius:4,padding:"4px 6px",marginBottom:2,fontSize:10,fontWeight:700,border:"none",cursor:"pointer",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis"}}>
                     <span style={{flexShrink:0}}>📅</span><span style={{overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{ev.title}</span>
                     {spansDays && <span style={{flexShrink:0,opacity:.6}}>→</span>}
                   </button>
@@ -695,21 +737,21 @@ function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, a
                     onMouseEnter={()=>setHoverId(item.id)} onMouseLeave={()=>setHoverId(h=>h===item.id?null:h)}
                     style={{
                     position:"relative",
-                    display:"flex",alignItems:"center",gap:4,background:wip?R.grey:ac+"0c",
-                    borderLeft:wip?`3px dashed ${ac}`:`3px solid ${ac}`,borderRadius:4,padding:"3px 5px 3px 6px",cursor:"pointer",
+                    display:"flex",alignItems:"center",gap:5,background:wip?R.grey:ac+"0c",
+                    borderLeft:wip?`3px dashed ${ac}`:`3px solid ${ac}`,borderRadius:4,padding:"4px 6px 4px 7px",cursor:"pointer",
                     boxShadow:sel?.id===item.id?`0 0 0 1.5px ${ac} inset`:"none",
-                    fontSize:9,color:wip?R.dark:R.black,textAlign:"left",width:"100%",
-                    fontWeight:500,lineHeight:1.2,marginBottom:2,
+                    fontSize:10.5,color:wip?R.dark:R.black,textAlign:"left",width:"100%",
+                    fontWeight:500,lineHeight:1.25,marginBottom:2,
                     overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis",
                   }}>
-                    <span style={{fontSize:11,lineHeight:1,flexShrink:0}}>{typeInfo.i}</span>
+                    <span style={{fontSize:12,lineHeight:1,flexShrink:0}}>{typeInfo.i}</span>
                     <span style={{overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{item.title}</span>
                     {needsAttn && (<span title={rev?"Ready for review":"Awaiting client input"} style={{flexShrink:0,width:6,height:6,borderRadius:"50%",background:rev?"#f59e42":"#ef4444"}}/>)}
                     {hovered && (
-                      <div style={{position:"absolute",top:"100%",left:0,marginTop:3,zIndex:60,background:R.black,color:R.white,padding:"8px 10px",borderRadius:8,minWidth:170,maxWidth:230,boxShadow:"0 8px 20px rgba(0,0,0,.3)",pointerEvents:"none"}}>
-                        <div style={{fontSize:11,fontWeight:700,marginBottom:4,whiteSpace:"normal",lineHeight:1.3}}>{item.title}</div>
-                        <div style={{fontSize:9,opacity:.75,marginBottom:3}}>{typeInfo.i} {typeInfo.l}{item.platform?` · ${item.platform}`:""}</div>
-                        <div style={{fontSize:9,fontWeight:700,color:stateInfo.c||"#fff"}}>{stateInfo.l||item.state}</div>
+                      <div style={{position:"absolute",top:"100%",left:0,marginTop:3,zIndex:60,background:R.black,color:R.white,padding:"9px 11px",borderRadius:8,minWidth:180,maxWidth:240,boxShadow:"0 8px 20px rgba(0,0,0,.3)",pointerEvents:"none"}}>
+                        <div style={{fontSize:12,fontWeight:700,marginBottom:4,whiteSpace:"normal",lineHeight:1.35}}>{item.title}</div>
+                        <div style={{fontSize:10,opacity:.75,marginBottom:3}}>{typeInfo.i} {typeInfo.l}{item.platform?` · ${item.platform}`:""}</div>
+                        <div style={{fontSize:10,fontWeight:700,color:stateInfo.c||"#fff"}}>{stateInfo.l||item.state}</div>
                       </div>
                     )}
                   </button>
@@ -765,6 +807,8 @@ export default function Portal() {
   const [selStack, setSelStack] = useState([]);
   const [selEvent, setSelEvent] = useState(null);
   const [modal, setModal] = useState(null); // null | "add" | {editing: item} | "addStrategy" | {editingStrategy: s}
+  const [addDefaults, setAddDefaults] = useState(null); // {date} to prefill the Add Item form
+  const [calDate, setCalDate] = useState(() => { const d = new Date(); return {year:d.getFullYear(), month:d.getMonth()}; });
 
   // Load data
   useEffect(() => {
@@ -818,6 +862,7 @@ export default function Portal() {
       updateItems(ni);
     }
     setModal(null);
+    setAddDefaults(null);
   }
 
   function handleDeleteItem(id) {
@@ -845,7 +890,11 @@ export default function Portal() {
   function panelBack() { setSelStack(s => { if(!s.length) return s; setSel(s[s.length-1]); return s.slice(0,-1); }); }
   function closePanel() { setSel(null); setSelStack([]); }
   function selectEventFromItem(ev) { setSel(null); setSelStack([]); setSelEvent(ev); }
-  function toggleFState(k) { setFStates(s => s.includes(k) ? s.filter(x=>x!==k) : [...s,k]); }
+  function openAddForDate(date) { setAddDefaults({date}); setModal("add"); }
+  function closeAddModal() { setModal(null); setAddDefaults(null); }
+  function prevMonth() { setCalDate(({year,month}) => month===0 ? {year:year-1,month:11} : {year,month:month-1}); }
+  function nextMonth() { setCalDate(({year,month}) => month===11 ? {year:year+1,month:0} : {year,month:month+1}); }
+  function goToday() { const d = new Date(); setCalDate({year:d.getFullYear(), month:d.getMonth()}); }
 
   const rc = useMemo(()=>items.filter(i=>i.state==="review").length,[items]);
   const ic = useMemo(()=>items.filter(i=>i.state==="input").length,[items]);
@@ -894,20 +943,12 @@ export default function Portal() {
 
       {/* FILTERS */}
       {showFilters&&(
-        <div style={{background:R.white,padding:"10px 24px",borderBottom:tab==="calendar"?"none":`1px solid ${R.mid}`,display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+        <div style={{background:R.white,padding:"10px 24px",borderBottom:`1px solid ${R.mid}`,display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
           <button onClick={()=>setFA(null)} style={{padding:"5px 12px",borderRadius:8,fontSize:10,fontWeight:700,cursor:"pointer",background:!fArea?R.black:R.white,color:!fArea?R.white:R.dark,border:`1px solid ${!fArea?R.black:R.mid}`}}>All brands</button>
           {Object.entries(areas).map(([k,a])=>(
             <button key={k} onClick={()=>setFA(fArea===k?null:k)} style={{padding:"5px 12px",borderRadius:8,fontSize:10,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:5,background:fArea===k?a.color+"14":R.white,color:fArea===k?a.color:R.dark,border:`1px solid ${fArea===k?a.color+"40":R.mid}`}}><Dot c={a.color} s={6}/>{a.label}</button>
           ))}
-          {tab==="calendar"&&(<><div style={{flex:1}}/><ChDrop value={fTypes} onChange={setFTypes}/></>)}
-        </div>
-      )}
-      {tab==="calendar"&&(
-        <div style={{background:R.white,padding:"0 24px 10px",borderBottom:`1px solid ${R.mid}`,display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
-          <button onClick={()=>setFStates([])} style={{padding:"4px 10px",borderRadius:8,fontSize:9,fontWeight:700,cursor:"pointer",background:!fStates.length?R.black:R.white,color:!fStates.length?R.white:R.dark,border:`1px solid ${!fStates.length?R.black:R.mid}`}}>All statuses</button>
-          {Object.entries(ST).map(([k,v])=>(
-            <button key={k} onClick={()=>toggleFState(k)} style={{padding:"4px 10px",borderRadius:8,fontSize:9,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:5,background:fStates.includes(k)?v.c+"14":R.white,color:fStates.includes(k)?v.c:R.dark,border:`1px solid ${fStates.includes(k)?v.c+"40":R.mid}`}}><Dot c={v.c} s={6}/>{v.l}</button>
-          ))}
+          {tab==="calendar"&&(<><div style={{flex:1}}/><FilterSettings fTypes={fTypes} setFTypes={setFTypes} fStates={fStates} setFStates={setFStates}/></>)}
         </div>
       )}
 
@@ -915,7 +956,7 @@ export default function Portal() {
       <div style={{padding:"20px 24px 48px",marginRight:(sel||selEvent)?360:0,transition:"margin-right .2s"}}>
         {tab==="strategy"&&(<StrategyView strategies={strategies} areas={areas} fArea={fArea} admin={admin} monthSummary={monthSummary} onToggleSummary={(v)=>updateMonthSummary({...monthSummary,enabled:v})} onEditSummary={(text)=>updateMonthSummary({...monthSummary,text})} onOpenForm={(s)=>setModal(s?{editingStrategy:s}:"addStrategy")}/>)}
         {tab==="dates"&&(<KeyDatesView events={events} areas={areas} onSelect={(ev)=>{closePanel();setSelEvent(ev);}}/>)}
-        {tab==="calendar"&&(<CalView items={items} events={events} areas={areas} fArea={fArea} fTypes={fTypes} fStates={fStates} onSelect={(it)=>{setSelEvent(null);openItem(it);}} onSelectEvent={(ev)=>{closePanel();setSelEvent(ev);}} sel={sel} admin={admin} onAdd={()=>setModal("add")}/>)}
+        {tab==="calendar"&&(<CalView items={items} events={events} areas={areas} fArea={fArea} fTypes={fTypes} fStates={fStates} onSelect={(it)=>{setSelEvent(null);openItem(it);}} onSelectEvent={(ev)=>{closePanel();setSelEvent(ev);}} sel={sel} admin={admin} onAdd={()=>openAddForDate(todayISO())} onAddOnDate={openAddForDate} month={calDate.month} year={calDate.year} onPrevMonth={prevMonth} onNextMonth={nextMonth} onToday={goToday}/>)}
         {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onSelect={(it)=>{setSelEvent(null);openItem(it);}}/>)}
         {tab==="reporting"&&(<ReportingView/>)}
       </div>
@@ -925,8 +966,8 @@ export default function Portal() {
       <EventPanel event={selEvent} items={items} areas={areas} themes={themes} onClose={()=>setSelEvent(null)} onSelectItem={(it)=>{setSelEvent(null);openItem(it);}}/>
 
       {/* MODALS */}
-      <Modal open={modal==="add"} onClose={()=>setModal(null)} title="Add Content Item">
-        <ItemForm areas={areas} themes={themes} onSave={handleSaveItem} onCancel={()=>setModal(null)}/>
+      <Modal open={modal==="add"} onClose={closeAddModal} title="Add Content Item">
+        <ItemForm areas={areas} themes={themes} defaultDate={addDefaults?.date} defaultArea={fArea} onSave={handleSaveItem} onCancel={closeAddModal}/>
       </Modal>
       <Modal open={modal&&modal.editing} onClose={()=>setModal(null)} title="Edit Item">
         {modal&&modal.editing&&(<ItemForm item={modal.editing} areas={areas} themes={themes} onSave={handleSaveItem} onDelete={handleDeleteItem} onCancel={()=>setModal(null)}/>)}

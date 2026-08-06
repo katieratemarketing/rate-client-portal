@@ -37,6 +37,10 @@ const ST = {
   live:{l:"Live",c:"#3b82f6",bg:"#eff6ff"},
 };
 
+function needsClientAction(item) {
+  return item.state==="input" || (item.checklist||[]).some(c=>c.ownerType==="client"&&!c.done);
+}
+
 const DEFAULT_THEMES = {
   christie:{l:"Agatha Christie Exhibition",c:"#7c3aed",brief:"Major tentpole tied to the London Museum exhibition (Aug–Oct). Coordinated across Ulverscroft and Trade — social series, blog content and trade press outreach spotlighting large-print Christie titles."},
   booklovers:{l:"National Book Lovers Day",c:"#ec4899",brief:"Cross-brand awareness day (9 Aug). Pre-scheduled content across Ulverscroft, uLibrary and The Reading House — must be ready by the 7th."},
@@ -64,18 +68,18 @@ const DEFAULT_MONTH_SUMMARY = {
 };
 
 const DEFAULT_ITEMS = [
-  {id:1,date:"2026-08-03",area:"ulverscroft",ch:"social",title:"Shadow of the Wind – carousel",state:"approved",platform:"IG / FB",notes:"Cover art + pull quotes",theme:"newrelease",url:"",comments:[],history:[]},
-  {id:2,date:"2026-08-05",area:"ulibrary",ch:"email",title:"August Book Club newsletter",state:"review",platform:"Kit",notes:"Black History Month feature",theme:"",url:"",comments:[],history:[]},
-  {id:3,date:"2026-08-06",area:"ulibrary",ch:"social",title:"Library of the Month announcement",state:"input",platform:"IG / LinkedIn",notes:"Need title confirmation from Daniel",theme:"",url:"",comments:[{id:"c1",author:"Rate Team",ts:"2026-08-05T10:12:00Z",text:"Can you confirm the library name before we schedule this?"}],history:[{id:"h1",ts:"2026-08-05T10:12:00Z",from:"review",to:"input",by:"Rate Team"}]},
-  {id:4,date:"2026-08-07",area:"ulverscroft",ch:"social",title:"Christie LP spotlight",state:"review",platform:"IG / X",notes:"Large print editions tie-in",theme:"christie",url:"",comments:[],history:[]},
-  {id:5,date:"2026-08-07",area:"ulverscroft",ch:"blog",title:"Christie — reading guide",state:"wip",platform:"Website",notes:"Curated LP Christie titles",theme:"christie",url:"",comments:[],history:[]},
-  {id:6,date:"2026-08-09",area:"readinghouse",ch:"social",title:"Book Lovers Day — staff picks reel",state:"review",platform:"IG / TikTok",notes:"Team picks filmed in-store",theme:"booklovers",url:"",comments:[],history:[]},
-  {id:7,date:"2026-08-09",area:"ulverscroft",ch:"email",title:"Book Lovers Day — reader email",state:"wip",platform:"Kit",notes:"Curated list + offer code",theme:"booklovers",url:"",comments:[],history:[]},
-  {id:8,date:"2026-08-11",area:"ulibrary",ch:"email",title:"uLibrary Monthly Update",state:"wip",platform:"Kit",notes:"Usage stats, retention",theme:"",url:"",comments:[],history:[]},
-  {id:9,date:"2026-08-13",area:"trade",ch:"email",title:"Trade catalogue — Autumn titles",state:"approved",platform:"Email",notes:"Sent to Audible, Bolinda",theme:"",url:"",comments:[],history:[]},
-  {id:10,date:"2026-08-18",area:"ulverscroft",ch:"social",title:"Land by Maggie O'Farrell",state:"wip",platform:"IG / FB",notes:"Review quote post",theme:"newrelease",url:"",comments:[],history:[]},
-  {id:11,date:"2026-08-25",area:"ulibrary",ch:"campaign",title:"Back to School — outreach",state:"review",platform:"Email + LP",notes:"School librarians, free trial",theme:"b2s",url:"",comments:[],history:[]},
-  {id:12,date:"2026-08-28",area:"ulverscroft",ch:"email",title:"Book of the Week — Honesty",state:"review",platform:"Kit",notes:"Carried from July series",theme:"",url:"",comments:[],history:[]},
+  {id:1,date:"2026-08-03",area:"ulverscroft",ch:"social",title:"Shadow of the Wind – carousel",state:"approved",platform:"IG / FB",notes:"Cover art + pull quotes",theme:"newrelease",url:"",comments:[],history:[],checklist:[]},
+  {id:2,date:"2026-08-05",area:"ulibrary",ch:"email",title:"August Book Club newsletter",state:"review",platform:"Kit",notes:"Black History Month feature",theme:"",url:"",comments:[],history:[],checklist:[]},
+  {id:3,date:"2026-08-06",area:"ulibrary",ch:"social",title:"Library of the Month announcement",state:"input",platform:"IG / LinkedIn",notes:"Need title confirmation from Daniel",theme:"",url:"",comments:[{id:"c1",author:"Rate Team",ts:"2026-08-05T10:12:00Z",text:"Can you confirm the library name before we schedule this?"}],history:[{id:"h1",ts:"2026-08-05T10:12:00Z",from:"review",to:"input",by:"Rate Team"}],checklist:[{id:"cl1",text:"Confirm library name",ownerType:"client",ownerName:"Daniel",done:false}]},
+  {id:4,date:"2026-08-07",area:"ulverscroft",ch:"social",title:"Christie LP spotlight",state:"review",platform:"IG / X",notes:"Large print editions tie-in",theme:"christie",url:"",comments:[],history:[],checklist:[{id:"cl2",text:"Caption written",ownerType:"rate",ownerName:"Katie",done:true},{id:"cl3",text:"Images designed",ownerType:"rate",ownerName:"Izzie",done:true}]},
+  {id:5,date:"2026-08-07",area:"ulverscroft",ch:"blog",title:"Christie — reading guide",state:"wip",platform:"Website",notes:"Curated LP Christie titles",theme:"christie",url:"",comments:[],history:[],checklist:[]},
+  {id:6,date:"2026-08-09",area:"readinghouse",ch:"social",title:"Book Lovers Day — staff picks reel",state:"review",platform:"IG / TikTok",notes:"Team picks filmed in-store",theme:"booklovers",url:"",comments:[],history:[],checklist:[]},
+  {id:7,date:"2026-08-09",area:"ulverscroft",ch:"email",title:"Book Lovers Day — reader email",state:"wip",platform:"Kit",notes:"Curated list + offer code",theme:"booklovers",url:"",comments:[],history:[],checklist:[]},
+  {id:8,date:"2026-08-11",area:"ulibrary",ch:"email",title:"uLibrary Monthly Update",state:"wip",platform:"Kit",notes:"Usage stats, retention",theme:"",url:"",comments:[],history:[],checklist:[]},
+  {id:9,date:"2026-08-13",area:"trade",ch:"email",title:"Trade catalogue — Autumn titles",state:"approved",platform:"Email",notes:"Sent to Audible, Bolinda",theme:"",url:"",comments:[],history:[],checklist:[]},
+  {id:10,date:"2026-08-18",area:"ulverscroft",ch:"social",title:"Land by Maggie O'Farrell",state:"wip",platform:"IG / FB",notes:"Review quote post",theme:"newrelease",url:"",comments:[],history:[],checklist:[]},
+  {id:11,date:"2026-08-25",area:"ulibrary",ch:"campaign",title:"Back to School — outreach",state:"review",platform:"Email + LP",notes:"School librarians, free trial",theme:"b2s",url:"",comments:[],history:[],checklist:[]},
+  {id:12,date:"2026-08-28",area:"ulverscroft",ch:"email",title:"Book of the Week — Honesty",state:"review",platform:"Kit",notes:"Carried from July series",theme:"",url:"",comments:[],history:[],checklist:[]},
 ];
 
 /* ══════════════════════════════════════════════
@@ -158,6 +162,55 @@ function LinkedContentList({items, areas, onSelect, title}) {
 }
 
 /* ══════════════════════════════════════════════
+   REQUIREMENTS CHECKLIST
+   ══════════════════════════════════════════════ */
+function ChecklistSection({checklist, admin, onToggle, onAdd, onRemove}) {
+  const [text, setText] = useState("");
+  const [ownerType, setOwnerType] = useState("rate");
+  const [ownerName, setOwnerName] = useState("");
+
+  function submit() {
+    if (!text.trim()) return;
+    onAdd(text.trim(), ownerType, ownerName.trim() || (ownerType==="rate" ? "Rate Team" : "Client"));
+    setText(""); setOwnerName("");
+  }
+
+  const done = checklist.filter(c=>c.done).length;
+
+  return (
+    <div style={{marginBottom:16}}>
+      <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>
+        Checklist{checklist.length>0 && ` (${done}/${checklist.length})`}
+      </div>
+      {checklist.length===0 && (<div style={{fontSize:11,color:"#ccc",fontStyle:"italic",marginBottom:8}}>No requirements yet</div>)}
+      {checklist.map(c=>{
+        const canToggle = admin ? c.ownerType==="rate" : c.ownerType==="client";
+        const pending = c.ownerType==="client" && !c.done;
+        return (
+          <div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:8,marginBottom:4,background:pending?"#fef2f2":R.grey}}>
+            <button onClick={()=>canToggle && onToggle(c.id)} disabled={!canToggle} title={canToggle?"Mark done":"Only the owner can toggle this"} style={{width:16,height:16,borderRadius:4,border:`1.5px solid ${c.done?"#22c55e":R.mid}`,background:c.done?"#22c55e":R.white,cursor:canToggle?"pointer":"default",flexShrink:0,padding:0,color:R.white,fontSize:10,lineHeight:"14px",fontWeight:800}}>{c.done?"✓":""}</button>
+            <span style={{flex:1,fontSize:11,color:c.done?R.dark:R.black,textDecoration:c.done?"line-through":"none"}}>{c.text}</span>
+            <span style={{fontSize:9,fontWeight:700,color:c.ownerType==="client"?"#7c3aed":R.dark,background:c.ownerType==="client"?"#7c3aed14":R.mid,padding:"2px 6px",borderRadius:5,flexShrink:0}}>{c.ownerName}</span>
+            {admin && (<button onClick={()=>onRemove(c.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#ccc",fontSize:14,padding:0,flexShrink:0}}>×</button>)}
+          </div>
+        );
+      })}
+      {admin && (
+        <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+          <input style={{...inputStyle,flex:"1 1 130px"}} value={text} onChange={e=>setText(e.target.value)} placeholder="New requirement..." onKeyDown={e=>{if(e.key==="Enter")submit();}}/>
+          <select style={{...selectStyle,width:72}} value={ownerType} onChange={e=>setOwnerType(e.target.value)}>
+            <option value="rate">Rate</option>
+            <option value="client">Client</option>
+          </select>
+          <input style={{...inputStyle,width:84}} value={ownerName} onChange={e=>setOwnerName(e.target.value)} placeholder="Name"/>
+          <button onClick={submit} style={{background:R.black,color:R.white,border:"none",borderRadius:8,padding:"0 12px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Add</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
    MODAL WRAPPER
    ══════════════════════════════════════════════ */
 function Modal({open, onClose, title, children, wide}) {
@@ -193,7 +246,7 @@ const selectStyle = {...inputStyle, background:R.white};
    ITEM FORM (add + edit)
    ══════════════════════════════════════════════ */
 function ItemForm({item, areas, themes, defaultDate, defaultArea, onSave, onDelete, onCancel}) {
-  const [f, setF] = useState(item || {title:"",date:defaultDate||todayISO(),area:defaultArea||Object.keys(areas)[0],ch:"social",state:"wip",platform:"",notes:"",theme:"",url:"",comments:[],history:[]});
+  const [f, setF] = useState(item || {title:"",date:defaultDate||todayISO(),area:defaultArea||Object.keys(areas)[0],ch:"social",state:"wip",platform:"",notes:"",theme:"",url:"",comments:[],history:[],checklist:[]});
   const upd = (k,v) => setF(p=>({...p,[k]:v}));
 
   return (
@@ -231,7 +284,7 @@ function ItemForm({item, areas, themes, defaultDate, defaultArea, onSave, onDele
         <Field label="Output URL"><input style={inputStyle} value={f.url||""} onChange={e=>upd("url",e.target.value)} placeholder="https://..."/></Field>
       </div>
       <div style={{display:"flex",gap:8,marginTop:16}}>
-        <button onClick={()=>onSave({...f,comments:f.comments||[],history:f.history||[]})} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"10px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>{item?"Save Changes":"Add Item"}</button>
+        <button onClick={()=>onSave({...f,comments:f.comments||[],history:f.history||[],checklist:f.checklist||[]})} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"10px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>{item?"Save Changes":"Add Item"}</button>
         <button onClick={onCancel} style={{padding:"10px 16px",background:R.white,color:R.dark,border:`1px solid ${R.mid}`,borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer"}}>Cancel</button>
         {item && onDelete && (<button onClick={()=>onDelete(item.id)} style={{padding:"10px 16px",background:R.white,color:"#ef4444",border:"1px solid #ef4444",borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer"}}>Delete</button>)}
       </div>
@@ -523,7 +576,7 @@ function EventPanel({event, items, areas, themes, onClose, onSelectItem}) {
    APPROVALS
    ══════════════════════════════════════════════ */
 function ApprovalsView({items, areas, themes, onSelect}) {
-  const rv=items.filter(i=>i.state==="review"), ip=items.filter(i=>i.state==="input");
+  const rv=items.filter(i=>i.state==="review"), ip=items.filter(needsClientAction);
   return (
     <div style={{maxWidth:680}}>
       {ip.length>0&&(
@@ -561,7 +614,7 @@ function ApprovalsView({items, areas, themes, onSelect}) {
 /* ══════════════════════════════════════════════
    SIDE PANEL
    ══════════════════════════════════════════════ */
-function Panel({item, items, events, areas, themes, admin, onClose, onApprove, onEdit, onAddComment, onSelectLinked, onSelectEvent, backTo, onBack}) {
+function Panel({item, items, events, areas, themes, admin, onClose, onApprove, onEdit, onAddComment, onSelectLinked, onSelectEvent, backTo, onBack, onAddChecklist, onToggleChecklist, onRemoveChecklist}) {
   const [actionMode, setActionMode] = useState(null); // null | "approve" | "reject"
   const [draft, setDraft] = useState("");
   const [commentDraft, setCommentDraft] = useState("");
@@ -622,6 +675,8 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
           <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>Output link</div>
           {item.url?(<a href={item.url} target="_blank" rel="noreferrer" style={{fontSize:11,color:a.color,wordBreak:"break-all"}}>{item.url}</a>):(<span style={{fontSize:11,color:"#ccc",fontStyle:"italic"}}>Not yet published</span>)}
         </div>
+
+        <ChecklistSection checklist={item.checklist||[]} admin={admin} onToggle={(clId)=>onToggleChecklist(item.id,clId)} onAdd={(text,ownerType,ownerName)=>onAddChecklist(item.id,text,ownerType,ownerName)} onRemove={(clId)=>onRemoveChecklist(item.id,clId)}/>
 
         {item.state==="review" && actionMode===null && (
           <div style={{display:"flex",gap:8,marginTop:12}}>
@@ -726,8 +781,8 @@ function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, a
                 );
               })}
               {di.map(item=>{
-                const wip=item.state==="wip",rev=item.state==="review",inp=item.state==="input";
-                const needsAttn = rev||inp;
+                const wip=item.state==="wip",rev=item.state==="review",clientAction=needsClientAction(item);
+                const needsAttn = rev||clientAction;
                 const ac=(areas[item.area]||{color:R.dark}).color;
                 const hovered = hoverId===item.id;
                 const typeInfo = CH[item.ch]||{i:"•",l:item.ch};
@@ -852,6 +907,22 @@ export default function Portal() {
     if (sel?.id===id) setSel(ni.find(i=>i.id===id));
   }
 
+  function addChecklistItem(id, text, ownerType, ownerName) {
+    const ni = items.map(i => i.id===id ? {...i, checklist:[...(i.checklist||[]), {id:`cl${Date.now()}`, text, ownerType, ownerName, done:false}]} : i);
+    updateItems(ni);
+    if (sel?.id===id) setSel(ni.find(i=>i.id===id));
+  }
+  function toggleChecklistItem(id, clId) {
+    const ni = items.map(i => i.id===id ? {...i, checklist:(i.checklist||[]).map(c=>c.id===clId?{...c,done:!c.done}:c)} : i);
+    updateItems(ni);
+    if (sel?.id===id) setSel(ni.find(i=>i.id===id));
+  }
+  function removeChecklistItem(id, clId) {
+    const ni = items.map(i => i.id===id ? {...i, checklist:(i.checklist||[]).filter(c=>c.id!==clId)} : i);
+    updateItems(ni);
+    if (sel?.id===id) setSel(ni.find(i=>i.id===id));
+  }
+
   function handleSaveItem(formData) {
     if (modal && modal.editing) {
       const ni = items.map(i => i.id===modal.editing.id ? {...formData, id:modal.editing.id} : i);
@@ -897,7 +968,7 @@ export default function Portal() {
   function goToday() { const d = new Date(); setCalDate({year:d.getFullYear(), month:d.getMonth()}); }
 
   const rc = useMemo(()=>items.filter(i=>i.state==="review").length,[items]);
-  const ic = useMemo(()=>items.filter(i=>i.state==="input").length,[items]);
+  const ic = useMemo(()=>items.filter(needsClientAction).length,[items]);
 
   if (loading) return (<div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",fontFamily:"'Manrope',sans-serif",color:R.dark}}>Loading...</div>);
 
@@ -962,7 +1033,7 @@ export default function Portal() {
       </div>
 
       {/* SIDE PANELS */}
-      <Panel item={sel} items={items} events={events} areas={areas} themes={themes} admin={admin} onClose={closePanel} onApprove={approve} onEdit={(it)=>setModal({editing:it})} onAddComment={addComment} onSelectLinked={selectLinked} onSelectEvent={selectEventFromItem} backTo={selStack.length?selStack[selStack.length-1].title:null} onBack={panelBack}/>
+      <Panel item={sel} items={items} events={events} areas={areas} themes={themes} admin={admin} onClose={closePanel} onApprove={approve} onEdit={(it)=>setModal({editing:it})} onAddComment={addComment} onSelectLinked={selectLinked} onSelectEvent={selectEventFromItem} backTo={selStack.length?selStack[selStack.length-1].title:null} onBack={panelBack} onAddChecklist={addChecklistItem} onToggleChecklist={toggleChecklistItem} onRemoveChecklist={removeChecklistItem}/>
       <EventPanel event={selEvent} items={items} areas={areas} themes={themes} onClose={()=>setSelEvent(null)} onSelectItem={(it)=>{setSelEvent(null);openItem(it);}}/>
 
       {/* MODALS */}

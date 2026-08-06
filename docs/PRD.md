@@ -387,6 +387,492 @@ Not every client gets every feature. Admin can toggle:
 
 ---
 
+## 13. Sign-off Flow & Requirements System
+
+### The problem
+Right now "Awaiting client input" is a status but it doesn't tell the client WHAT is needed. And "Ready for review" doesn't guarantee the client can see everything they need to sign off. The form captures data for the marketer, but the sign-off view needs to show the assembled output — caption + image together, not fields in a form.
+
+### 13.1 Requirements checklist (per item)
+
+Every item has an optional checklist of things that need to happen before it's ready. Each checklist item has:
+
+| Field | Type |
+|---|---|
+| Task description | Text — e.g. "Send product images", "Approve caption" |
+| Owner | Dropdown — Rate team member OR client contact |
+| Status | To do / Done |
+
+**How it works**
+
+Marketer creates a social post:
+- Writes the caption, selects platform, picks hashtags
+- Needs product images from the client
+- Adds a checklist item: "Send product images" → assigned to Daniel → status: To do
+- Sets item status to "Awaiting client input"
+
+Client opens the portal:
+- Sees the item flagged as "Action needed"
+- Opens it, sees the checklist: "Send product images — assigned to you"
+- Uploads the images or replies with a comment
+- Ticks the checklist item as done
+
+Marketer sees it's done:
+- Gets notified (email or portal)
+- Adds the images to the creative, finishes design
+- Sets status to "Ready for review"
+
+Client reviews:
+- Opens the item, sees the full assembled post: caption + image + hashtags + platform + scheduled time
+- Approves or requests changes (with comment)
+
+**Checklist vs subtask**
+
+Keep it as a simple checklist on the item, not a separate subtask system. Subtasks add complexity. The checklist is visible inline in the item detail view. If a checklist item is assigned to the client, it triggers the "Awaiting client input" indicator.
+
+**Auto-status**
+
+If ANY checklist item is assigned to a client contact and marked "To do", the item automatically shows the "Action needed" indicator — even if the overall status is "In progress". This means the marketer doesn't need to manually toggle the status every time.
+
+### 13.2 Sign-off view (what the client sees when reviewing)
+
+The side panel / detail view needs to show the ASSEMBLED output, not just form fields. Different layout per activity type.
+
+**Social post — sign-off view**
+
+```
+┌─────────────────────────────────────┐
+│ [Brand badge]  SOC  [Status badge]  │
+│                                     │
+│ Title: Christie LP spotlight        │
+│ Platform: IG / X                    │
+│ Post type: Carousel                 │
+│ Scheduled: 7 Aug, 10:00            │
+│                                     │
+│ ─── CONTENT ────────────────────── │
+│                                     │
+│ [IMAGE / VIDEO PREVIEW]             │
+│ (carousel: swipeable thumbnails)    │
+│                                     │
+│ Caption:                            │
+│ "Discover Agatha Christie in large  │
+│ print. Our LP editions bring the    │
+│ Queen of Crime to readers who..."   │
+│                                     │
+│ Hashtags: #AgathChristie #LP...     │
+│ Tagged: @londonmuseum               │
+│                                     │
+│ ─── LINKED CONTENT ────────────── │
+│ 📝 Christie reading guide (Blog)    │
+│ 📰 Christie — Bookseller pitch (PR) │
+│                                     │
+│ ─── CHECKLIST ─────────────────── │
+│ ✅ Caption written (Katie)          │
+│ ✅ Images designed (Izzie)          │
+│ ☐ Final approval (Daniel)          │
+│                                     │
+│ ─── ACTIVITY ──────────────────── │
+│ Katie set to Review — 5 Aug 14:30  │
+│ Daniel commented — 6 Aug 09:15     │
+│ "Can we use the blue cover not red" │
+│                                     │
+│ [Comment box]                       │
+│                                     │
+│ [  Approve  ] [ Request Changes ]   │
+└─────────────────────────────────────┘
+```
+
+Key: the creative (images/video) and copy (caption) are the hero of the view. Metadata sits above. Actions sit below.
+
+**Email — sign-off view**
+
+```
+┌─────────────────────────────────────┐
+│ [Brand badge]  EML  [Status badge]  │
+│                                     │
+│ Title: August Book Club newsletter  │
+│ Platform: Kit                       │
+│ Segment: Book Club subscribers      │
+│ Send time: 5 Aug, 09:00            │
+│                                     │
+│ ─── CONTENT ────────────────────── │
+│                                     │
+│ Subject: Your August Book Club pick │
+│ Preview: This month we're           │
+│ celebrating Black History Month...  │
+│                                     │
+│ [EMAIL DESIGN PREVIEW]              │
+│ (full email render or screenshot)   │
+│                                     │
+│ Preview link: [Open in Kit →]       │
+│                                     │
+│ ─── CHECKLIST ─────────────────── │
+│ ...                                 │
+└─────────────────────────────────────┘
+```
+
+Addition needed on email form:
+- Preview link — URL — link to the Kit/Mailchimp email preview so client can see the full rendered email
+- Email body summary — Textarea — short description of what's in the email if no preview link
+
+**Blog — sign-off view**
+
+```
+┌─────────────────────────────────────┐
+│ [Brand badge]  BLG  [Status badge]  │
+│                                     │
+│ Title: Christie exhibition guide    │
+│ URL: /blog/christie-reading-guide   │
+│ Author: Katie                       │
+│                                     │
+│ ─── CONTENT ────────────────────── │
+│                                     │
+│ [FEATURED IMAGE]                    │
+│                                     │
+│ [Draft link: Open in Google Docs →] │
+│ OR                                  │
+│ [Full article preview — scrollable] │
+│                                     │
+│ Meta title: ...                     │
+│ Meta description: ...               │
+│                                     │
+│ Word count: 850                     │
+│ SEO keywords: agatha christie...    │
+│ ...                                 │
+└─────────────────────────────────────┘
+```
+
+Additions needed on blog form:
+- Draft link — URL — Google Doc or CMS preview
+- Word count — Number
+- Body content — Long textarea (optional — for short posts)
+
+**Paid ad — sign-off view**
+
+```
+┌─────────────────────────────────────┐
+│ [Brand badge]  ADS  [Status badge]  │
+│                                     │
+│ Title: Back to School — Meta ads    │
+│ Platform: Meta (FB + IG)            │
+│ Flight: 17 Aug – 31 Aug            │
+│ Budget: £500 total                  │
+│                                     │
+│ ─── AD CREATIVE ────────────────── │
+│                                     │
+│ [AD IMAGE / VIDEO — variant 1]      │
+│ Headline: Free trial for schools    │
+│ Primary text: "Give your students   │
+│ access to 1000+ audiobooks..."      │
+│ CTA: Sign up free                   │
+│                                     │
+│ [AD IMAGE — variant 2]              │
+│ Headline: ...                       │
+│                                     │
+│ ─── TARGETING ─────────────────── │
+│ Audience: School librarians, 25-55  │
+│ Locations: UK                       │
+│ Interests: Education, libraries...  │
+│                                     │
+│ ─── RESULTS (when live) ────────── │
+│ Impressions: 12,400                 │
+│ Clicks: 340                         │
+│ CTR: 2.7%                           │
+│ ...                                 │
+└─────────────────────────────────────┘
+```
+
+**PR — sign-off view**
+
+```
+┌─────────────────────────────────────┐
+│ [Brand badge]  PR  [Status badge]   │
+│                                     │
+│ Title: Christie — Bookseller pitch  │
+│ Target: The Bookseller              │
+│ Journalist: [name]                  │
+│ Coverage type: Feature              │
+│ Pitch status: Sent / Followed up /  │
+│               Accepted / Declined   │
+│                                     │
+│ ─── CONTENT ────────────────────── │
+│                                     │
+│ Pitch angle: Ulverscroft LP         │
+│ editions tie-in with London Museum  │
+│ exhibition...                       │
+│                                     │
+│ [PRESS RELEASE — attachment]        │
+│ [PRESS IMAGES — gallery]            │
+│                                     │
+│ ─── FOLLOW-UP ─────────────────── │
+│ Follow-up date: 21 Aug             │
+│ ...                                 │
+└─────────────────────────────────────┘
+```
+
+Additions needed on PR form:
+- Pitch status — Dropdown: Drafted / Sent / Followed up / Accepted / Declined
+- Follow-up date — Date
+
+**Shoot — sign-off view**
+
+```
+┌─────────────────────────────────────┐
+│ [Brand badge]  🎬  [Status badge]   │
+│                                     │
+│ Title: Enkai product shoot          │
+│ Shoot type: Product video           │
+│ Date: 15 Aug                        │
+│ Location: Studio X, Nottingham      │
+│                                     │
+│ ─── PRODUCTION ─────────────────── │
+│ Crew: Katie (directing), Izzie      │
+│ Talent: N/A                         │
+│ Equipment: [notes]                  │
+│                                     │
+│ [SHOT LIST / STORYBOARD — attach]   │
+│ [CALL SHEET — attachment]           │
+│ [MOOD BOARD — attachment]           │
+│                                     │
+│ Schedule:                           │
+│ 09:00 Setup                         │
+│ 10:00 Product flat lays             │
+│ 11:30 Lifestyle shots               │
+│ 13:00 Video content                 │
+│ 15:00 Wrap                          │
+│                                     │
+│ Props / wardrobe: [notes]           │
+│                                     │
+│ ─── DELIVERABLES (post-shoot) ──── │
+│ [SELECTED STILLS — gallery]         │
+│ [EDITED VIDEO — preview]            │
+│ [RAW FILES — download link]         │
+│                                     │
+│ ─── CHECKLIST ─────────────────── │
+│ ✅ Location booked (Katie)          │
+│ ✅ Shot list approved (Ben)         │
+│ ☐ Props sourced (Izzie)            │
+│ ☐ Equipment hired (Katie)          │
+│ ...                                 │
+└─────────────────────────────────────┘
+```
+
+Additions needed on shoot form:
+- Call sheet — Upload
+- Mood board — Upload
+- Day schedule — Textarea — timeline for the day
+- Props / wardrobe — Textarea
+- Post-shoot deliverables — Multi-upload section (appears after shoot date)
+
+**Event — sign-off view**
+
+```
+┌─────────────────────────────────────┐
+│ [Brand badge]  EVT  [Status badge]  │
+│                                     │
+│ Title: Spark Expo Australia         │
+│ Event type: Trade show              │
+│ Dates: 4–6 Aug 2026                │
+│ Venue: Melbourne Convention Centre  │
+│ Event URL: [link]                   │
+│                                     │
+│ ─── ATTENDING ─────────────────── │
+│ Rate: Katie                         │
+│ Client: Diana, Daniel               │
+│ Registration: Confirmed             │
+│                                     │
+│ ─── LOGISTICS ─────────────────── │
+│ Travel: [notes]                     │
+│ Accommodation: [notes]              │
+│ Budget: £2,000                      │
+│                                     │
+│ ─── MARKETING ─────────────────── │
+│ Stand design needed: Yes            │
+│ Collateral: [list]                  │
+│                                     │
+│ ─── LINKED CONTENT ────────────── │
+│ 📱 Pre-event social post            │
+│ 📱 Day-of social coverage           │
+│ ✉️ Post-event follow-up email       │
+│                                     │
+│ ─── POST-EVENT ────────────────── │
+│ Leads captured: [number]            │
+│ Follow-up actions: [notes]          │
+│ ...                                 │
+└─────────────────────────────────────┘
+```
+
+Additions needed on event form:
+- Travel / accommodation — Textarea
+- Budget — Currency (£)
+- Stand design needed — Toggle yes/no
+- Post-event leads — Number
+- Post-event follow-up — Textarea
+
+### 13.3 Missing fields summary (add to form spec)
+
+**Social — add:** creative is there but needs to be PROMINENT in review view. Nothing missing from form, but sign-off view needs to assemble caption + creative together.
+
+**Email — add:**
+
+| Field | Type |
+|---|---|
+| Preview link | URL — link to Kit/Mailchimp preview |
+| Email body summary | Textarea — what's in the email |
+
+**Blog — add:**
+
+| Field | Type |
+|---|---|
+| Draft link | URL — Google Doc or CMS preview |
+| Word count | Number |
+| Body content | Long textarea (optional — for short posts) |
+
+**PR — add:**
+
+| Field | Type |
+|---|---|
+| Pitch status | Dropdown: Drafted / Sent / Followed up / Accepted / Declined |
+| Follow-up date | Date |
+
+**Shoot — add:**
+
+| Field | Type |
+|---|---|
+| Call sheet | Upload |
+| Mood board | Upload |
+| Day schedule | Textarea — timeline for the day |
+| Props / wardrobe | Textarea |
+| Post-shoot deliverables | Multi-upload section (appears after shoot date) |
+
+**Event — add:**
+
+| Field | Type |
+|---|---|
+| Travel / accommodation | Textarea |
+| Budget | Currency (£) |
+| Stand design needed | Toggle yes/no |
+| Post-event leads | Number |
+| Post-event follow-up | Textarea |
+
+**Campaign — add:**
+
+| Field | Type |
+|---|---|
+| Campaign brief document | Upload |
+
+**All types — add:**
+
+| Field | Type |
+|---|---|
+| Requirements checklist | Inline checklist (see 13.1) |
+| Comment thread | Inline comments (see section 4) |
+
+### 13.4 The full item lifecycle
+
+**From the marketer's perspective**
+
+```
+1. CREATE
+   Katie creates a social post
+   Fills in: title, date, brand, platform, post type
+   Status: In Progress
+   Checklist: Caption (Katie) / Design (Izzie) / Client images (Daniel)
+2. BUILD
+   Katie writes the caption → ticks checklist
+   Adds checklist item for Izzie: "Design carousel graphics"
+   Izzie is assigned, works on it
+   Meanwhile, needs product images from client
+3. REQUEST INPUT
+   Katie adds checklist item: "Send product images" → assigned to Daniel
+   Item auto-flags as "Action needed" for Daniel
+   Daniel gets email notification
+   Daniel uploads images via the portal or sends via email
+   Daniel ticks the checklist item
+4. INTERNAL REVIEW
+   Katie assembles the post: caption + designed graphics + client images
+   Reviews internally (optional — could skip for routine posts)
+   Uploads final creative to the item
+5. CLIENT REVIEW
+   Katie sets status to "Ready for review"
+   Daniel gets email notification
+   Daniel opens the item, sees the full assembled post
+   Daniel approves or requests changes (with comment)
+6. APPROVED
+   Daniel approves → status changes to "Approved"
+   Katie gets notification
+   Katie schedules the post
+7. LIVE
+   Post goes out
+   Katie pastes the output URL
+   Status changes to "Live"
+   At month end, output URL feeds into reporting
+```
+
+**From the client's perspective**
+
+```
+MY PORTAL
+Dashboard:
+- 2 items need my review  [→ click to see]
+- 1 item needs my input   [→ click to see]
+- 12 items in progress     (greyed out, I can see what's coming)
+- 6 items approved/live    (all good)
+I click on "needs my input":
+→ "Christie LP spotlight — send product images"
+→ I upload the images
+→ Done, back to my day
+I click on "needs my review":
+→ I see the full social post: image + caption + hashtags
+→ Looks good → I hit Approve
+→ Or: "Can we change the caption? Too long for LinkedIn"
+→ I type my feedback, hit Request Changes
+→ Katie gets notified, makes the change, sends it back for review
+```
+
+### 13.5 What the client CANNOT see
+
+- Internal notes (only client notes)
+- Internal checklist items assigned to Rate team
+- Time tracking
+- Cost / billing information
+- Other clients
+- CRM / pipeline
+- Rate internal tasks
+- Design iterations / internal feedback threads
+- Production calendar (unless toggled on by admin)
+
+What they CAN see:
+- Checklist items assigned to them
+- All content in "Review" or "Approved" or "Live" status
+- Content in "In Progress" status (greyed out — they know it's coming)
+- Strategy, key dates, reporting, documents
+- Comment threads they're part of
+- Their own approval history
+
+### 13.6 Form variations — quick reference
+
+15 form variations, keyed by activity type:
+
+| Select this type | Key fields that appear | Date behaviour |
+|---|---|---|
+| Social | Platform multi-select, post type, caption, hashtags, scheduled time, tagged accounts | Single date |
+| Email | Platform (Kit etc.), subject line, preview text, segment, send time | Single date |
+| Blog | Slug, author, meta title/description, category, SEO keywords | Single date |
+| Campaign | Objective, channels involved, landing page, budget | Date range |
+| Paid Ads | Ad platform, ad type, copy fields, targeting, budget + results fields when live | Date range |
+| PR | Target publication, journalist, pitch angle, coverage type | Single date |
+| Web | Page type, site section, developer, go-live date, wireframe | Single date |
+| Shoot | Shoot type, location, crew, talent, equipment, shot list | Single date |
+| Event | Event type, venue, attendees, registration status, collateral | Date range |
+| Strategy | Deliverable type, format, approval required | Single date |
+| Design | Design type, format, designer, brief, print specs | Single date |
+| Report | Report period, channels covered | Date range |
+| Video | Video type, duration, platforms, script | Single date |
+| Print | Print type, dimensions, paper, quantity, printer, proof date | Single date |
+| Case Study | Subject, author, format, key stats, client quote | Single date |
+
+---
+
 ## Build Priority
 
 ### Phase 1 — MVP (prototype → production)

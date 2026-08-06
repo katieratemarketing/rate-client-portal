@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 
 /* ══════════════════════════════════════════════
@@ -64,13 +66,13 @@ const DEFAULT_ITEMS = [
 const STORAGE_KEY = "rate-portal-ulverscroft";
 
 async function saveAll(data) {
-  try { await window.storage.set(STORAGE_KEY, JSON.stringify(data), true); } catch(e) { console.error("Save failed", e); }
+  try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) { console.error("Save failed", e); }
 }
 
 async function loadAll() {
   try {
-    const r = await window.storage.get(STORAGE_KEY, true);
-    return r ? JSON.parse(r.value) : null;
+    const r = window.localStorage.getItem(STORAGE_KEY);
+    return r ? JSON.parse(r) : null;
   } catch(e) { return null; }
 }
 

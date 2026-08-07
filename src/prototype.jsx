@@ -27,6 +27,9 @@ const CH = {
   strategy:{l:"Strategy",i:"🎯",tag:"STR"},
   report:{l:"Report",i:"📊",tag:"RPT"},
   design:{l:"Design",i:"🎨",tag:"DSN"},
+  video:{l:"Video",i:"🎥",tag:"VID"},
+  print:{l:"Print",i:"🖨️",tag:"PRT"},
+  casestudy:{l:"Case Study",i:"📖",tag:"CS"},
 };
 
 const ST = {
@@ -40,6 +43,129 @@ const ST = {
 function needsClientAction(item) {
   return item.state==="input" || (item.checklist||[]).some(c=>c.ownerType==="client"&&!c.done);
 }
+
+/* ══════════════════════════════════════════════
+   TYPE-SPECIFIC FORM FIELDS
+   Each activity type declares its own extra fields + whether it
+   runs on a single date or a date range. Values live in item.fields{}.
+   ══════════════════════════════════════════════ */
+const TYPE_FIELDS = {
+  social:{dateMode:"single",fields:[
+    {key:"postType",label:"Post Type",type:"select",options:["Single image","Carousel","Reel / Video","Story"]},
+    {key:"caption",label:"Caption",type:"textarea"},
+    {key:"hashtags",label:"Hashtags",type:"text"},
+    {key:"scheduledTime",label:"Scheduled Time",type:"time"},
+    {key:"taggedAccounts",label:"Tagged Accounts",type:"text"},
+  ]},
+  email:{dateMode:"single",fields:[
+    {key:"subjectLine",label:"Subject Line",type:"text"},
+    {key:"previewText",label:"Preview Text",type:"text"},
+    {key:"segment",label:"Segment",type:"text"},
+    {key:"sendTime",label:"Send Time",type:"time"},
+    {key:"previewLink",label:"Preview Link",type:"text",placeholder:"https://..."},
+  ]},
+  blog:{dateMode:"single",fields:[
+    {key:"slug",label:"Slug",type:"text",placeholder:"/blog/..."},
+    {key:"author",label:"Author",type:"text"},
+    {key:"metaTitle",label:"Meta Title",type:"text"},
+    {key:"metaDescription",label:"Meta Description",type:"textarea"},
+    {key:"category",label:"Category",type:"text"},
+    {key:"seoKeywords",label:"SEO Keywords",type:"text"},
+    {key:"draftLink",label:"Draft Link",type:"text",placeholder:"Google Doc / CMS URL"},
+    {key:"wordCount",label:"Word Count",type:"number"},
+  ]},
+  campaign:{dateMode:"range",fields:[
+    {key:"objective",label:"Objective",type:"text"},
+    {key:"channelsInvolved",label:"Channels Involved",type:"text"},
+    {key:"landingPage",label:"Landing Page",type:"text"},
+    {key:"budget",label:"Budget",type:"currency"},
+  ]},
+  paid:{dateMode:"range",fields:[
+    {key:"adPlatform",label:"Ad Platform",type:"select",options:["Meta","Google","LinkedIn","TikTok"]},
+    {key:"adType",label:"Ad Type",type:"text"},
+    {key:"headline",label:"Headline",type:"text"},
+    {key:"primaryText",label:"Primary Text",type:"textarea"},
+    {key:"cta",label:"CTA",type:"text"},
+    {key:"targeting",label:"Targeting",type:"textarea"},
+    {key:"budget",label:"Budget",type:"currency"},
+    {key:"resultsImpressions",label:"Impressions (when live)",type:"number"},
+    {key:"resultsClicks",label:"Clicks (when live)",type:"number"},
+    {key:"resultsCtr",label:"CTR % (when live)",type:"text"},
+  ]},
+  pr:{dateMode:"single",fields:[
+    {key:"targetPublication",label:"Target Publication",type:"text"},
+    {key:"journalist",label:"Journalist",type:"text"},
+    {key:"pitchAngle",label:"Pitch Angle",type:"textarea"},
+    {key:"coverageType",label:"Coverage Type",type:"select",options:["Feature","News","Interview","Review","Mention"]},
+    {key:"pitchStatus",label:"Pitch Status",type:"select",options:["Drafted","Sent","Followed up","Accepted","Declined"]},
+    {key:"followUpDate",label:"Follow-up Date",type:"date"},
+  ]},
+  web:{dateMode:"single",fields:[
+    {key:"pageType",label:"Page Type",type:"text"},
+    {key:"siteSection",label:"Site Section",type:"text"},
+    {key:"developer",label:"Developer",type:"text"},
+    {key:"goLiveDate",label:"Go-live Date",type:"date"},
+    {key:"wireframe",label:"Wireframe Link",type:"text"},
+  ]},
+  shoot:{dateMode:"single",fields:[
+    {key:"shootType",label:"Shoot Type",type:"text"},
+    {key:"location",label:"Location",type:"text"},
+    {key:"crew",label:"Crew",type:"text"},
+    {key:"talent",label:"Talent",type:"text"},
+    {key:"equipment",label:"Equipment",type:"textarea"},
+    {key:"shotList",label:"Shot List",type:"textarea"},
+    {key:"daySchedule",label:"Day Schedule",type:"textarea",placeholder:"Timeline for the day"},
+    {key:"propsWardrobe",label:"Props / Wardrobe",type:"textarea"},
+  ]},
+  event:{dateMode:"range",fields:[
+    {key:"eventType",label:"Event Type",type:"text"},
+    {key:"venue",label:"Venue",type:"text"},
+    {key:"attendees",label:"Attendees",type:"text"},
+    {key:"registrationStatus",label:"Registration Status",type:"select",options:["Not registered","Confirmed","Cancelled"]},
+    {key:"collateral",label:"Collateral",type:"textarea"},
+    {key:"travelAccommodation",label:"Travel / Accommodation",type:"textarea"},
+    {key:"budget",label:"Budget",type:"currency"},
+    {key:"standDesignNeeded",label:"Stand Design Needed",type:"checkbox"},
+    {key:"postEventLeads",label:"Post-event Leads",type:"number"},
+    {key:"postEventFollowUp",label:"Post-event Follow-up",type:"textarea"},
+  ]},
+  strategy:{dateMode:"single",fields:[
+    {key:"deliverableType",label:"Deliverable Type",type:"text"},
+    {key:"format",label:"Format",type:"text"},
+    {key:"approvalRequired",label:"Approval Required",type:"checkbox"},
+  ]},
+  design:{dateMode:"single",fields:[
+    {key:"designType",label:"Design Type",type:"text"},
+    {key:"format",label:"Format",type:"text"},
+    {key:"designer",label:"Designer",type:"text"},
+    {key:"brief",label:"Brief",type:"textarea"},
+    {key:"printSpecs",label:"Print Specs",type:"textarea"},
+  ]},
+  report:{dateMode:"range",fields:[
+    {key:"reportPeriod",label:"Report Period",type:"text"},
+    {key:"channelsCovered",label:"Channels Covered",type:"text"},
+  ]},
+  video:{dateMode:"single",fields:[
+    {key:"videoType",label:"Video Type",type:"text"},
+    {key:"duration",label:"Duration",type:"text"},
+    {key:"script",label:"Script",type:"textarea"},
+  ]},
+  print:{dateMode:"single",fields:[
+    {key:"printType",label:"Print Type",type:"text"},
+    {key:"dimensions",label:"Dimensions",type:"text"},
+    {key:"paper",label:"Paper",type:"text"},
+    {key:"quantity",label:"Quantity",type:"number"},
+    {key:"printer",label:"Printer",type:"text"},
+    {key:"proofDate",label:"Proof Date",type:"date"},
+  ]},
+  casestudy:{dateMode:"single",fields:[
+    {key:"subject",label:"Subject",type:"text"},
+    {key:"author",label:"Author",type:"text"},
+    {key:"format",label:"Format",type:"text"},
+    {key:"keyStats",label:"Key Stats",type:"textarea"},
+    {key:"clientQuote",label:"Client Quote",type:"textarea"},
+  ]},
+};
 
 const DEFAULT_THEMES = {
   christie:{l:"Agatha Christie Exhibition",c:"#7c3aed",brief:"Major tentpole tied to the London Museum exhibition (Aug–Oct). Coordinated across Ulverscroft and Trade — social series, blog content and trade press outreach spotlighting large-print Christie titles."},
@@ -243,36 +369,124 @@ const inputStyle = {width:"100%",padding:"8px 10px",borderRadius:8,border:`1px s
 const selectStyle = {...inputStyle, background:R.white};
 
 /* ══════════════════════════════════════════════
+   TYPE-SPECIFIC FIELD RENDERER
+   ══════════════════════════════════════════════ */
+function TypeFieldInput({field, value, onChange}) {
+  const v = value ?? (field.type==="checkbox" ? false : "");
+  if (field.type==="textarea") return (<textarea style={{...inputStyle,minHeight:50,resize:"vertical"}} value={v} onChange={e=>onChange(e.target.value)} placeholder={field.placeholder}/>);
+  if (field.type==="select") return (
+    <select style={selectStyle} value={v} onChange={e=>onChange(e.target.value)}>
+      <option value="">Select...</option>
+      {field.options.map(o=>(<option key={o} value={o}>{o}</option>))}
+    </select>
+  );
+  if (field.type==="checkbox") return (
+    <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12,color:R.black,padding:"7px 0"}}>
+      <input type="checkbox" checked={!!v} onChange={e=>onChange(e.target.checked)}/> Yes
+    </label>
+  );
+  if (field.type==="number") return (<input type="number" style={inputStyle} value={v} onChange={e=>onChange(e.target.value)} placeholder={field.placeholder}/>);
+  if (field.type==="date") return (<input type="date" style={inputStyle} value={v} onChange={e=>onChange(e.target.value)}/>);
+  if (field.type==="time") return (<input type="time" style={inputStyle} value={v} onChange={e=>onChange(e.target.value)}/>);
+  if (field.type==="currency") return (<input type="text" style={inputStyle} value={v} onChange={e=>onChange(e.target.value)} placeholder={field.placeholder||"£"}/>);
+  return (<input type="text" style={inputStyle} value={v} onChange={e=>onChange(e.target.value)} placeholder={field.placeholder}/>);
+}
+
+function TypeFieldsForm({ch, values, onChange}) {
+  const config = TYPE_FIELDS[ch];
+  if (!config || !config.fields.length) return null;
+  return (
+    <>
+      {config.fields.map(f=>(
+        <Field key={f.key} label={f.label}>
+          <TypeFieldInput field={f} value={values[f.key]} onChange={(v)=>onChange(f.key,v)}/>
+        </Field>
+      ))}
+    </>
+  );
+}
+
+function TypeFieldsDisplay({ch, values}) {
+  const config = TYPE_FIELDS[ch];
+  if (!config) return null;
+  const entries = config.fields.filter(f=>{
+    const v = (values||{})[f.key];
+    return f.type==="checkbox" ? !!v : (v!==undefined && v!==null && v!=="");
+  });
+  if (!entries.length) return null;
+  return (
+    <>
+      {entries.map(f=>(
+        <div key={f.key} style={{fontSize:12,color:R.dark,marginBottom:10}}>
+          <div style={{fontWeight:700,color:R.black,marginBottom:2,fontSize:11,textTransform:"uppercase",letterSpacing:.5}}>{f.label}</div>
+          <div style={{lineHeight:1.6,whiteSpace:"pre-wrap"}}>{f.type==="checkbox" ? "Yes" : values[f.key]}</div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/* ══════════════════════════════════════════════
    ITEM FORM (add + edit)
    ══════════════════════════════════════════════ */
-function ItemForm({item, areas, themes, defaultDate, defaultArea, onSave, onDelete, onCancel}) {
-  const [f, setF] = useState(item || {title:"",date:defaultDate||todayISO(),area:defaultArea||Object.keys(areas)[0],ch:"social",state:"wip",platform:"",notes:"",theme:"",url:"",comments:[],history:[],checklist:[]});
+function ItemForm({item, areas, themes, items, defaultDate, defaultArea, onSave, onDelete, onCancel}) {
+  const [f, setF] = useState(item || {title:"",date:defaultDate||todayISO(),endDate:"",area:defaultArea||Object.keys(areas)[0],ch:"social",state:"wip",platform:"",notes:"",theme:"",url:"",comments:[],history:[],checklist:[],attachments:[],linkedItemIds:[],fields:{}});
   const upd = (k,v) => setF(p=>({...p,[k]:v}));
+  const updField = (k,v) => setF(p=>({...p,fields:{...(p.fields||{}),[k]:v}}));
+
+  const [attName, setAttName] = useState("");
+  const [attUrl, setAttUrl] = useState("");
+  function addAttachment() {
+    if (!attName.trim() || !attUrl.trim()) return;
+    upd("attachments", [...(f.attachments||[]), {id:`att${Date.now()}`, name:attName.trim(), url:attUrl.trim()}]);
+    setAttName(""); setAttUrl("");
+  }
+  function removeAttachment(id) { upd("attachments", (f.attachments||[]).filter(a=>a.id!==id)); }
+
+  const [linkSearch, setLinkSearch] = useState("");
+  const allItems = items || [];
+  const linkedIds = f.linkedItemIds || [];
+  const linkedItems = allItems.filter(i=>linkedIds.includes(i.id));
+  const linkMatches = linkSearch.trim() ? allItems.filter(i => i.id!==(item&&item.id) && !linkedIds.includes(i.id) && i.title.toLowerCase().includes(linkSearch.trim().toLowerCase())).slice(0,6) : [];
+  function addLink(id) { upd("linkedItemIds", [...linkedIds, id]); setLinkSearch(""); }
+  function removeLink(id) { upd("linkedItemIds", linkedIds.filter(x=>x!==id)); }
+
+  const typeConfig = TYPE_FIELDS[f.ch];
+  const isRange = typeConfig && typeConfig.dateMode==="range";
 
   return (
     <div>
-      <Field label="Title"><input style={inputStyle} value={f.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Christie LP spotlight"/></Field>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-        <Field label="Date"><input type="date" style={inputStyle} value={f.date} onChange={e=>upd("date",e.target.value)}/></Field>
-        <Field label="Status">
-          <select style={selectStyle} value={f.state} onChange={e=>upd("state",e.target.value)}>
-            {Object.entries(ST).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
-          </select>
-        </Field>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <span style={{fontSize:10,fontWeight:700,color:R.dark,textTransform:"uppercase",letterSpacing:.5}}>{item?"Edit Item":"New Item"}</span>
+        <select value={f.ch} onChange={e=>upd("ch",e.target.value)} style={{fontSize:12,fontWeight:700,color:R.black,padding:"6px 10px",borderRadius:20,border:`1px solid ${R.mid}`,background:R.grey,cursor:"pointer"}}>
+          {Object.entries(CH).map(([k,v])=>(<option key={k} value={k}>{v.i} {v.l}</option>))}
+        </select>
       </div>
+      <Field label="Title"><input style={inputStyle} value={f.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. Christie LP spotlight"/></Field>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
         <Field label="Brand">
           <select style={selectStyle} value={f.area} onChange={e=>upd("area",e.target.value)}>
             {Object.entries(areas).map(([k,v])=>(<option key={k} value={k}>{v.label}</option>))}
           </select>
         </Field>
-        <Field label="Activity Type">
-          <select style={selectStyle} value={f.ch} onChange={e=>upd("ch",e.target.value)}>
-            {Object.entries(CH).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
+        <Field label="Status">
+          <select style={selectStyle} value={f.state} onChange={e=>upd("state",e.target.value)}>
+            {Object.entries(ST).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
           </select>
         </Field>
       </div>
+      {isRange ? (
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <Field label="Start Date"><input type="date" style={inputStyle} value={f.date} onChange={e=>upd("date",e.target.value)}/></Field>
+          <Field label="End Date"><input type="date" style={inputStyle} value={f.endDate||""} onChange={e=>upd("endDate",e.target.value)}/></Field>
+        </div>
+      ) : (
+        <Field label="Date"><input type="date" style={inputStyle} value={f.date} onChange={e=>upd("date",e.target.value)}/></Field>
+      )}
       <Field label="Platform"><input style={inputStyle} value={f.platform} onChange={e=>upd("platform",e.target.value)} placeholder="e.g. IG / Facebook"/></Field>
+
+      <TypeFieldsForm ch={f.ch} values={f.fields||{}} onChange={updField}/>
+
       <Field label="Notes"><textarea style={{...inputStyle,minHeight:60,resize:"vertical"}} value={f.notes} onChange={e=>upd("notes",e.target.value)}/></Field>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
         <Field label="Theme / Campaign (optional)">
@@ -283,8 +497,44 @@ function ItemForm({item, areas, themes, defaultDate, defaultArea, onSave, onDele
         </Field>
         <Field label="Output URL"><input style={inputStyle} value={f.url||""} onChange={e=>upd("url",e.target.value)} placeholder="https://..."/></Field>
       </div>
+
+      <Field label="Attachments">
+        {(f.attachments||[]).map(a=>(
+          <div key={a.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",background:R.grey,borderRadius:8,marginBottom:4}}>
+            <span style={{fontSize:13,flexShrink:0}}>📎</span>
+            <a href={a.url} target="_blank" rel="noreferrer" style={{flex:1,fontSize:11,color:R.black,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.name}</a>
+            <button type="button" onClick={()=>removeAttachment(a.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#ccc",fontSize:14,flexShrink:0}}>×</button>
+          </div>
+        ))}
+        <div style={{display:"flex",gap:6}}>
+          <input style={{...inputStyle,flex:1}} value={attName} onChange={e=>setAttName(e.target.value)} placeholder="File name"/>
+          <input style={{...inputStyle,flex:2}} value={attUrl} onChange={e=>setAttUrl(e.target.value)} placeholder="Link (Drive, Dropbox...)"/>
+          <button type="button" onClick={addAttachment} style={{background:R.black,color:R.white,border:"none",borderRadius:8,padding:"0 12px",fontSize:11,fontWeight:700,cursor:"pointer",flexShrink:0}}>Add</button>
+        </div>
+      </Field>
+
+      <Field label="Linked Content">
+        {linkedItems.map(li=>(
+          <div key={li.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",background:R.grey,borderRadius:8,marginBottom:4}}>
+            <TypeTag ch={li.ch}/>
+            <span style={{flex:1,fontSize:11,color:R.black,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{li.title}</span>
+            <button type="button" onClick={()=>removeLink(li.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#ccc",fontSize:14,flexShrink:0}}>×</button>
+          </div>
+        ))}
+        <div style={{position:"relative"}}>
+          <input style={inputStyle} value={linkSearch} onChange={e=>setLinkSearch(e.target.value)} placeholder="Search items to link..."/>
+          {linkMatches.length>0 && (
+            <div style={{position:"absolute",top:"100%",left:0,right:0,marginTop:4,zIndex:10,background:R.white,border:`1px solid ${R.mid}`,borderRadius:8,boxShadow:"0 8px 20px rgba(0,0,0,.12)",overflow:"hidden"}}>
+              {linkMatches.map(m=>(
+                <button key={m.id} type="button" onClick={()=>addLink(m.id)} style={{display:"block",width:"100%",textAlign:"left",padding:"8px 10px",border:"none",background:R.white,cursor:"pointer",fontSize:11}}>{(CH[m.ch]||{}).i} {m.title}</button>
+              ))}
+            </div>
+          )}
+        </div>
+      </Field>
+
       <div style={{display:"flex",gap:8,marginTop:16}}>
-        <button onClick={()=>onSave({...f,comments:f.comments||[],history:f.history||[],checklist:f.checklist||[]})} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"10px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>{item?"Save Changes":"Add Item"}</button>
+        <button onClick={()=>onSave({...f,comments:f.comments||[],history:f.history||[],checklist:f.checklist||[],attachments:f.attachments||[],linkedItemIds:f.linkedItemIds||[],fields:f.fields||{}})} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"10px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>{item?"Save Changes":"Add Item"}</button>
         <button onClick={onCancel} style={{padding:"10px 16px",background:R.white,color:R.dark,border:`1px solid ${R.mid}`,borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer"}}>Cancel</button>
         {item && onDelete && (<button onClick={()=>onDelete(item.id)} style={{padding:"10px 16px",background:R.white,color:"#ef4444",border:"1px solid #ef4444",borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer"}}>Delete</button>)}
       </div>
@@ -624,10 +874,16 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
 
   if(!item) return null;
   const a = (areas||{})[item.area]||{color:R.dark};
-  const linked = item.theme ? items.filter(i=>i.theme===item.theme&&i.id!==item.id) : [];
+  const themeLinked = item.theme ? items.filter(i=>i.theme===item.theme&&i.id!==item.id) : [];
+  const directLinked = items.filter(i=>(item.linkedItemIds||[]).includes(i.id));
+  const linked = [...directLinked, ...themeLinked.filter(i=>!directLinked.some(d=>d.id===i.id))];
   const relatedEvent = item.theme ? (events||[]).find(e=>e.theme===item.theme) : null;
   const comments = item.comments || [];
   const history = item.history || [];
+  const attachments = item.attachments || [];
+  const dateLabel = item.endDate && item.endDate!==item.date
+    ? `${new Date(item.date).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})} – ${new Date(item.endDate).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}`
+    : new Date(item.date).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 
   function submitAction() {
     onApprove(item.id, actionMode==="approve"?"approved":"input", draft.trim());
@@ -659,15 +915,29 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
           <SBadge s={item.state}/>
           {admin&&(<button onClick={()=>onEdit(item)} style={{fontSize:10,color:R.dark,background:R.grey,border:"none",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontWeight:600}}>Edit</button>)}
         </div>
-        {[["Date",new Date(item.date).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})],["Platform",item.platform],["Notes",item.notes]].map(([l,v])=>(
+        {[["Date",dateLabel],["Platform",item.platform],["Notes",item.notes]].map(([l,v])=>(
           <div key={l} style={{fontSize:12,color:R.dark,marginBottom:10}}><div style={{fontWeight:700,color:R.black,marginBottom:2,fontSize:11,textTransform:"uppercase",letterSpacing:.5}}>{l}</div><div style={{lineHeight:1.6}}>{v}</div></div>
         ))}
-        {item.theme&&(
+        <TypeFieldsDisplay ch={item.ch} values={item.fields||{}}/>
+        {attachments.length>0 && (
           <div style={{marginBottom:16}}>
-            <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
-              <TTag t={item.theme} themes={themes}/>
-              {relatedEvent && (<button onClick={()=>onSelectEvent(relatedEvent)} style={{fontSize:9,color:R.dark,background:R.grey,border:"none",borderRadius:6,padding:"2px 7px",cursor:"pointer",fontWeight:600}}>View key date →</button>)}
-            </div>
+            <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>Attachments</div>
+            {attachments.map(att=>(
+              <div key={att.id} style={{display:"flex",alignItems:"center",gap:7,padding:"6px 8px",background:R.grey,borderRadius:8,marginBottom:4}}>
+                <span style={{fontSize:13,flexShrink:0}}>📎</span>
+                <a href={att.url} target="_blank" rel="noreferrer" style={{flex:1,fontSize:11,color:a.color,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{att.name}</a>
+              </div>
+            ))}
+          </div>
+        )}
+        {(item.theme || linked.length>0)&&(
+          <div style={{marginBottom:16}}>
+            {item.theme&&(
+              <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                <TTag t={item.theme} themes={themes}/>
+                {relatedEvent && (<button onClick={()=>onSelectEvent(relatedEvent)} style={{fontSize:9,color:R.dark,background:R.grey,border:"none",borderRadius:6,padding:"2px 7px",cursor:"pointer",fontWeight:600}}>View key date →</button>)}
+              </div>
+            )}
             <LinkedContentList items={linked} areas={areas} onSelect={onSelectLinked}/>
           </div>
         )}
@@ -801,6 +1071,7 @@ function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, a
                   }}>
                     <span style={{fontSize:12,lineHeight:1,flexShrink:0}}>{typeInfo.i}</span>
                     <span style={{overflow:"hidden",textOverflow:"ellipsis",flex:1}}>{item.title}</span>
+                    {item.endDate && item.endDate!==item.date && (<span style={{flexShrink:0,opacity:.5,fontSize:9}}>→</span>)}
                     {needsAttn && (<span title={rev?"Ready for review":"Awaiting client input"} style={{flexShrink:0,width:6,height:6,borderRadius:"50%",background:rev?"#f59e42":"#ef4444"}}/>)}
                     {hovered && (
                       <div style={{position:"absolute",top:"100%",left:0,marginTop:3,zIndex:60,background:R.black,color:R.white,padding:"9px 11px",borderRadius:8,minWidth:180,maxWidth:240,boxShadow:"0 8px 20px rgba(0,0,0,.3)",pointerEvents:"none"}}>
@@ -1038,10 +1309,10 @@ export default function Portal() {
 
       {/* MODALS */}
       <Modal open={modal==="add"} onClose={closeAddModal} title="Add Content Item">
-        <ItemForm areas={areas} themes={themes} defaultDate={addDefaults?.date} defaultArea={fArea} onSave={handleSaveItem} onCancel={closeAddModal}/>
+        <ItemForm areas={areas} themes={themes} items={items} defaultDate={addDefaults?.date} defaultArea={fArea} onSave={handleSaveItem} onCancel={closeAddModal}/>
       </Modal>
       <Modal open={modal&&modal.editing} onClose={()=>setModal(null)} title="Edit Item">
-        {modal&&modal.editing&&(<ItemForm item={modal.editing} areas={areas} themes={themes} onSave={handleSaveItem} onDelete={handleDeleteItem} onCancel={()=>setModal(null)}/>)}
+        {modal&&modal.editing&&(<ItemForm item={modal.editing} areas={areas} themes={themes} items={items} onSave={handleSaveItem} onDelete={handleDeleteItem} onCancel={()=>setModal(null)}/>)}
       </Modal>
       <Modal open={modal==="addStrategy"} onClose={()=>setModal(null)} title="New Strategy" wide>
         <StrategyForm areas={areas} onSave={handleSaveStrategy} onCancel={()=>setModal(null)}/>

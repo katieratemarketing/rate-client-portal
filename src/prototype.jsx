@@ -33,6 +33,7 @@ const CH = {
 };
 
 const ST = {
+  todo:{l:"To Do",c:"#94a3b8",bg:"#f8fafc"},
   wip:{l:"In Progress",c:"#a1a1aa",bg:"#f4f4f5"},
   review:{l:"Ready for Review",c:"#f59e42",bg:"#fff7ed"},
   input:{l:"Awaiting Client Input",c:"#ef4444",bg:"#fef2f2"},
@@ -50,9 +51,10 @@ function needsClientAction(item) {
    runs on a single date or a date range. Values live in item.fields{}.
    ══════════════════════════════════════════════ */
 const TYPE_FIELDS = {
-  social:{dateMode:"single",fields:[
+  social:{dateMode:"single",dateLabel:"Publish Date",fields:[
+    {key:"platforms",label:"Platform(s)",type:"multiselect",allOption:"All",options:["All","Instagram","Facebook","X","TikTok","LinkedIn","YouTube","Pinterest"]},
     {key:"postType",label:"Post Type",type:"select",options:["Single image","Carousel","Reel / Video","Story"]},
-    {key:"caption",label:"Caption",type:"textarea"},
+    {key:"caption",label:"Caption",type:"textarea",large:true},
     {key:"hashtags",label:"Hashtags",type:"text"},
     {key:"scheduledTime",label:"Scheduled Time",type:"time"},
     {key:"taggedAccounts",label:"Tagged Accounts",type:"text"},
@@ -99,6 +101,7 @@ const TYPE_FIELDS = {
     {key:"coverageType",label:"Coverage Type",type:"select",options:["Feature","News","Interview","Review","Mention"]},
     {key:"pitchStatus",label:"Pitch Status",type:"select",options:["Drafted","Sent","Followed up","Accepted","Declined"]},
     {key:"followUpDate",label:"Follow-up Date",type:"date"},
+    {key:"draftLink",label:"Draft Link",type:"text",placeholder:"Google Doc / press release URL"},
   ]},
   web:{dateMode:"single",fields:[
     {key:"pageType",label:"Page Type",type:"text"},
@@ -288,6 +291,27 @@ function LinkedContentList({items, areas, onSelect, title}) {
 }
 
 /* ══════════════════════════════════════════════
+   ATTACHMENT PREVIEW (image thumbnail, falls back to a link)
+   ══════════════════════════════════════════════ */
+function AttachmentPreview({attachment, accentColor}) {
+  const [broken, setBroken] = useState(false);
+  if (!broken) {
+    return (
+      <a href={attachment.url} target="_blank" rel="noreferrer" style={{display:"block",marginBottom:8,borderRadius:10,overflow:"hidden",border:`1px solid ${R.mid}`}}>
+        <img src={attachment.url} alt={attachment.name} onError={()=>setBroken(true)} style={{display:"block",width:"100%",maxHeight:180,objectFit:"cover",background:R.grey}}/>
+        <div style={{padding:"6px 10px",fontSize:10,color:R.dark,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{attachment.name}</div>
+      </a>
+    );
+  }
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:7,padding:"6px 8px",background:R.grey,borderRadius:8,marginBottom:8}}>
+      <span style={{fontSize:13,flexShrink:0}}>📎</span>
+      <a href={attachment.url} target="_blank" rel="noreferrer" style={{flex:1,fontSize:11,color:accentColor,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{attachment.name}</a>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
    REQUIREMENTS CHECKLIST
    ══════════════════════════════════════════════ */
 function ChecklistSection({checklist, admin, onToggle, onAdd, onRemove}) {
@@ -355,6 +379,24 @@ function Modal({open, onClose, title, children, wide}) {
 }
 
 /* ══════════════════════════════════════════════
+   FORM PANEL (right-side drawer for add/edit item)
+   ══════════════════════════════════════════════ */
+function FormPanel({open, onClose, title, children}) {
+  if (!open) return null;
+  return (
+    <div style={{position:"fixed",top:0,right:0,bottom:0,width:400,background:R.white,borderLeft:`1px solid ${R.mid}`,boxShadow:"-8px 0 32px rgba(0,0,0,.14)",zIndex:150,display:"flex",flexDirection:"column"}}>
+      <div style={{padding:"16px 20px",borderBottom:`1px solid ${R.mid}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0}}>
+        <h2 style={{fontSize:15,fontWeight:800,margin:0,color:R.black}}>{title}</h2>
+        <button onClick={onClose} style={{background:"none",border:"none",fontSize:22,cursor:"pointer",color:R.dark,padding:0,lineHeight:1}}>×</button>
+      </div>
+      <div style={{flex:1,overflow:"auto",padding:"20px"}}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
    FORM FIELD
    ══════════════════════════════════════════════ */
 function Field({label, children}) {
@@ -371,9 +413,40 @@ const selectStyle = {...inputStyle, background:R.white};
 /* ══════════════════════════════════════════════
    TYPE-SPECIFIC FIELD RENDERER
    ══════════════════════════════════════════════ */
+function MultiSelectInput({field, value, onChange}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
+  const selected = value || [];
+  function toggle(o) {
+    if (field.allOption && o===field.allOption) { onChange(selected.includes(o) ? [] : [o]); return; }
+    const withoutAll = selected.filter(x=>x!==field.allOption);
+    onChange(withoutAll.includes(o) ? withoutAll.filter(x=>x!==o) : [...withoutAll, o]);
+  }
+  const label = selected.length===0 ? "Select..." : selected.join(", ");
+  return (
+    <div ref={ref} style={{position:"relative"}}>
+      <button type="button" onClick={()=>setOpen(!open)} style={{...selectStyle,textAlign:"left",cursor:"pointer",color:selected.length?R.black:"#9ca3af",overflow:"hidden",whiteSpace:"nowrap",textOverflow:"ellipsis",display:"flex",justifyContent:"space-between",alignItems:"center",gap:6}}>
+        <span style={{overflow:"hidden",textOverflow:"ellipsis"}}>{label}</span><span style={{fontSize:9,flexShrink:0}}>▾</span>
+      </button>
+      {open&&(
+        <div style={{position:"absolute",top:"100%",left:0,right:0,marginTop:4,zIndex:50,background:R.white,borderRadius:10,border:`1px solid ${R.mid}`,boxShadow:"0 8px 24px rgba(0,0,0,.12)",overflow:"hidden",maxHeight:220,overflowY:"auto"}}>
+          {field.options.map(o=>(
+            <label key={o} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 12px",cursor:"pointer",background:selected.includes(o)?R.grey:R.white,fontSize:12,color:R.black}}>
+              <input type="checkbox" checked={selected.includes(o)} onChange={()=>toggle(o)} style={{margin:0}}/>
+              <span>{o}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TypeFieldInput({field, value, onChange}) {
   const v = value ?? (field.type==="checkbox" ? false : "");
-  if (field.type==="textarea") return (<textarea style={{...inputStyle,minHeight:50,resize:"vertical"}} value={v} onChange={e=>onChange(e.target.value)} placeholder={field.placeholder}/>);
+  if (field.type==="multiselect") return (<MultiSelectInput field={field} value={value} onChange={onChange}/>);
+  if (field.type==="textarea") return (<textarea style={{...inputStyle,minHeight:field.large?130:50,fontSize:field.large?13:12,lineHeight:1.5,resize:"vertical"}} value={v} onChange={e=>onChange(e.target.value)} placeholder={field.placeholder}/>);
   if (field.type==="select") return (
     <select style={selectStyle} value={v} onChange={e=>onChange(e.target.value)}>
       <option value="">Select...</option>
@@ -411,7 +484,9 @@ function TypeFieldsDisplay({ch, values}) {
   if (!config) return null;
   const entries = config.fields.filter(f=>{
     const v = (values||{})[f.key];
-    return f.type==="checkbox" ? !!v : (v!==undefined && v!==null && v!=="");
+    if (f.type==="checkbox") return !!v;
+    if (f.type==="multiselect") return Array.isArray(v) && v.length>0;
+    return v!==undefined && v!==null && v!=="";
   });
   if (!entries.length) return null;
   return (
@@ -419,7 +494,7 @@ function TypeFieldsDisplay({ch, values}) {
       {entries.map(f=>(
         <div key={f.key} style={{fontSize:12,color:R.dark,marginBottom:10}}>
           <div style={{fontWeight:700,color:R.black,marginBottom:2,fontSize:11,textTransform:"uppercase",letterSpacing:.5}}>{f.label}</div>
-          <div style={{lineHeight:1.6,whiteSpace:"pre-wrap"}}>{f.type==="checkbox" ? "Yes" : values[f.key]}</div>
+          <div style={{lineHeight:1.6,whiteSpace:"pre-wrap"}}>{f.type==="checkbox" ? "Yes" : f.type==="multiselect" ? values[f.key].join(", ") : values[f.key]}</div>
         </div>
       ))}
     </>
@@ -430,7 +505,7 @@ function TypeFieldsDisplay({ch, values}) {
    ITEM FORM (add + edit)
    ══════════════════════════════════════════════ */
 function ItemForm({item, areas, themes, items, defaultDate, defaultArea, onSave, onDelete, onCancel}) {
-  const [f, setF] = useState(item || {title:"",date:defaultDate||todayISO(),endDate:"",area:defaultArea||Object.keys(areas)[0],ch:"social",state:"wip",platform:"",notes:"",theme:"",url:"",comments:[],history:[],checklist:[],attachments:[],linkedItemIds:[],fields:{}});
+  const [f, setF] = useState(item || {title:"",date:defaultDate||todayISO(),endDate:"",area:defaultArea||Object.keys(areas)[0],ch:"social",state:"todo",platform:"",notes:"",theme:"",url:"",comments:[],history:[],checklist:[],attachments:[],linkedItemIds:[],fields:{}});
   const upd = (k,v) => setF(p=>({...p,[k]:v}));
   const updField = (k,v) => setF(p=>({...p,fields:{...(p.fields||{}),[k]:v}}));
 
@@ -457,7 +532,7 @@ function ItemForm({item, areas, themes, items, defaultDate, defaultArea, onSave,
   return (
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-        <span style={{fontSize:10,fontWeight:700,color:R.dark,textTransform:"uppercase",letterSpacing:.5}}>{item?"Edit Item":"New Item"}</span>
+        <span style={{fontSize:10,fontWeight:700,color:R.dark,textTransform:"uppercase",letterSpacing:.5}}>Activity Type</span>
         <select value={f.ch} onChange={e=>upd("ch",e.target.value)} style={{fontSize:12,fontWeight:700,color:R.black,padding:"6px 10px",borderRadius:20,border:`1px solid ${R.mid}`,background:R.grey,cursor:"pointer"}}>
           {Object.entries(CH).map(([k,v])=>(<option key={k} value={k}>{v.i} {v.l}</option>))}
         </select>
@@ -481,10 +556,8 @@ function ItemForm({item, areas, themes, items, defaultDate, defaultArea, onSave,
           <Field label="End Date"><input type="date" style={inputStyle} value={f.endDate||""} onChange={e=>upd("endDate",e.target.value)}/></Field>
         </div>
       ) : (
-        <Field label="Date"><input type="date" style={inputStyle} value={f.date} onChange={e=>upd("date",e.target.value)}/></Field>
+        <Field label={(typeConfig&&typeConfig.dateLabel)||"Date"}><input type="date" style={inputStyle} value={f.date} onChange={e=>upd("date",e.target.value)}/></Field>
       )}
-      <Field label="Platform"><input style={inputStyle} value={f.platform} onChange={e=>upd("platform",e.target.value)} placeholder="e.g. IG / Facebook"/></Field>
-
       <TypeFieldsForm ch={f.ch} values={f.fields||{}} onChange={updField}/>
 
       <Field label="Notes"><textarea style={{...inputStyle,minHeight:60,resize:"vertical"}} value={f.notes} onChange={e=>upd("notes",e.target.value)}/></Field>
@@ -853,7 +926,7 @@ function ApprovalsView({items, areas, themes, onSelect}) {
             </div>
             <span style={{fontSize:10,color:R.dark,whiteSpace:"nowrap"}}>{new Date(item.date).toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"})}</span>
           </div>
-          <div style={{fontSize:11,color:R.dark,marginBottom:4}}><strong>Platform:</strong> {item.platform}</div>
+          {item.ch==="social" && item.platform && (<div style={{fontSize:11,color:R.dark,marginBottom:4}}><strong>Platform:</strong> {item.platform}</div>)}
           <div style={{fontSize:11,color:R.dark}}><strong>Notes:</strong> {item.notes}</div>
         </button>
       ))}
@@ -881,9 +954,13 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
   const comments = item.comments || [];
   const history = item.history || [];
   const attachments = item.attachments || [];
-  const dateLabel = item.endDate && item.endDate!==item.date
+  const dateValue = item.endDate && item.endDate!==item.date
     ? `${new Date(item.date).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})} – ${new Date(item.endDate).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}`
     : new Date(item.date).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const dateFieldLabel = (TYPE_FIELDS[item.ch]||{}).dateLabel || "Date";
+  const fieldRows = [[dateFieldLabel,dateValue]];
+  if (item.ch==="social" && item.platform) fieldRows.push(["Platform",item.platform]);
+  fieldRows.push(["Notes",item.notes]);
 
   function submitAction() {
     onApprove(item.id, actionMode==="approve"?"approved":"input", draft.trim());
@@ -915,19 +992,14 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
           <SBadge s={item.state}/>
           {admin&&(<button onClick={()=>onEdit(item)} style={{fontSize:10,color:R.dark,background:R.grey,border:"none",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontWeight:600}}>Edit</button>)}
         </div>
-        {[["Date",dateLabel],["Platform",item.platform],["Notes",item.notes]].map(([l,v])=>(
+        {fieldRows.map(([l,v])=>(
           <div key={l} style={{fontSize:12,color:R.dark,marginBottom:10}}><div style={{fontWeight:700,color:R.black,marginBottom:2,fontSize:11,textTransform:"uppercase",letterSpacing:.5}}>{l}</div><div style={{lineHeight:1.6}}>{v}</div></div>
         ))}
         <TypeFieldsDisplay ch={item.ch} values={item.fields||{}}/>
         {attachments.length>0 && (
           <div style={{marginBottom:16}}>
             <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>Attachments</div>
-            {attachments.map(att=>(
-              <div key={att.id} style={{display:"flex",alignItems:"center",gap:7,padding:"6px 8px",background:R.grey,borderRadius:8,marginBottom:4}}>
-                <span style={{fontSize:13,flexShrink:0}}>📎</span>
-                <a href={att.url} target="_blank" rel="noreferrer" style={{flex:1,fontSize:11,color:a.color,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{att.name}</a>
-              </div>
-            ))}
+            {attachments.map(att=>(<AttachmentPreview key={att.id} attachment={att} accentColor={a.color}/>))}
           </div>
         )}
         {(item.theme || linked.length>0)&&(
@@ -1051,7 +1123,7 @@ function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, a
                 );
               })}
               {di.map(item=>{
-                const wip=item.state==="wip",rev=item.state==="review",clientAction=needsClientAction(item);
+                const wip=item.state==="wip"||item.state==="todo",rev=item.state==="review",clientAction=needsClientAction(item);
                 const needsAttn = rev||clientAction;
                 const ac=(areas[item.area]||{color:R.dark}).color;
                 const hovered = hoverId===item.id;
@@ -1076,7 +1148,7 @@ function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, a
                     {hovered && (
                       <div style={{position:"absolute",top:"100%",left:0,marginTop:3,zIndex:60,background:R.black,color:R.white,padding:"9px 11px",borderRadius:8,minWidth:180,maxWidth:240,boxShadow:"0 8px 20px rgba(0,0,0,.3)",pointerEvents:"none"}}>
                         <div style={{fontSize:12,fontWeight:700,marginBottom:4,whiteSpace:"normal",lineHeight:1.35}}>{item.title}</div>
-                        <div style={{fontSize:10,opacity:.75,marginBottom:3}}>{typeInfo.i} {typeInfo.l}{item.platform?` · ${item.platform}`:""}</div>
+                        <div style={{fontSize:10,opacity:.75,marginBottom:3}}>{typeInfo.i} {typeInfo.l}{(item.ch==="social"&&item.platform)?` · ${item.platform}`:""}</div>
                         <div style={{fontSize:10,fontWeight:700,color:stateInfo.c||"#fff"}}>{stateInfo.l||item.state}</div>
                       </div>
                     )}
@@ -1308,12 +1380,12 @@ export default function Portal() {
       <EventPanel event={selEvent} items={items} areas={areas} themes={themes} onClose={()=>setSelEvent(null)} onSelectItem={(it)=>{setSelEvent(null);openItem(it);}}/>
 
       {/* MODALS */}
-      <Modal open={modal==="add"} onClose={closeAddModal} title="Add Content Item">
+      <FormPanel open={modal==="add"} onClose={closeAddModal} title="Add Content Item">
         <ItemForm areas={areas} themes={themes} items={items} defaultDate={addDefaults?.date} defaultArea={fArea} onSave={handleSaveItem} onCancel={closeAddModal}/>
-      </Modal>
-      <Modal open={modal&&modal.editing} onClose={()=>setModal(null)} title="Edit Item">
+      </FormPanel>
+      <FormPanel open={modal&&modal.editing} onClose={()=>setModal(null)} title="Edit Item">
         {modal&&modal.editing&&(<ItemForm item={modal.editing} areas={areas} themes={themes} items={items} onSave={handleSaveItem} onDelete={handleDeleteItem} onCancel={()=>setModal(null)}/>)}
-      </Modal>
+      </FormPanel>
       <Modal open={modal==="addStrategy"} onClose={()=>setModal(null)} title="New Strategy" wide>
         <StrategyForm areas={areas} onSave={handleSaveStrategy} onCancel={()=>setModal(null)}/>
       </Modal>

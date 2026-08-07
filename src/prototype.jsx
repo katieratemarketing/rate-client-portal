@@ -248,11 +248,11 @@ function Dot({c, s = 8}) {
 }
 function ATag({a, areas, sm}) {
   const v = (areas||DEFAULT_AREAS)[a]; if(!v) return null;
-  return (<span style={{display:"inline-flex",alignItems:"center",gap:3,background:v.color+"12",color:v.color,padding:sm?"1px 6px":"2px 8px",borderRadius:6,fontSize:sm?9:10,fontWeight:700,letterSpacing:.3}}><Dot c={v.color} s={5}/>{v.short}</span>);
+  return (<span style={{display:"inline-flex",alignItems:"center",gap:3,background:v.color+"14",color:v.color,padding:sm?"2px 7px":"3px 9px",borderRadius:6,fontSize:sm?10:11,fontWeight:700,letterSpacing:.3}}><Dot c={v.color} s={5}/>{v.short}</span>);
 }
 function SBadge({s}) {
   const v = ST[s]; if(!v) return null;
-  return (<span style={{display:"inline-flex",alignItems:"center",gap:5,background:v.bg,color:v.c,padding:"3px 10px",borderRadius:8,fontSize:10,fontWeight:600}}><span style={{width:7,height:7,borderRadius:"50%",background:v.c}}/>{v.l}</span>);
+  return (<span style={{display:"inline-flex",alignItems:"center",gap:5,background:v.bg,color:v.c,padding:"4px 11px",borderRadius:8,fontSize:11,fontWeight:700}}><span style={{width:7,height:7,borderRadius:"50%",background:v.c}}/>{v.l}</span>);
 }
 function SDot({s}) {
   const v = ST[s]; if(!v) return null;
@@ -260,14 +260,14 @@ function SDot({s}) {
 }
 function TTag({t, themes}) {
   if (!t) return null; const v = (themes||DEFAULT_THEMES)[t]; if(!v) return null;
-  return (<span style={{display:"inline-flex",alignItems:"center",gap:4,background:v.c+"10",color:v.c,padding:"2px 8px",borderRadius:6,fontSize:9,fontWeight:600,border:`1px dashed ${v.c}30`}}><span style={{width:4,height:4,borderRadius:"50%",background:v.c}}/>{v.l}</span>);
+  return (<span style={{display:"inline-flex",alignItems:"center",gap:4,background:v.c+"12",color:v.c,padding:"3px 9px",borderRadius:6,fontSize:10,fontWeight:700,border:`1px dashed ${v.c}40`}}><span style={{width:4,height:4,borderRadius:"50%",background:v.c}}/>{v.l}</span>);
 }
 function TypeTag({ch, size}) {
   const v = CH[ch]; if(!v) return null;
   return (<span title={v.l} style={{display:"inline-flex",alignItems:"center",fontSize:size||13,lineHeight:1,flexShrink:0}}>{v.i}</span>);
 }
 function Eyebrow({children}) {
-  return (<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}><span style={{width:20,height:2,background:R.lime,borderRadius:1}}/><span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:R.dark}}>{children}</span></div>);
+  return (<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}><span style={{width:20,height:2,background:R.lime,borderRadius:1}}/><span style={{fontSize:11,fontWeight:800,letterSpacing:1.3,textTransform:"uppercase",color:"#52525b"}}>{children}</span></div>);
 }
 
 /* ══════════════════════════════════════════════
@@ -277,7 +277,7 @@ function LinkedContentList({items, areas, onSelect, title}) {
   if (!items || !items.length) return null;
   return (
     <div style={{marginTop:10}}>
-      <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>{title||"Linked content"}</div>
+      <div style={{fontSize:10,fontWeight:700,color:"#52525b",marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>{title||"Linked content"}</div>
       {items.map(li=>(
         <button key={li.id} onClick={()=>onSelect(li)} style={{display:"flex",width:"100%",alignItems:"center",gap:7,padding:"7px 10px",background:R.grey,border:"none",borderRadius:8,marginBottom:4,fontSize:11,color:R.black,cursor:"pointer",textAlign:"left"}}>
           <TypeTag ch={li.ch}/>
@@ -329,10 +329,10 @@ function ChecklistSection({checklist, admin, onToggle, onAdd, onRemove}) {
 
   return (
     <div style={{marginBottom:16}}>
-      <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>
+      <div style={{fontSize:10,fontWeight:700,color:"#52525b",marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>
         Checklist{checklist.length>0 && ` (${done}/${checklist.length})`}
       </div>
-      {checklist.length===0 && (<div style={{fontSize:11,color:"#ccc",fontStyle:"italic",marginBottom:8}}>No requirements yet</div>)}
+      {checklist.length===0 && (<div style={{fontSize:11,color:R.dark,fontStyle:"italic",marginBottom:8}}>No requirements yet</div>)}
       {checklist.map(c=>{
         const canToggle = admin ? c.ownerType==="rate" : c.ownerType==="client";
         const pending = c.ownerType==="client" && !c.done;
@@ -341,7 +341,7 @@ function ChecklistSection({checklist, admin, onToggle, onAdd, onRemove}) {
             <button onClick={()=>canToggle && onToggle(c.id)} disabled={!canToggle} title={canToggle?"Mark done":"Only the owner can toggle this"} style={{width:16,height:16,borderRadius:4,border:`1.5px solid ${c.done?"#22c55e":R.mid}`,background:c.done?"#22c55e":R.white,cursor:canToggle?"pointer":"default",flexShrink:0,padding:0,color:R.white,fontSize:10,lineHeight:"14px",fontWeight:800}}>{c.done?"✓":""}</button>
             <span style={{flex:1,fontSize:11,color:c.done?R.dark:R.black,textDecoration:c.done?"line-through":"none"}}>{c.text}</span>
             <span style={{fontSize:9,fontWeight:700,color:c.ownerType==="client"?"#7c3aed":R.dark,background:c.ownerType==="client"?"#7c3aed14":R.mid,padding:"2px 6px",borderRadius:5,flexShrink:0}}>{c.ownerName}</span>
-            {admin && (<button onClick={()=>onRemove(c.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#ccc",fontSize:14,padding:0,flexShrink:0}}>×</button>)}
+            {admin && (<button onClick={()=>onRemove(c.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#a1a1aa",fontSize:14,padding:0,flexShrink:0}}>×</button>)}
           </div>
         );
       })}
@@ -402,12 +402,12 @@ function FormPanel({open, onClose, title, children}) {
 function Field({label, children}) {
   return (
     <div style={{marginBottom:12}}>
-      <div style={{fontSize:10,fontWeight:700,color:R.dark,marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>{label}</div>
+      <div style={{fontSize:11,fontWeight:700,color:"#52525b",marginBottom:5,textTransform:"uppercase",letterSpacing:.4}}>{label}</div>
       {children}
     </div>
   );
 }
-const inputStyle = {width:"100%",padding:"8px 10px",borderRadius:8,border:`1px solid ${R.mid}`,fontSize:12,fontFamily:"inherit",boxSizing:"border-box"};
+const inputStyle = {width:"100%",padding:"9px 11px",borderRadius:8,border:`1px solid ${R.mid}`,fontSize:13,fontFamily:"inherit",boxSizing:"border-box"};
 const selectStyle = {...inputStyle, background:R.white};
 
 /* ══════════════════════════════════════════════
@@ -492,8 +492,8 @@ function TypeFieldsDisplay({ch, values}) {
   return (
     <>
       {entries.map(f=>(
-        <div key={f.key} style={{fontSize:12,color:R.dark,marginBottom:10}}>
-          <div style={{fontWeight:700,color:R.black,marginBottom:2,fontSize:11,textTransform:"uppercase",letterSpacing:.5}}>{f.label}</div>
+        <div key={f.key} style={{fontSize:13,color:"#3f3f46",marginBottom:10}}>
+          <div style={{fontWeight:700,color:R.black,marginBottom:2,fontSize:10,textTransform:"uppercase",letterSpacing:.5}}>{f.label}</div>
           <div style={{lineHeight:1.6,whiteSpace:"pre-wrap"}}>{f.type==="checkbox" ? "Yes" : f.type==="multiselect" ? values[f.key].join(", ") : values[f.key]}</div>
         </div>
       ))}
@@ -576,7 +576,7 @@ function ItemForm({item, areas, themes, items, defaultDate, defaultArea, onSave,
           <div key={a.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",background:R.grey,borderRadius:8,marginBottom:4}}>
             <span style={{fontSize:13,flexShrink:0}}>📎</span>
             <a href={a.url} target="_blank" rel="noreferrer" style={{flex:1,fontSize:11,color:R.black,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.name}</a>
-            <button type="button" onClick={()=>removeAttachment(a.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#ccc",fontSize:14,flexShrink:0}}>×</button>
+            <button type="button" onClick={()=>removeAttachment(a.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#a1a1aa",fontSize:14,flexShrink:0}}>×</button>
           </div>
         ))}
         <div style={{display:"flex",gap:6}}>
@@ -591,7 +591,7 @@ function ItemForm({item, areas, themes, items, defaultDate, defaultArea, onSave,
           <div key={li.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",background:R.grey,borderRadius:8,marginBottom:4}}>
             <TypeTag ch={li.ch}/>
             <span style={{flex:1,fontSize:11,color:R.black,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{li.title}</span>
-            <button type="button" onClick={()=>removeLink(li.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#ccc",fontSize:14,flexShrink:0}}>×</button>
+            <button type="button" onClick={()=>removeLink(li.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#a1a1aa",fontSize:14,flexShrink:0}}>×</button>
           </div>
         ))}
         <div style={{position:"relative"}}>
@@ -786,13 +786,13 @@ function StrategyView({strategies, areas, fArea, admin, monthSummary, onToggleSu
               {admin && (<button onClick={()=>onOpenForm(s)} style={{background:"rgba(255,255,255,.2)",color:R.white,border:"none",borderRadius:6,padding:"4px 10px",fontSize:10,fontWeight:600,cursor:"pointer"}}>Edit</button>)}
             </div>
             <div style={{padding:"18px 20px"}}>
-              <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+              <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                 <tbody>
                   {rows.map(([l,v])=>(
-                    <tr key={l}><td style={{fontWeight:700,color:R.black,padding:"8px 16px 8px 0",verticalAlign:"top",width:130,borderBottom:`1px solid ${R.grey}`}}>{l}</td><td style={{color:R.dark,padding:"8px 0",lineHeight:1.6,borderBottom:`1px solid ${R.grey}`}}>{v}</td></tr>
+                    <tr key={l}><td style={{fontWeight:700,color:R.black,padding:"9px 16px 9px 0",verticalAlign:"top",width:130,borderBottom:`1px solid ${R.grey}`}}>{l}</td><td style={{color:"#3f3f46",padding:"9px 0",lineHeight:1.6,borderBottom:`1px solid ${R.grey}`}}>{v}</td></tr>
                   ))}
                   {s.kpis && s.kpis.length>0 && (
-                    <tr><td style={{fontWeight:700,color:R.black,padding:"8px 16px 8px 0",verticalAlign:"top"}}>KPIs</td><td style={{padding:"8px 0"}}>{s.kpis.map((k,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4,fontSize:12,color:R.dark}}><Dot c={primary.color} s={6}/>{k}</div>))}</td></tr>
+                    <tr><td style={{fontWeight:700,color:R.black,padding:"9px 16px 9px 0",verticalAlign:"top"}}>KPIs</td><td style={{padding:"9px 0"}}>{s.kpis.map((k,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4,fontSize:13,color:"#3f3f46"}}><Dot c={primary.color} s={6}/>{k}</div>))}</td></tr>
                   )}
                 </tbody>
               </table>
@@ -857,7 +857,7 @@ function EventPanel({event, items, areas, themes, onClose, onSelectItem}) {
     <div style={{position:"fixed",top:0,right:0,bottom:0,width:360,background:R.white,borderLeft:`1px solid ${R.mid}`,boxShadow:"-8px 0 32px rgba(0,0,0,.08)",zIndex:100,display:"flex",flexDirection:"column"}}>
       <div style={{padding:"16px 20px 12px",borderBottom:`1px solid ${R.mid}`}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-          <span style={{fontSize:9,fontWeight:700,color:R.dark,textTransform:"uppercase",letterSpacing:.5}}>Key Date</span>
+          <span style={{fontSize:10,fontWeight:700,color:"#52525b",textTransform:"uppercase",letterSpacing:.5}}>Key Date</span>
           <button onClick={onClose} style={{background:"none",border:"none",cursor:"pointer",fontSize:22,color:R.dark,padding:0,lineHeight:1}}>×</button>
         </div>
         <h3 style={{fontSize:15,fontWeight:700,color:R.black,margin:"6px 0 0",lineHeight:1.3}}>{event.title}</h3>
@@ -993,12 +993,12 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
           {admin&&(<button onClick={()=>onEdit(item)} style={{fontSize:10,color:R.dark,background:R.grey,border:"none",borderRadius:6,padding:"3px 8px",cursor:"pointer",fontWeight:600}}>Edit</button>)}
         </div>
         {fieldRows.map(([l,v])=>(
-          <div key={l} style={{fontSize:12,color:R.dark,marginBottom:10}}><div style={{fontWeight:700,color:R.black,marginBottom:2,fontSize:11,textTransform:"uppercase",letterSpacing:.5}}>{l}</div><div style={{lineHeight:1.6}}>{v}</div></div>
+          <div key={l} style={{fontSize:13,color:"#3f3f46",marginBottom:10}}><div style={{fontWeight:700,color:R.black,marginBottom:2,fontSize:10,textTransform:"uppercase",letterSpacing:.5}}>{l}</div><div style={{lineHeight:1.6}}>{v}</div></div>
         ))}
         <TypeFieldsDisplay ch={item.ch} values={item.fields||{}}/>
         {attachments.length>0 && (
           <div style={{marginBottom:16}}>
-            <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>Attachments</div>
+            <div style={{fontSize:10,fontWeight:700,color:"#52525b",marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>Attachments</div>
             {attachments.map(att=>(<AttachmentPreview key={att.id} attachment={att} accentColor={a.color}/>))}
           </div>
         )}
@@ -1014,8 +1014,8 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
           </div>
         )}
         <div style={{marginBottom:16}}>
-          <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>Output link</div>
-          {item.url?(<a href={item.url} target="_blank" rel="noreferrer" style={{fontSize:11,color:a.color,wordBreak:"break-all"}}>{item.url}</a>):(<span style={{fontSize:11,color:"#ccc",fontStyle:"italic"}}>Not yet published</span>)}
+          <div style={{fontSize:10,fontWeight:700,color:"#52525b",marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>Output link</div>
+          {item.url?(<a href={item.url} target="_blank" rel="noreferrer" style={{fontSize:11,color:a.color,wordBreak:"break-all"}}>{item.url}</a>):(<span style={{fontSize:11,color:R.dark,fontStyle:"italic"}}>Not yet published</span>)}
         </div>
 
         <ChecklistSection checklist={item.checklist||[]} admin={admin} onToggle={(clId)=>onToggleChecklist(item.id,clId)} onAdd={(text,ownerType,ownerName)=>onAddChecklist(item.id,text,ownerType,ownerName)} onRemove={(clId)=>onRemoveChecklist(item.id,clId)}/>
@@ -1042,8 +1042,8 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
         {item.state==="approved"&&(<div style={{background:"#f0fdf4",borderRadius:10,padding:14,marginTop:12,fontSize:11,color:"#22c55e",fontWeight:600}}>Approved</div>)}
 
         <div style={{marginTop:24,paddingTop:16,borderTop:`1px solid ${R.mid}`}}>
-          <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Comments ({comments.length})</div>
-          {comments.length===0 && (<div style={{fontSize:11,color:"#ccc",fontStyle:"italic",marginBottom:10}}>No comments yet</div>)}
+          <div style={{fontSize:10,fontWeight:700,color:"#52525b",marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Comments ({comments.length})</div>
+          {comments.length===0 && (<div style={{fontSize:11,color:R.dark,fontStyle:"italic",marginBottom:10}}>No comments yet</div>)}
           {comments.map(c=>(
             <div key={c.id} style={{marginBottom:10,background:R.grey,borderRadius:8,padding:"8px 10px"}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
@@ -1061,7 +1061,7 @@ function Panel({item, items, events, areas, themes, admin, onClose, onApprove, o
 
         {history.length>0 && (
           <div style={{marginTop:20,paddingTop:16,borderTop:`1px solid ${R.mid}`}}>
-            <div style={{fontSize:9,fontWeight:700,color:R.dark,marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Activity</div>
+            <div style={{fontSize:10,fontWeight:700,color:"#52525b",marginBottom:8,textTransform:"uppercase",letterSpacing:.5}}>Activity</div>
             {[...history].reverse().map(h=>(
               <div key={h.id} style={{fontSize:10,color:R.dark,marginBottom:6,lineHeight:1.5}}>
                 <strong style={{color:R.black}}>{h.by}</strong> moved this from <em>{(ST[h.from]||{}).l||h.from}</em> to <em>{(ST[h.to]||{}).l||h.to}</em> — {fmtTs(h.ts)}
@@ -1093,12 +1093,15 @@ function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, a
         </div>
         {admin&&(<button onClick={onAdd} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"8px 16px",fontSize:11,fontWeight:700,cursor:"pointer"}}>+ Add item</button>)}
       </div>
+      <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+      <div style={{minWidth:700}}>
       <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,marginBottom:2}}>
-        {DAYS.map(d=>(<div key={d} style={{textAlign:"center",fontSize:11,fontWeight:700,color:R.dark,padding:"6px 0",textTransform:"uppercase",letterSpacing:.5}}>{d}</div>))}
+        {DAYS.map(d=>(<div key={d} style={{textAlign:"center",fontSize:12,fontWeight:700,color:R.dark,padding:"6px 0",textTransform:"uppercase",letterSpacing:.5}}>{d}</div>))}
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2}}>
         {g.map((day,i)=>{
           if(!day) return (<div key={i} style={{minHeight:100,background:"#f0f0f0",borderRadius:10}}/>);
+          const col = i % 7;
           const ds=fd(year,month,day),isT=ds===today;
           const di=items.filter(it=>it.date===ds&&(!fArea||it.area===fArea)&&(fTypes.length===0||fTypes.includes(it.ch))&&(fStates.length===0||fStates.includes(it.state)));
           const dEvents = showKeyDates ? events.filter(ev=>ev.start===ds&&(!fArea||ev.areas.includes(fArea))) : [];
@@ -1146,10 +1149,13 @@ function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, a
                     {item.endDate && item.endDate!==item.date && (<span style={{flexShrink:0,opacity:.5,fontSize:9}}>→</span>)}
                     {needsAttn && (<span title={rev?"Ready for review":"Awaiting client input"} style={{flexShrink:0,width:6,height:6,borderRadius:"50%",background:rev?"#f59e42":"#ef4444"}}/>)}
                     {hovered && (
-                      <div style={{position:"absolute",top:"100%",left:0,marginTop:3,zIndex:60,background:R.black,color:R.white,padding:"9px 11px",borderRadius:8,minWidth:180,maxWidth:240,boxShadow:"0 8px 20px rgba(0,0,0,.3)",pointerEvents:"none"}}>
-                        <div style={{fontSize:12,fontWeight:700,marginBottom:4,whiteSpace:"normal",lineHeight:1.35}}>{item.title}</div>
-                        <div style={{fontSize:10,opacity:.75,marginBottom:3}}>{typeInfo.i} {typeInfo.l}{(item.ch==="social"&&item.platform)?` · ${item.platform}`:""}</div>
-                        <div style={{fontSize:10,fontWeight:700,color:stateInfo.c||"#fff"}}>{stateInfo.l||item.state}</div>
+                      <div style={{position:"absolute",top:"100%",...(col>=5?{right:0}:{left:0}),marginTop:3,zIndex:60,background:R.black,color:R.white,padding:"10px 12px",borderRadius:8,minWidth:190,maxWidth:250,boxShadow:"0 8px 20px rgba(0,0,0,.35)",pointerEvents:"none"}}>
+                        <div style={{fontSize:12,fontWeight:700,marginBottom:6,whiteSpace:"normal",lineHeight:1.35}}>{item.title}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
+                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:700,background:"rgba(255,255,255,.15)",padding:"2px 8px",borderRadius:6}}>{typeInfo.i} {typeInfo.l}</span>
+                          {(item.ch==="social"&&item.platform) && (<span style={{fontSize:10,opacity:.75}}>{item.platform}</span>)}
+                        </div>
+                        <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:stateInfo.c||"#fff"}}><span style={{width:6,height:6,borderRadius:"50%",background:stateInfo.c||"#fff",flexShrink:0}}/>{stateInfo.l||item.state}</div>
                       </div>
                     )}
                   </button>
@@ -1158,6 +1164,8 @@ function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, a
             </div>
           );
         })}
+      </div>
+      </div>
       </div>
     </div>
   );

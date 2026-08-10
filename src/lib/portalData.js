@@ -3,9 +3,20 @@
 export const CLIENT_SLUG = "ulverscroft";
 
 export async function getClientOrThrow(sb) {
-  const { data, error } = await sb.from("clients").select("id, name, slug").eq("slug", CLIENT_SLUG).single();
+  const { data, error } = await sb.from("clients").select("id, name, slug, show_planning_reference").eq("slug", CLIENT_SLUG).single();
   if (error || !data) throw new Error(error?.message || "Client not found");
   return data;
+}
+
+export function rowToPlanningDate(row) {
+  return {
+    id: row.id,
+    year: row.year,
+    month: row.month,
+    dateLabel: row.date_label || "",
+    title: row.title,
+    description: row.description || "",
+  };
 }
 
 const orEmpty = (v) => v ?? "";

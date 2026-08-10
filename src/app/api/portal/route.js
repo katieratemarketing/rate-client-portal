@@ -8,6 +8,7 @@ import {
   rowToEvent,
   rowToReport,
   rowToDeliverable,
+  rowToPlanningDate,
 } from "../../../lib/portalData";
 
 export async function GET(request) {
@@ -47,6 +48,14 @@ export async function GET(request) {
     ? { enabled: monthSummaryRes.data.enabled, text: monthSummaryRes.data.text || "" }
     : { enabled: false, text: "" };
 
+  const showPlanningReference = client.show_planning_reference;
+  let planningDates = [];
+  if (admin || showPlanningReference) {
+    const { data, error } = await sb.from("planning_reference_dates").select("*").order("year").order("month").order("sort_order");
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    planningDates = data.map(rowToPlanningDate);
+  }
+
   return NextResponse.json({
     admin,
     areas,
@@ -57,5 +66,7 @@ export async function GET(request) {
     events: eventsRes.data.map(rowToEvent),
     reports: reportsRes.data.filter((r) => admin || r.status === "published").map(rowToReport),
     deliverables: deliverablesRes.data.map(rowToDeliverable),
+    showPlanningReference,
+    planningDates,
   });
 }

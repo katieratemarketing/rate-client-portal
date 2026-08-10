@@ -20,6 +20,7 @@ create table clients (
   id uuid primary key default gen_random_uuid(),
   slug text unique not null,
   name text not null,
+  show_planning_reference boolean not null default false,
   created_at timestamptz default now()
 );
 
@@ -177,6 +178,23 @@ create table deliverables (
 create index deliverables_client_idx on deliverables(client_id);
 
 -- ══════════════════════════════════════════════
+-- PLANNING REFERENCE DATES
+-- A single shared, global reference bank of industry/awareness dates used
+-- for content planning — not client-owned data, so no client_id. Whether a
+-- given client's portal shows it is controlled by clients.show_planning_reference.
+-- ══════════════════════════════════════════════
+create table planning_reference_dates (
+  id uuid primary key default gen_random_uuid(),
+  year int not null,
+  month int not null, -- 1-12
+  sort_order int not null default 0,
+  date_label text not null default '', -- freeform, e.g. "22 Jan", "6-12 Apr" — source dates vary in precision
+  title text not null,
+  description text not null default ''
+);
+create index planning_reference_dates_month_idx on planning_reference_dates(year, month, sort_order);
+
+-- ══════════════════════════════════════════════
 -- Row Level Security — enabled with no policies (service_role only, see note above)
 -- ══════════════════════════════════════════════
 alter table clients enable row level security;
@@ -188,6 +206,7 @@ alter table month_summaries enable row level security;
 alter table key_events enable row level security;
 alter table monthly_reports enable row level security;
 alter table deliverables enable row level security;
+alter table planning_reference_dates enable row level security;
 
 -- ══════════════════════════════════════════════
 -- BOOTSTRAP: the one client this prototype currently serves, plus its

@@ -783,39 +783,93 @@ function StrategyView({strategies, areas, fArea, admin, monthSummary, onToggleSu
 /* ══════════════════════════════════════════════
    KEY DATES
    ══════════════════════════════════════════════ */
-function KeyDatesView({events, areas, onSelect}) {
+function KeyDatesView({events, areas, onSelect, admin, planningDates, showPlanningReference, onToggleShowPlanningReference}) {
   const sorted = [...events].sort((a,b)=>new Date(a.start)-new Date(b.start));
   let lastMonthKey = null;
+  const showReferencePanel = admin || showPlanningReference;
   return (
-    <div style={{maxWidth:680}}>
-      <Eyebrow>Key Dates</Eyebrow>
-      <h2 style={{fontSize:22,fontWeight:800,color:R.black,margin:"0 0 20px",letterSpacing:-.5}}>What's coming up.</h2>
-      {sorted.map((ev,idx)=>{
-        const s=new Date(ev.start),e=new Date(ev.end),same=ev.start===ev.end;
-        const monthKey = `${s.getFullYear()}-${s.getMonth()}`;
-        const showHeader = monthKey !== lastMonthKey;
-        lastMonthKey = monthKey;
-        return (
-          <div key={ev.id}>
-            {showHeader && (
-              <div style={{fontSize:12,fontWeight:800,color:R.black,textTransform:"uppercase",letterSpacing:.8,margin:idx===0?"0 0 4px":"20px 0 4px"}}>{s.toLocaleDateString("en-GB",{month:"long",year:"numeric"})}</div>
-            )}
-            <button onClick={()=>onSelect(ev)} style={{display:"flex",gap:14,padding:"16px 0",borderBottom:`1px solid ${R.mid}`,width:"100%",background:"none",border:"none",borderBottomStyle:"solid",cursor:"pointer",textAlign:"left"}}>
-              <div style={{minWidth:50,background:R.black,color:R.white,borderRadius:10,padding:"8px 10px",textAlign:"center",alignSelf:"flex-start"}}>
-                <div style={{fontSize:8,fontWeight:600,opacity:.5,letterSpacing:.5}}>{same?DAYS[(s.getDay()||7)-1].toUpperCase():"FROM"}</div>
-                <div style={{fontSize:20,fontWeight:800}}>{s.getDate()}</div>
-                <div style={{fontSize:8,opacity:.5}}>{MN[s.getMonth()]}</div>
-              </div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:700,color:R.black,marginBottom:4}}>{ev.title}</div>
-                <div style={{fontSize:10,color:R.dark,marginBottom:6}}>{same?s.toLocaleDateString("en-GB",{day:"numeric",month:"long"}):`${s.toLocaleDateString("en-GB",{day:"numeric",month:"short"})} – ${e.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}`}</div>
-                <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:4}}>{ev.areas.map(a=>(<ATag key={a} a={a} areas={areas} sm/>))}</div>
-                <div style={{fontSize:11,color:R.dark,lineHeight:1.5}}>{ev.notes}</div>
-              </div>
-            </button>
-          </div>
-        );
-      })}
+    <div style={{display:"flex",flexWrap:"wrap",gap:32,alignItems:"flex-start"}}>
+      <div style={{maxWidth:680,flex:"10 1 400px",minWidth:0}}>
+        <Eyebrow>Key Dates</Eyebrow>
+        <h2 style={{fontSize:22,fontWeight:800,color:R.black,margin:"0 0 20px",letterSpacing:-.5}}>What's coming up.</h2>
+        {sorted.map((ev,idx)=>{
+          const s=new Date(ev.start),e=new Date(ev.end),same=ev.start===ev.end;
+          const monthKey = `${s.getFullYear()}-${s.getMonth()}`;
+          const showHeader = monthKey !== lastMonthKey;
+          lastMonthKey = monthKey;
+          return (
+            <div key={ev.id}>
+              {showHeader && (
+                <div style={{fontSize:12,fontWeight:800,color:R.black,textTransform:"uppercase",letterSpacing:.8,margin:idx===0?"0 0 4px":"20px 0 4px"}}>{s.toLocaleDateString("en-GB",{month:"long",year:"numeric"})}</div>
+              )}
+              <button onClick={()=>onSelect(ev)} style={{display:"flex",gap:14,padding:"16px 0",borderBottom:`1px solid ${R.mid}`,width:"100%",background:"none",border:"none",borderBottomStyle:"solid",cursor:"pointer",textAlign:"left"}}>
+                <div style={{minWidth:50,background:R.black,color:R.white,borderRadius:10,padding:"8px 10px",textAlign:"center",alignSelf:"flex-start"}}>
+                  <div style={{fontSize:8,fontWeight:600,opacity:.5,letterSpacing:.5}}>{same?DAYS[(s.getDay()||7)-1].toUpperCase():"FROM"}</div>
+                  <div style={{fontSize:20,fontWeight:800}}>{s.getDate()}</div>
+                  <div style={{fontSize:8,opacity:.5}}>{MN[s.getMonth()]}</div>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:700,color:R.black,marginBottom:4}}>{ev.title}</div>
+                  <div style={{fontSize:10,color:R.dark,marginBottom:6}}>{same?s.toLocaleDateString("en-GB",{day:"numeric",month:"long"}):`${s.toLocaleDateString("en-GB",{day:"numeric",month:"short"})} – ${e.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}`}</div>
+                  <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:4}}>{ev.areas.map(a=>(<ATag key={a} a={a} areas={areas} sm/>))}</div>
+                  <div style={{fontSize:11,color:R.dark,lineHeight:1.5}}>{ev.notes}</div>
+                </div>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      {showReferencePanel && (
+        <PlanningReferencePanel admin={admin} dates={planningDates} visible={showPlanningReference} onToggleVisible={onToggleShowPlanningReference}/>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   PLANNING REFERENCE PANEL
+   Admin's evergreen bank of industry/awareness dates for content planning.
+   Visibility to the client is a per-client toggle, admin-only.
+   ══════════════════════════════════════════════ */
+function PlanningReferencePanel({admin, dates, visible, onToggleVisible}) {
+  const byMonth = {};
+  for (const d of dates) { (byMonth[d.month] ||= []).push(d); }
+  const months = Object.keys(byMonth).map(Number).sort((a,b)=>a-b);
+  const year = dates[0]?.year;
+
+  return (
+    <div style={{width:320,flexShrink:0,position:"sticky",top:20}}>
+      <div style={{background:R.white,border:`1px solid ${R.mid}`,borderRadius:14,overflow:"hidden"}}>
+        <div style={{padding:"16px 18px",borderBottom:`1px solid ${R.mid}`}}>
+          <Eyebrow>Planning Reference{year?` · ${year}`:""}</Eyebrow>
+          <div style={{fontSize:13,color:R.dark,lineHeight:1.5}}>Industry & awareness dates for content planning.</div>
+          {admin && (
+            <label style={{display:"flex",alignItems:"center",gap:7,marginTop:10,fontSize:11,fontWeight:600,color:R.black,cursor:"pointer"}}>
+              <input type="checkbox" checked={visible} onChange={e=>onToggleVisible(e.target.checked)}/> Visible to client
+            </label>
+          )}
+          {admin && !visible && (
+            <div style={{marginTop:8,fontSize:10,color:"#b45309",background:"#fffbeb",border:"1px solid #fde68a",borderRadius:6,padding:"5px 8px"}}>Only you can see this — the client can't.</div>
+          )}
+        </div>
+        <div style={{maxHeight:560,overflowY:"auto",padding:"6px 18px 14px"}}>
+          {months.map(m=>(
+            <div key={m}>
+              <div style={{fontSize:11,fontWeight:800,color:R.black,textTransform:"uppercase",letterSpacing:.8,margin:"14px 0 6px"}}>{MN_FULL[m-1]}</div>
+              {byMonth[m].map(d=>(
+                <div key={d.id} style={{padding:"8px 0",borderBottom:`1px solid ${R.grey}`}}>
+                  <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"baseline"}}>
+                    <div style={{fontSize:12,fontWeight:700,color:R.black,lineHeight:1.4}}>{d.title}</div>
+                    {d.dateLabel && (<div style={{fontSize:10,color:R.dark,whiteSpace:"nowrap",flexShrink:0}}>{d.dateLabel}</div>)}
+                  </div>
+                  {d.description && (<div style={{fontSize:11,color:R.dark,lineHeight:1.5,marginTop:2}}>{d.description}</div>)}
+                </div>
+              ))}
+            </div>
+          ))}
+          {!months.length && (<div style={{fontSize:12,color:R.dark,padding:"14px 0"}}>No reference dates yet.</div>)}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1555,6 +1609,8 @@ export default function Portal() {
   const [deliverables, setDeliverables] = useState([]);
   const [areas, setAreas] = useState({});
   const [themes, setThemes] = useState({});
+  const [planningDates, setPlanningDates] = useState([]);
+  const [showPlanningReference, setShowPlanningReference] = useState(false);
 
   const [tab, setTab] = useState("calendar");
   const [fArea, setFA] = useState(null);
@@ -1581,6 +1637,8 @@ export default function Portal() {
         setEvents(data.events);
         setReports(data.reports);
         setDeliverables(data.deliverables);
+        setPlanningDates(data.planningDates);
+        setShowPlanningReference(data.showPlanningReference);
       } catch (e) {
         console.error("Failed to load portal data", e);
       }
@@ -1719,6 +1777,14 @@ export default function Portal() {
     } catch (e) { console.error("Failed to save month summary", e); }
   }
 
+  async function updateShowPlanningReference(v) {
+    setShowPlanningReference(v);
+    try {
+      const updated = await api("/api/settings", {method:"PATCH", body:{showPlanningReference:v}});
+      setShowPlanningReference(updated.showPlanningReference);
+    } catch (e) { console.error("Failed to save setting", e); }
+  }
+
   async function addDeliverable(draft) {
     try {
       const created = await api("/api/deliverables", {method:"POST", body:draft});
@@ -1832,7 +1898,7 @@ export default function Portal() {
       {/* CONTENT */}
       <div style={{padding:"20px 24px 48px",marginRight:(sel||selEvent)?360:0,transition:"margin-right .2s"}}>
         {tab==="strategy"&&(<StrategyView strategies={strategies} areas={areas} fArea={fArea} admin={admin} monthSummary={monthSummary} onToggleSummary={(v)=>updateMonthSummary({...monthSummary,enabled:v})} onEditSummary={(text)=>updateMonthSummary({...monthSummary,text})} onOpenForm={(s)=>setModal(s?{editingStrategy:s}:"addStrategy")}/>)}
-        {tab==="dates"&&(<KeyDatesView events={events} areas={areas} onSelect={(ev)=>{closePanel();setSelEvent(ev);}}/>)}
+        {tab==="dates"&&(<KeyDatesView events={events} areas={areas} onSelect={(ev)=>{closePanel();setSelEvent(ev);}} admin={admin} planningDates={planningDates} showPlanningReference={showPlanningReference} onToggleShowPlanningReference={updateShowPlanningReference}/>)}
         {tab==="calendar"&&(<CalView items={items} events={events} areas={areas} fArea={fArea} fTypes={fTypes} fStates={fStates} onSelect={(it)=>{setSelEvent(null);openItem(it);}} onSelectEvent={(ev)=>{closePanel();setSelEvent(ev);}} sel={sel} admin={admin} onAdd={()=>openAddForDate(todayISO())} onAddOnDate={openAddForDate} month={calDate.month} year={calDate.year} onPrevMonth={prevMonth} onNextMonth={nextMonth} onToday={goToday}/>)}
         {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onSelect={(it)=>{setSelEvent(null);openItem(it);}}/>)}
         {tab==="reporting"&&(<ReportingView reports={reports} deliverables={deliverables} areas={areas} admin={admin} onCreateDraft={createDraftReport} onUpdateReport={updateReport} onPublishReport={publishReport} onAddDeliverable={addDeliverable} onUpdateDeliverable={updateDeliverable} onRemoveDeliverable={removeDeliverable}/>)}

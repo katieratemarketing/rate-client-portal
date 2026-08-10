@@ -1807,12 +1807,12 @@ export default function Portal() {
         <div style={{display:"flex",gap:0,overflowX:"auto"}}>
           {[{k:"strategy",l:"Strategy"},{k:"dates",l:"Key Dates"},{k:"calendar",l:"Calendar"},{k:"approvals",l:"Approvals",count:rc+ic},{k:"reporting",l:"Reporting"}].map(t=>(
             <button key={t.k} onClick={()=>{setTab(t.k);closePanel();setSelEvent(null);}} style={{
-              background:"none",border:"none",cursor:"pointer",padding:"10px 16px",fontSize:11,fontWeight:600,
-              color:tab===t.k?R.lime:"#666",borderBottom:tab===t.k?`2px solid ${R.lime}`:"2px solid transparent",
-              display:"flex",alignItems:"center",gap:5,
+              background:"none",border:"none",cursor:"pointer",padding:"14px 20px",fontSize:15,fontWeight:700,
+              color:tab===t.k?R.lime:R.white,borderBottom:tab===t.k?`3px solid ${R.lime}`:"3px solid transparent",
+              display:"flex",alignItems:"center",gap:7,whiteSpace:"nowrap",
             }}>
               {t.l}
-              {t.count>0&&(<span style={{background:"#ef4444",color:R.white,fontSize:9,fontWeight:700,padding:"0 5px",borderRadius:10,minWidth:16,textAlign:"center"}}>{t.count}</span>)}
+              {t.count>0&&(<span style={{background:"#ef4444",color:R.white,fontSize:10,fontWeight:700,padding:"1px 6px",borderRadius:10,minWidth:18,textAlign:"center"}}>{t.count}</span>)}
             </button>
           ))}
         </div>

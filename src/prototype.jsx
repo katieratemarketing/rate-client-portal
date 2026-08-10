@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 
 /* ══════════════════════════════════════════════
    TOKENS
@@ -177,25 +177,6 @@ const DEFAULT_THEMES = {
   newrelease:{l:"August New Releases",c:"#f97316",brief:"Rolling spotlight on new large-print and audio titles released in August."},
 };
 
-const DEFAULT_EVENTS = [
-  {id:"k1",title:"Agatha Christie — London Museum",start:"2026-08-01",end:"2026-10-31",areas:["ulverscroft","trade"],notes:"Major tentpole. Social series, blog, trade press.",theme:"christie",venue:"London Museum",links:[{label:"Exhibition site",url:"https://example.com/christie-exhibition"}]},
-  {id:"k2",title:"National Book Lovers Day",start:"2026-08-09",end:"2026-08-09",areas:["ulverscroft","readinghouse","ulibrary"],notes:"Cross-brand. Pre-schedule by 7th.",theme:"booklovers",venue:"",links:[]},
-  {id:"k3",title:"Spark Expo Australia",start:"2026-08-04",end:"2026-08-06",areas:["ulibrary","trade"],notes:"Trade event. uLibrary demo.",theme:"",venue:"Sydney Exhibition Centre",links:[{label:"Event website",url:"https://example.com/spark-expo"}]},
-  {id:"k4",title:"Back to School window",start:"2026-08-17",end:"2026-08-31",areas:["ulibrary","readinghouse"],notes:"Target schools and libraries.",theme:"b2s",venue:"",links:[]},
-];
-
-const DEFAULT_STRATEGIES = [
-  {id:"s1",name:"Ulverscroft Content Strategy",brands:["ulverscroft"],startDate:"2026-08-01",endDate:"2026-08-31",b2b:"B2C",productFocus:"Large print & audio backlist, new releases",purpose:"Leverage the Agatha Christie exhibition as a tentpole moment to reach library authorities and general readers.",goal:"Grow engaged readership and strengthen library authority relationships ahead of Q4 renewals.",kpis:["Social engagement +15% vs July","Email open rate >30%","Blog traffic +20%"],audience:"Library authorities, general readers (50+), visually impaired readers",tone:"Warm, accessible, trusted.",message:"The world's best stories, made accessible to everyone.",channels:"Instagram, Facebook, X, Kit, Website blog",frequency:"3–4 posts per week",cta:"Browse the catalogue",budget:"",hashtags:"#Ulverscroft #LargePrint"},
-  {id:"s2",name:"uLibrary Growth Strategy",brands:["ulibrary"],startDate:"2026-08-01",endDate:"2026-08-31",b2b:"Both",productFocus:"Digital library subscriptions, Book Club",purpose:"Drive retention through Book Club engagement while opening a new education-sector channel.",goal:"Grow school/library sign-ups and lift subscriber retention above 85%.",kpis:["Newsletter opens >35%","Back to School: 50 trial sign-ups","Retention >85%"],audience:"School librarians, education buyers, digital subscribers",tone:"Modern, digital-first, practical.",message:"The digital library that readers actually use.",channels:"LinkedIn, Instagram, Kit, Landing pages",frequency:"2 posts per week + monthly newsletter",cta:"Start a free trial",budget:"£350",hashtags:"#uLibrary #BackToSchool"},
-  {id:"s3",name:"The Reading House — Community Strategy",brands:["readinghouse"],startDate:"2026-08-01",endDate:"2026-08-31",b2b:"B2C",productFocus:"In-store experience, local events",purpose:"Build consistent social presence with behind-the-scenes content to drive footfall.",goal:"Increase local awareness and repeat footfall through community-first content.",kpis:["Social following +200","Email list +50","Reel views avg >1k"],audience:"Local readers, gift buyers, community book lovers",tone:"Friendly, personal, cosy.",message:"Your local bookshop, with something for everyone.",channels:"Instagram, TikTok, Facebook, Kit",frequency:"4–5 posts per week",cta:"Visit us in store",budget:"",hashtags:"#ReadingHouse #ShopLocal"},
-  {id:"s4",name:"Trade — Autumn Catalogue Push",brands:["trade"],startDate:"2026-08-01",endDate:"2026-09-30",b2b:"B2B",productFocus:"Autumn catalogue, Christie large-print range",purpose:"Distribute the autumn catalogue and pitch the Christie exhibition angle to trade press.",goal:"Land trade press coverage and generate new partner enquiries.",kpis:["1 feature in The Bookseller","Catalogue to all partners","2 new enquiries"],audience:"Audible, Bolinda, W.F. Howes, trade press",tone:"Professional, concise, industry-fluent.",message:"The partner publishers choose for accessible formats.",channels:"Email (direct), Trade press",frequency:"Monthly",cta:"Request the catalogue",budget:"",hashtags:""},
-];
-
-const DEFAULT_MONTH_SUMMARY = {
-  enabled:true,
-  text:"Leverage the Agatha Christie exhibition as a tentpole across Ulverscroft and Trade. Drive uLibrary retention through Book Club engagement. Build consistent social presence for The Reading House.",
-};
-
 /* ══════════════════════════════════════════════
    DELIVERABLES / ONGOING PROJECTS
    ══════════════════════════════════════════════ */
@@ -206,104 +187,22 @@ const DELIVERABLE_STATUS = {
   complete:{l:"Complete",c:"#8b5cf6"},
 };
 
-const DEFAULT_DELIVERABLES = [
-  {id:"dlv1",title:"CRM Data Investigation",description:"Auditing existing customer data before committing to a CRM platform. Checking into available data and segmentation requirements.",status:"on_hold",statusNote:"Waiting for Lisa to return from annual leave",area:""},
-  {id:"dlv2",title:"Sector Landing Pages",description:"New dedicated pages for care homes, prisons and hospitals to support new business development. Research and brief completed; copy pending with Katie.",status:"in_planning",statusNote:"Brief complete, awaiting build",area:""},
-  {id:"dlv3",title:"Accessible Publishing Conference",description:"CPI Conference planning underway. Sponsorship includes exhibition table, branding, and a speaking slot.",status:"in_progress",statusNote:"Planning and prep",area:""},
-  {id:"dlv4",title:"Other Team Activity",description:"Jenny: Amazon implementation. Daniel: Trade relations, general sales promotions and strategy including Spotify partnership calls.",status:"in_progress",statusNote:"In progress across the team",area:""},
-];
-
 /* ══════════════════════════════════════════════
-   MONTHLY REPORTS
+   API
+   All content is stored in Supabase; loaded in one shot from /api/portal and
+   persisted through the per-entity route handlers under src/app/api/.
    ══════════════════════════════════════════════ */
-const DEFAULT_REPORTS = [
-  {
-    id:"rpt-2026-06",year:2026,month:6,status:"published",
-    summary:{
-      narrative:"July saw consistent output across social content, partner graphics packages, and book highlights. A new social video format was trialled and partner campaign activity included the Boldwood Disability Pride Giveaway.\n\nLinkedIn was the strongest social channel, with +8 followers and 789 impressions building on May/June's growth. The Reading House Facebook outperformed Ulverscroft's page on impressions, showing an appetite for a B2C audience. Website traffic dipped slightly (3.9% in active users), consistent with summer seasonality.\n\nThe strategy has been more reactive as the business navigates internal changes, we are working towards some key announcements. It's important to also consider longer term brand strategy which may need groundwork to implement.",
-      stats:[
-        {label:"Active Users",value:"21K",change:"3.9%",dir:"down"},
-        {label:"Best Growth Channel",value:"+8",change:"Best growth channel",dir:"up"},
-        {label:"Reading House Impressions",value:"1,116",change:"11 posts published",dir:"up"},
-        {label:"Total Sessions",value:"22K",change:"3.1%",dir:"down"},
-      ],
-    },
-    socialGroups:[
-      {id:"sg1",brand:"ulverscroft",platform:"Facebook",metrics:[
-        {label:"Page Fans",value:"882 (+4)"},{label:"Page Impressions",value:"983"},{label:"Post Engagements",value:"26"},
-        {label:"Posts Published",value:"4"},{label:"Page Views",value:"167"},{label:"New Fans",value:"5 (1 unlike)"},
-      ]},
-      {id:"sg2",brand:"readinghouse",platform:"Facebook",metrics:[
-        {label:"Page Fans",value:"490 (+2)"},{label:"Page Impressions",value:"1,116"},{label:"Post Engagements",value:"24"},
-        {label:"Posts Published",value:"11"},{label:"Page Views",value:"51"},{label:"New Fans",value:"3 (0 unlikes)"},
-      ]},
-      {id:"sg3",brand:"ulibrary",platform:"Instagram",metrics:[
-        {label:"Followers",value:"742"},{label:"Reach",value:"695"},{label:"New Followers",value:"+7 (1,785 total)"},
-      ]},
-      {id:"sg4",brand:"ulverscroft",platform:"LinkedIn",metrics:[
-        {label:"Followers",value:"575"},{label:"Impressions",value:"789 (21 clicks, 36 likes)"},
-      ]},
-    ],
-    socialAnalysis:"LinkedIn was the strongest channel this month with +8 followers and 789 impressions, continuing the upward trajectory from the May-June period (+3 followers, 565 impressions).\nThe Reading House Facebook outperformed Ulverscroft's page on impressions (1,116 vs 983) despite a smaller audience.\nuLibrary Instagram remains relatively flat (+1 follower). Content is being produced consistently (7 new posts) but follower growth is a continued challenge. This could be due to fairly generic content which is focused on two different markets.",
-    website:{
-      stats:[
-        {label:"Active Users",value:"21K",change:"3.9%",dir:"down"},
-        {label:"Sessions",value:"100K",change:"4.6%",dir:"down"},
-        {label:"Page Views",value:"22K",change:"3.1%",dir:"down"},
-      ],
-      acquisition:[
-        {channel:"Direct",totalUsers:"20,224",newUsers:"21,605",returning:"631",avgEngagement:"19s",pctTotal:"96.14%"},
-        {channel:"Organic Search",totalUsers:"665",newUsers:"699",returning:"45",avgEngagement:"23s",pctTotal:"3.16%"},
-        {channel:"Referral",totalUsers:"85",newUsers:"84",returning:"8",avgEngagement:"12s",pctTotal:"0.40%"},
-        {channel:"Organic Social",totalUsers:"41",newUsers:"41",returning:"1",avgEngagement:"3s",pctTotal:"0.19%"},
-        {channel:"AI Assistant",totalUsers:"6",newUsers:"6",returning:"0",avgEngagement:"6s",pctTotal:"0.03%"},
-      ],
-      topPages:[
-        {page:"Login",views:"9,745",pctTotal:"28.94%",users:"9,040",avgEngagement:"1s"},
-        {page:"Search",views:"4,668",pctTotal:"13.86%",users:"2,091",avgEngagement:"38s"},
-        {page:"Large Print / Audiobooks / eBooks",views:"3,572",pctTotal:"10.61%",users:"1,908",avgEngagement:"17s"},
-        {page:"Browse",views:"3,291",pctTotal:"9.77%",users:"1,686",avgEngagement:"56s"},
-        {page:"Creating a Literary Lifeline",views:"1,944",pctTotal:"5.77%",users:"1,652",avgEngagement:"8s"},
-      ],
-      notes:"Read Your Way page: 148 views (98 users, 39s avg engagement) + Introducing Read Your Way: 47 views\nCheckout flow: 177 (Your Details) > 175 (Pay) > 170 (Delivery) > 119 (Order Complete)\nPublishing page: 229 views (213 users) / Our History: 103 views (90 users)",
-    },
-    content:{
-      campaignsContent:"Ulverscroft Audio Now Available on Overdrive email announcement\nNew social video format trialled\nBoldwood Disability Pride Giveaway: Partner campaign\nMonthly newsletters: uLibrary + The Reading House\nSocial media graphics packages distributed to partners\nuLibrary book club content\nLP + Audio highlights: Ironwood, Land",
-      assetsCreated:"BatchLine blog post and press release\nJamacia Inn PR\nSolus - once the Australian library to test then we can push.",
-    },
-    projectsSnapshot:DEFAULT_DELIVERABLES,
-  },
-];
-
-const DEFAULT_ITEMS = [
-  {id:1,date:"2026-08-03",area:"ulverscroft",ch:"social",title:"Shadow of the Wind – carousel",state:"approved",platform:"IG / FB",notes:"Cover art + pull quotes",theme:"newrelease",url:"",comments:[],history:[],checklist:[]},
-  {id:2,date:"2026-08-05",area:"ulibrary",ch:"email",title:"August Book Club newsletter",state:"review",platform:"Kit",notes:"Black History Month feature",theme:"",url:"",comments:[],history:[],checklist:[]},
-  {id:3,date:"2026-08-06",area:"ulibrary",ch:"social",title:"Library of the Month announcement",state:"input",platform:"IG / LinkedIn",notes:"Need title confirmation from Daniel",theme:"",url:"",comments:[{id:"c1",author:"Rate Team",ts:"2026-08-05T10:12:00Z",text:"Can you confirm the library name before we schedule this?"}],history:[{id:"h1",ts:"2026-08-05T10:12:00Z",from:"review",to:"input",by:"Rate Team"}],checklist:[{id:"cl1",text:"Confirm library name",ownerType:"client",ownerName:"Daniel",done:false}]},
-  {id:4,date:"2026-08-07",area:"ulverscroft",ch:"social",title:"Christie LP spotlight",state:"review",platform:"IG / X",notes:"Large print editions tie-in",theme:"christie",url:"",comments:[],history:[],checklist:[{id:"cl2",text:"Caption written",ownerType:"rate",ownerName:"Katie",done:true},{id:"cl3",text:"Images designed",ownerType:"rate",ownerName:"Izzie",done:true}]},
-  {id:5,date:"2026-08-07",area:"ulverscroft",ch:"blog",title:"Christie — reading guide",state:"wip",platform:"Website",notes:"Curated LP Christie titles",theme:"christie",url:"",comments:[],history:[],checklist:[]},
-  {id:6,date:"2026-08-09",area:"readinghouse",ch:"social",title:"Book Lovers Day — staff picks reel",state:"review",platform:"IG / TikTok",notes:"Team picks filmed in-store",theme:"booklovers",url:"",comments:[],history:[],checklist:[]},
-  {id:7,date:"2026-08-09",area:"ulverscroft",ch:"email",title:"Book Lovers Day — reader email",state:"wip",platform:"Kit",notes:"Curated list + offer code",theme:"booklovers",url:"",comments:[],history:[],checklist:[]},
-  {id:8,date:"2026-08-11",area:"ulibrary",ch:"email",title:"uLibrary Monthly Update",state:"wip",platform:"Kit",notes:"Usage stats, retention",theme:"",url:"",comments:[],history:[],checklist:[]},
-  {id:9,date:"2026-08-13",area:"trade",ch:"email",title:"Trade catalogue — Autumn titles",state:"approved",platform:"Email",notes:"Sent to Audible, Bolinda",theme:"",url:"",comments:[],history:[],checklist:[]},
-  {id:10,date:"2026-08-18",area:"ulverscroft",ch:"social",title:"Land by Maggie O'Farrell",state:"wip",platform:"IG / FB",notes:"Review quote post",theme:"newrelease",url:"",comments:[],history:[],checklist:[]},
-  {id:11,date:"2026-08-25",area:"ulibrary",ch:"campaign",title:"Back to School — outreach",state:"review",platform:"Email + LP",notes:"School librarians, free trial",theme:"b2s",url:"",comments:[],history:[],checklist:[]},
-  {id:12,date:"2026-08-28",area:"ulverscroft",ch:"email",title:"Book of the Week — Honesty",state:"review",platform:"Kit",notes:"Carried from July series",theme:"",url:"",comments:[],history:[],checklist:[]},
-];
-
-/* ══════════════════════════════════════════════
-   STORAGE
-   ══════════════════════════════════════════════ */
-const STORAGE_KEY = "rate-portal-ulverscroft";
-
-async function saveAll(data) {
-  try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) { console.error("Save failed", e); }
-}
-
-async function loadAll() {
-  try {
-    const r = window.localStorage.getItem(STORAGE_KEY);
-    return r ? JSON.parse(r) : null;
-  } catch(e) { return null; }
+async function api(path, options) {
+  const res = await fetch(path, {
+    method: options?.method || "GET",
+    headers: options?.body ? { "Content-Type": "application/json" } : undefined,
+    body: options?.body ? JSON.stringify(options.body) : undefined,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Request failed: ${res.status}`);
+  }
+  return res.json();
 }
 
 /* ══════════════════════════════════════════════
@@ -315,8 +214,6 @@ const MN_FULL=["January","February","March","April","May","June","July","August"
 function todayISO(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
 function mkGrid(y,m){const f=new Date(y,m,1),l=new Date(y,m+1,0);let s=f.getDay()===0?6:f.getDay()-1;const d=[];for(let i=0;i<s;i++)d.push(null);for(let i=1;i<=l.getDate();i++)d.push(i);while(d.length%7)d.push(null);return d;}
 function fd(y,m,d){return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;}
-function nextId(items){return items.length?Math.max(...items.map(i=>i.id))+1:1;}
-function nextStrId(list,prefix){let n=list.length+1;while(list.some(x=>x.id===`${prefix}${n}`))n++;return `${prefix}${n}`;}
 function fmtTs(ts){ try { return new Date(ts).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); } catch(e){ return ts; } }
 
 /* ══════════════════════════════════════════════
@@ -1648,14 +1545,16 @@ export default function Portal() {
   const [adminInput, setAdminInput] = useState("");
   const [showLogin, setShowLogin] = useState(false);
 
-  const [items, setItems] = useState(DEFAULT_ITEMS);
-  const [strategies, setStrategies] = useState(DEFAULT_STRATEGIES);
-  const [monthSummary, setMonthSummary] = useState(DEFAULT_MONTH_SUMMARY);
-  const [events, setEvents] = useState(DEFAULT_EVENTS);
-  const [reports, setReports] = useState(DEFAULT_REPORTS);
-  const [deliverables, setDeliverables] = useState(DEFAULT_DELIVERABLES);
-  const [areas] = useState(DEFAULT_AREAS);
-  const [themes] = useState(DEFAULT_THEMES);
+  const [loginError, setLoginError] = useState("");
+
+  const [items, setItems] = useState([]);
+  const [strategies, setStrategies] = useState([]);
+  const [monthSummary, setMonthSummary] = useState({enabled:false, text:""});
+  const [events, setEvents] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [deliverables, setDeliverables] = useState([]);
+  const [areas, setAreas] = useState({});
+  const [themes, setThemes] = useState({});
 
   const [tab, setTab] = useState("calendar");
   const [fArea, setFA] = useState(null);
@@ -1671,116 +1570,194 @@ export default function Portal() {
   // Load data
   useEffect(() => {
     (async () => {
-      const data = await loadAll();
-      if (data) {
-        if (data.items) setItems(data.items);
-        if (data.strategies) setStrategies(data.strategies);
-        if (data.monthSummary) setMonthSummary(data.monthSummary);
-        if (data.events) setEvents(data.events);
-        if (data.reports) setReports(data.reports);
-        if (data.deliverables) setDeliverables(data.deliverables);
+      try {
+        const data = await api("/api/portal");
+        setAdmin(data.admin);
+        setAreas(data.areas);
+        setThemes(data.themes);
+        setItems(data.items);
+        setStrategies(data.strategies);
+        setMonthSummary(data.monthSummary);
+        setEvents(data.events);
+        setReports(data.reports);
+        setDeliverables(data.deliverables);
+      } catch (e) {
+        console.error("Failed to load portal data", e);
       }
       setLoading(false);
     })();
   }, []);
 
-  // Save on changes
-  const save = useCallback(async (patch) => {
-    await saveAll({ items, strategies, monthSummary, events, reports, deliverables, ...patch });
-  }, [items, strategies, monthSummary, events, reports, deliverables]);
+  async function handleLoginSubmit() {
+    setLoginError("");
+    try {
+      await api("/api/admin/login", {method:"POST", body:{passcode:adminInput}});
+      setAdmin(true);
+      setShowLogin(false);
+      setAdminInput("");
+      const data = await api("/api/portal"); // re-fetch so draft reports become visible
+      setReports(data.reports);
+    } catch (e) {
+      setLoginError("Incorrect passcode");
+    }
+  }
+  async function handleLogout() {
+    await api("/api/admin/logout", {method:"POST"}).catch(()=>{});
+    setAdmin(false);
+    setReports(rs => rs.filter(r=>r.status==="published"));
+  }
 
-  function updateItems(newItems) { setItems(newItems); save({items:newItems}); }
-  function updateStrategies(ns) { setStrategies(ns); save({strategies:ns}); }
-  function updateMonthSummary(ns) { setMonthSummary(ns); save({monthSummary:ns}); }
-  function updateReports(ns) { setReports(ns); save({reports:ns}); }
-  function updateDeliverables(ns) { setDeliverables(ns); save({deliverables:ns}); }
+  function patchItemLocal(id, patch) { setItems(prev => prev.map(i => i.id===id ? {...i, ...patch} : i)); }
+  async function persistItemPatch(id, patch) {
+    try {
+      const updated = await api(`/api/items/${id}`, {method:"PATCH", body:patch});
+      setItems(prev => prev.map(i => i.id===id ? updated : i));
+      if (sel?.id===id) setSel(updated);
+    } catch (e) { console.error("Failed to save item", e); }
+  }
 
   function approve(id, ns, commentText) {
     const author = admin ? "Rate Team" : "Client";
-    const ni = items.map(i => {
-      if (i.id !== id) return i;
-      const histEntry = {id:`h${Date.now()}`, ts:new Date().toISOString(), from:i.state, to:ns, by:author};
-      const newComments = commentText ? [...(i.comments||[]), {id:`c${Date.now()}`, author, ts:new Date().toISOString(), text:commentText}] : (i.comments||[]);
-      return {...i, state:ns, history:[...(i.history||[]), histEntry], comments:newComments};
-    });
-    updateItems(ni);
-    if (sel?.id===id) setSel(ni.find(i=>i.id===id));
+    const target = items.find(i=>i.id===id);
+    if (!target) return;
+    const histEntry = {id:`h${Date.now()}`, ts:new Date().toISOString(), from:target.state, to:ns, by:author};
+    const newComments = commentText ? [...(target.comments||[]), {id:`c${Date.now()}`, author, ts:new Date().toISOString(), text:commentText}] : (target.comments||[]);
+    const patch = {state:ns, history:[...(target.history||[]), histEntry], comments:newComments};
+    patchItemLocal(id, patch);
+    if (sel?.id===id) setSel(s=>({...s, ...patch}));
+    persistItemPatch(id, patch);
   }
 
   function addComment(id, text) {
     const author = admin ? "Rate Team" : "Client";
-    const ni = items.map(i => i.id===id ? {...i, comments:[...(i.comments||[]), {id:`c${Date.now()}`, author, ts:new Date().toISOString(), text}]} : i);
-    updateItems(ni);
-    if (sel?.id===id) setSel(ni.find(i=>i.id===id));
+    const target = items.find(i=>i.id===id);
+    if (!target) return;
+    const patch = {comments:[...(target.comments||[]), {id:`c${Date.now()}`, author, ts:new Date().toISOString(), text}]};
+    patchItemLocal(id, patch);
+    if (sel?.id===id) setSel(s=>({...s, ...patch}));
+    persistItemPatch(id, patch);
   }
 
   function addChecklistItem(id, text, ownerType, ownerName) {
-    const ni = items.map(i => i.id===id ? {...i, checklist:[...(i.checklist||[]), {id:`cl${Date.now()}`, text, ownerType, ownerName, done:false}]} : i);
-    updateItems(ni);
-    if (sel?.id===id) setSel(ni.find(i=>i.id===id));
+    const target = items.find(i=>i.id===id);
+    if (!target) return;
+    const patch = {checklist:[...(target.checklist||[]), {id:`cl${Date.now()}`, text, ownerType, ownerName, done:false}]};
+    patchItemLocal(id, patch);
+    if (sel?.id===id) setSel(s=>({...s, ...patch}));
+    persistItemPatch(id, patch);
   }
   function toggleChecklistItem(id, clId) {
-    const ni = items.map(i => i.id===id ? {...i, checklist:(i.checklist||[]).map(c=>c.id===clId?{...c,done:!c.done}:c)} : i);
-    updateItems(ni);
-    if (sel?.id===id) setSel(ni.find(i=>i.id===id));
+    const target = items.find(i=>i.id===id);
+    if (!target) return;
+    const patch = {checklist:(target.checklist||[]).map(c=>c.id===clId?{...c,done:!c.done}:c)};
+    patchItemLocal(id, patch);
+    if (sel?.id===id) setSel(s=>({...s, ...patch}));
+    persistItemPatch(id, patch);
   }
   function removeChecklistItem(id, clId) {
-    const ni = items.map(i => i.id===id ? {...i, checklist:(i.checklist||[]).filter(c=>c.id!==clId)} : i);
-    updateItems(ni);
-    if (sel?.id===id) setSel(ni.find(i=>i.id===id));
+    const target = items.find(i=>i.id===id);
+    if (!target) return;
+    const patch = {checklist:(target.checklist||[]).filter(c=>c.id!==clId)};
+    patchItemLocal(id, patch);
+    if (sel?.id===id) setSel(s=>({...s, ...patch}));
+    persistItemPatch(id, patch);
   }
 
-  function handleSaveItem(formData) {
-    if (modal && modal.editing) {
-      const ni = items.map(i => i.id===modal.editing.id ? {...formData, id:modal.editing.id} : i);
-      updateItems(ni);
-      setSel({...formData, id:modal.editing.id});
-    } else {
-      const ni = [...items, {...formData, id:nextId(items), comments:[], history:[]}];
-      updateItems(ni);
-    }
+  async function handleSaveItem(formData) {
     setModal(null);
     setAddDefaults(null);
+    if (modal && modal.editing) {
+      const id = modal.editing.id;
+      patchItemLocal(id, formData);
+      setSel({...formData, id});
+      await persistItemPatch(id, formData);
+    } else {
+      try {
+        const created = await api("/api/items", {method:"POST", body:formData});
+        setItems(prev => [...prev, created]);
+      } catch (e) { console.error("Failed to create item", e); }
+    }
   }
 
-  function handleDeleteItem(id) {
-    updateItems(items.filter(i=>i.id!==id));
+  async function handleDeleteItem(id) {
+    setItems(prev => prev.filter(i=>i.id!==id));
     closePanel();
     setModal(null);
+    try { await api(`/api/items/${id}`, {method:"DELETE"}); }
+    catch (e) { console.error("Failed to delete item", e); }
   }
 
-  function handleSaveStrategy(formData) {
+  async function handleSaveStrategy(formData) {
+    setModal(null);
     if (modal && modal.editingStrategy) {
-      updateStrategies(strategies.map(s => s.id===modal.editingStrategy.id ? {...formData, id:modal.editingStrategy.id} : s));
+      const id = modal.editingStrategy.id;
+      setStrategies(prev => prev.map(s=>s.id===id?{...formData,id}:s));
+      try {
+        const updated = await api(`/api/strategies/${id}`, {method:"PATCH", body:formData});
+        setStrategies(prev => prev.map(s=>s.id===id?updated:s));
+      } catch (e) { console.error("Failed to save strategy", e); }
     } else {
-      updateStrategies([...strategies, {...formData, id:nextStrId(strategies,"s")}]);
+      try {
+        const created = await api("/api/strategies", {method:"POST", body:formData});
+        setStrategies(prev => [...prev, created]);
+      } catch (e) { console.error("Failed to create strategy", e); }
     }
+  }
+
+  async function handleDeleteStrategy(id) {
+    setStrategies(prev => prev.filter(s=>s.id!==id));
     setModal(null);
+    try { await api(`/api/strategies/${id}`, {method:"DELETE"}); }
+    catch (e) { console.error("Failed to delete strategy", e); }
   }
 
-  function handleDeleteStrategy(id) {
-    updateStrategies(strategies.filter(s=>s.id!==id));
-    setModal(null);
+  async function updateMonthSummary(ns) {
+    setMonthSummary(ns);
+    try {
+      const updated = await api("/api/month-summary", {method:"PATCH", body:ns});
+      setMonthSummary(updated);
+    } catch (e) { console.error("Failed to save month summary", e); }
   }
 
-  function addDeliverable(draft) { updateDeliverables([...deliverables, {...draft, id:`dlv${Date.now()}`}]); }
-  function updateDeliverable(id, patch) { updateDeliverables(deliverables.map(d=>d.id===id?{...d,...patch}:d)); }
-  function removeDeliverable(id) { updateDeliverables(deliverables.filter(d=>d.id!==id)); }
-
-  function createDraftReport() {
-    const d = new Date();
-    const ni = [...reports, {
-      id:`rpt-${d.getFullYear()}-${d.getMonth()}`, year:d.getFullYear(), month:d.getMonth(), status:"draft",
-      summary:{narrative:"", stats:[]},
-      socialGroups:[], socialAnalysis:"",
-      website:{stats:[], acquisition:[], topPages:[], notes:""},
-      content:{campaignsContent:"", assetsCreated:""},
-      projectsSnapshot: deliverables,
-    }];
-    updateReports(ni);
+  async function addDeliverable(draft) {
+    try {
+      const created = await api("/api/deliverables", {method:"POST", body:draft});
+      setDeliverables(prev => [...prev, created]);
+    } catch (e) { console.error("Failed to add deliverable", e); }
   }
-  function updateReport(id, updated) { updateReports(reports.map(r=>r.id===id?updated:r)); }
-  function publishReport(id) { updateReports(reports.map(r=>r.id===id?{...r, status:"published", projectsSnapshot:deliverables}:r)); }
+  async function updateDeliverable(id, patch) {
+    setDeliverables(prev => prev.map(d=>d.id===id?{...d,...patch}:d));
+    try {
+      const updated = await api(`/api/deliverables/${id}`, {method:"PATCH", body:patch});
+      setDeliverables(prev => prev.map(d=>d.id===id?updated:d));
+    } catch (e) { console.error("Failed to update deliverable", e); }
+  }
+  async function removeDeliverable(id) {
+    setDeliverables(prev => prev.filter(d=>d.id!==id));
+    try { await api(`/api/deliverables/${id}`, {method:"DELETE"}); }
+    catch (e) { console.error("Failed to remove deliverable", e); }
+  }
+
+  async function createDraftReport() {
+    try {
+      const created = await api("/api/reports", {method:"POST"});
+      setReports(prev => [...prev, created]);
+    } catch (e) { console.error("Failed to create draft report", e); }
+  }
+  async function updateReport(id, updated) {
+    setReports(prev => prev.map(r=>r.id===id?updated:r));
+    try {
+      const saved = await api(`/api/reports/${id}`, {method:"PATCH", body:updated});
+      setReports(prev => prev.map(r=>r.id===id?saved:r));
+    } catch (e) { console.error("Failed to save report", e); }
+  }
+  async function publishReport(id) {
+    setReports(prev => prev.map(r=>r.id===id?{...r, status:"published"}:r));
+    try {
+      const saved = await api(`/api/reports/${id}`, {method:"PATCH", body:{status:"published"}});
+      setReports(prev => prev.map(r=>r.id===id?saved:r));
+    } catch (e) { console.error("Failed to publish report", e); }
+  }
 
   function openItem(it) { setSelEvent(null); setSelStack([]); setSel(it); }
   function selectLinked(li) { setSelEvent(null); setSelStack(s => sel ? [...s, sel] : s); setSel(li); }
@@ -1811,16 +1788,19 @@ export default function Portal() {
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             {admin&&(<span style={{fontSize:9,fontWeight:700,color:"#f59e42",background:"#f59e4218",padding:"3px 8px",borderRadius:4}}>ADMIN</span>)}
-            <button onClick={()=>{if(admin){setAdmin(false);}else{setShowLogin(!showLogin);}}} style={{background:"#222",borderRadius:8,padding:"5px 12px",border:"none",cursor:"pointer"}}>
+            <button onClick={()=>{if(admin){handleLogout();}else{setShowLogin(!showLogin);setLoginError("");}}} style={{background:"#222",borderRadius:8,padding:"5px 12px",border:"none",cursor:"pointer"}}>
               <span style={{fontSize:13,fontWeight:900,color:R.white,letterSpacing:2}}>RATE</span>
             </button>
           </div>
         </div>
         {/* Admin login */}
         {showLogin&&!admin&&(
-          <div style={{display:"flex",gap:8,paddingBottom:12}}>
-            <input type="password" placeholder="Admin code" value={adminInput} onChange={e=>setAdminInput(e.target.value)} style={{...inputStyle,width:140,fontSize:11,background:"#222",color:R.white,border:"1px solid #444"}}/>
-            <button onClick={()=>{if(adminInput==="rate2026"){setAdmin(true);setShowLogin(false);setAdminInput("");}}} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"5px 12px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Go</button>
+          <div style={{paddingBottom:12}}>
+            <div style={{display:"flex",gap:8}}>
+              <input type="password" placeholder="Admin code" value={adminInput} onChange={e=>setAdminInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")handleLoginSubmit();}} style={{...inputStyle,width:140,fontSize:11,background:"#222",color:R.white,border:"1px solid #444"}}/>
+              <button onClick={handleLoginSubmit} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"5px 12px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Go</button>
+            </div>
+            {loginError&&(<div style={{fontSize:10,color:"#f87171",marginTop:6}}>{loginError}</div>)}
           </div>
         )}
         {/* Tabs */}

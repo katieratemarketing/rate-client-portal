@@ -196,6 +196,85 @@ const DEFAULT_MONTH_SUMMARY = {
   text:"Leverage the Agatha Christie exhibition as a tentpole across Ulverscroft and Trade. Drive uLibrary retention through Book Club engagement. Build consistent social presence for The Reading House.",
 };
 
+/* ══════════════════════════════════════════════
+   DELIVERABLES / ONGOING PROJECTS
+   ══════════════════════════════════════════════ */
+const DELIVERABLE_STATUS = {
+  on_hold:{l:"On Hold",c:"#71717a"},
+  in_planning:{l:"In Planning",c:"#3b82f6"},
+  in_progress:{l:"In Progress",c:"#22c55e"},
+  complete:{l:"Complete",c:"#8b5cf6"},
+};
+
+const DEFAULT_DELIVERABLES = [
+  {id:"dlv1",title:"CRM Data Investigation",description:"Auditing existing customer data before committing to a CRM platform. Checking into available data and segmentation requirements.",status:"on_hold",statusNote:"Waiting for Lisa to return from annual leave",area:""},
+  {id:"dlv2",title:"Sector Landing Pages",description:"New dedicated pages for care homes, prisons and hospitals to support new business development. Research and brief completed; copy pending with Katie.",status:"in_planning",statusNote:"Brief complete, awaiting build",area:""},
+  {id:"dlv3",title:"Accessible Publishing Conference",description:"CPI Conference planning underway. Sponsorship includes exhibition table, branding, and a speaking slot.",status:"in_progress",statusNote:"Planning and prep",area:""},
+  {id:"dlv4",title:"Other Team Activity",description:"Jenny: Amazon implementation. Daniel: Trade relations, general sales promotions and strategy including Spotify partnership calls.",status:"in_progress",statusNote:"In progress across the team",area:""},
+];
+
+/* ══════════════════════════════════════════════
+   MONTHLY REPORTS
+   ══════════════════════════════════════════════ */
+const DEFAULT_REPORTS = [
+  {
+    id:"rpt-2026-06",year:2026,month:6,status:"published",
+    summary:{
+      narrative:"July saw consistent output across social content, partner graphics packages, and book highlights. A new social video format was trialled and partner campaign activity included the Boldwood Disability Pride Giveaway.\n\nLinkedIn was the strongest social channel, with +8 followers and 789 impressions building on May/June's growth. The Reading House Facebook outperformed Ulverscroft's page on impressions, showing an appetite for a B2C audience. Website traffic dipped slightly (3.9% in active users), consistent with summer seasonality.\n\nThe strategy has been more reactive as the business navigates internal changes, we are working towards some key announcements. It's important to also consider longer term brand strategy which may need groundwork to implement.",
+      stats:[
+        {label:"Active Users",value:"21K",change:"3.9%",dir:"down"},
+        {label:"Best Growth Channel",value:"+8",change:"Best growth channel",dir:"up"},
+        {label:"Reading House Impressions",value:"1,116",change:"11 posts published",dir:"up"},
+        {label:"Total Sessions",value:"22K",change:"3.1%",dir:"down"},
+      ],
+    },
+    socialGroups:[
+      {id:"sg1",brand:"ulverscroft",platform:"Facebook",metrics:[
+        {label:"Page Fans",value:"882 (+4)"},{label:"Page Impressions",value:"983"},{label:"Post Engagements",value:"26"},
+        {label:"Posts Published",value:"4"},{label:"Page Views",value:"167"},{label:"New Fans",value:"5 (1 unlike)"},
+      ]},
+      {id:"sg2",brand:"readinghouse",platform:"Facebook",metrics:[
+        {label:"Page Fans",value:"490 (+2)"},{label:"Page Impressions",value:"1,116"},{label:"Post Engagements",value:"24"},
+        {label:"Posts Published",value:"11"},{label:"Page Views",value:"51"},{label:"New Fans",value:"3 (0 unlikes)"},
+      ]},
+      {id:"sg3",brand:"ulibrary",platform:"Instagram",metrics:[
+        {label:"Followers",value:"742"},{label:"Reach",value:"695"},{label:"New Followers",value:"+7 (1,785 total)"},
+      ]},
+      {id:"sg4",brand:"ulverscroft",platform:"LinkedIn",metrics:[
+        {label:"Followers",value:"575"},{label:"Impressions",value:"789 (21 clicks, 36 likes)"},
+      ]},
+    ],
+    socialAnalysis:"LinkedIn was the strongest channel this month with +8 followers and 789 impressions, continuing the upward trajectory from the May-June period (+3 followers, 565 impressions).\nThe Reading House Facebook outperformed Ulverscroft's page on impressions (1,116 vs 983) despite a smaller audience.\nuLibrary Instagram remains relatively flat (+1 follower). Content is being produced consistently (7 new posts) but follower growth is a continued challenge. This could be due to fairly generic content which is focused on two different markets.",
+    website:{
+      stats:[
+        {label:"Active Users",value:"21K",change:"3.9%",dir:"down"},
+        {label:"Sessions",value:"100K",change:"4.6%",dir:"down"},
+        {label:"Page Views",value:"22K",change:"3.1%",dir:"down"},
+      ],
+      acquisition:[
+        {channel:"Direct",totalUsers:"20,224",newUsers:"21,605",returning:"631",avgEngagement:"19s",pctTotal:"96.14%"},
+        {channel:"Organic Search",totalUsers:"665",newUsers:"699",returning:"45",avgEngagement:"23s",pctTotal:"3.16%"},
+        {channel:"Referral",totalUsers:"85",newUsers:"84",returning:"8",avgEngagement:"12s",pctTotal:"0.40%"},
+        {channel:"Organic Social",totalUsers:"41",newUsers:"41",returning:"1",avgEngagement:"3s",pctTotal:"0.19%"},
+        {channel:"AI Assistant",totalUsers:"6",newUsers:"6",returning:"0",avgEngagement:"6s",pctTotal:"0.03%"},
+      ],
+      topPages:[
+        {page:"Login",views:"9,745",pctTotal:"28.94%",users:"9,040",avgEngagement:"1s"},
+        {page:"Search",views:"4,668",pctTotal:"13.86%",users:"2,091",avgEngagement:"38s"},
+        {page:"Large Print / Audiobooks / eBooks",views:"3,572",pctTotal:"10.61%",users:"1,908",avgEngagement:"17s"},
+        {page:"Browse",views:"3,291",pctTotal:"9.77%",users:"1,686",avgEngagement:"56s"},
+        {page:"Creating a Literary Lifeline",views:"1,944",pctTotal:"5.77%",users:"1,652",avgEngagement:"8s"},
+      ],
+      notes:"Read Your Way page: 148 views (98 users, 39s avg engagement) + Introducing Read Your Way: 47 views\nCheckout flow: 177 (Your Details) > 175 (Pay) > 170 (Delivery) > 119 (Order Complete)\nPublishing page: 229 views (213 users) / Our History: 103 views (90 users)",
+    },
+    content:{
+      campaignsContent:"Ulverscroft Audio Now Available on Overdrive email announcement\nNew social video format trialled\nBoldwood Disability Pride Giveaway: Partner campaign\nMonthly newsletters: uLibrary + The Reading House\nSocial media graphics packages distributed to partners\nuLibrary book club content\nLP + Audio highlights: Ironwood, Land",
+      assetsCreated:"BatchLine blog post and press release\nJamacia Inn PR\nSolus - once the Australian library to test then we can push.",
+    },
+    projectsSnapshot:DEFAULT_DELIVERABLES,
+  },
+];
+
 const DEFAULT_ITEMS = [
   {id:1,date:"2026-08-03",area:"ulverscroft",ch:"social",title:"Shadow of the Wind – carousel",state:"approved",platform:"IG / FB",notes:"Cover art + pull quotes",theme:"newrelease",url:"",comments:[],history:[],checklist:[]},
   {id:2,date:"2026-08-05",area:"ulibrary",ch:"email",title:"August Book Club newsletter",state:"review",platform:"Kit",notes:"Black History Month feature",theme:"",url:"",comments:[],history:[],checklist:[]},
@@ -1172,19 +1251,390 @@ function CalView({items, events, areas, fArea, fTypes, fStates, onSelect, sel, a
 }
 
 /* ══════════════════════════════════════════════
+   REPORTING — shared helpers
+   ══════════════════════════════════════════════ */
+const removeBtnStyle = {background:"none",border:"none",cursor:"pointer",color:"#a1a1aa",fontSize:15,padding:0,flexShrink:0};
+const addBtnStyle = {background:"none",border:`1px dashed ${R.mid}`,borderRadius:8,padding:"7px 12px",fontSize:11,fontWeight:700,color:R.dark,cursor:"pointer"};
+function linesToText(lines){ return (lines||[]).join("\n"); }
+function textToLines(text){ return text.split("\n").map(l=>l.trim()).filter(Boolean); }
+
+function BulletList({text, muted}) {
+  const lines = textToLines(text);
+  if (!lines.length) return null;
+  return (
+    <ul style={{margin:0,paddingLeft:18,fontSize:13,color:muted?R.dark:"#3f3f46",lineHeight:1.7}}>
+      {lines.map((l,i)=>(<li key={i}>{l}</li>))}
+    </ul>
+  );
+}
+
+function HeroStats({stats, editable, onChange}) {
+  const upd = (i,k,v) => onChange(stats.map((s,idx)=>idx===i?{...s,[k]:v}:s));
+  const add = () => onChange([...stats, {label:"",value:"",change:"",dir:"up"}]);
+  const remove = (i) => onChange(stats.filter((_,idx)=>idx!==i));
+  return (
+    <div style={{display:"flex",flexWrap:"wrap",gap:28,marginTop:8}}>
+      {stats.map((s,i)=>(
+        <div key={i} style={{minWidth:130}}>
+          {editable ? (
+            <div style={{display:"flex",flexDirection:"column",gap:4}}>
+              <input style={{...inputStyle,fontSize:20,fontWeight:800}} value={s.value} onChange={e=>upd(i,"value",e.target.value)} placeholder="21K"/>
+              <input style={{...inputStyle,fontSize:11}} value={s.label} onChange={e=>upd(i,"label",e.target.value)} placeholder="What this measures"/>
+              <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                <select style={{...selectStyle,width:56,fontSize:11,padding:"6px 4px"}} value={s.dir} onChange={e=>upd(i,"dir",e.target.value)}>
+                  <option value="up">↑</option><option value="down">↓</option>
+                </select>
+                <input style={{...inputStyle,fontSize:11}} value={s.change} onChange={e=>upd(i,"change",e.target.value)} placeholder="3.9% vs prev"/>
+                <button onClick={()=>remove(i)} style={removeBtnStyle}>×</button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div style={{fontSize:28,fontWeight:800,color:R.black,letterSpacing:-.5}}>{s.value}</div>
+              {s.label && <div style={{fontSize:10,color:R.dark,marginTop:2,fontWeight:600}}>{s.label}</div>}
+              <div style={{fontSize:11,fontWeight:700,color:s.dir==="down"?"#dc2626":"#16a34a",marginTop:6}}>{s.dir==="down"?"↓":"↑"} {s.change}</div>
+            </div>
+          )}
+        </div>
+      ))}
+      {editable && (<button onClick={add} style={{...addBtnStyle,alignSelf:"flex-start"}}>+ Add stat</button>)}
+    </div>
+  );
+}
+
+function EditableTable({rows, columns, editable, onChange}) {
+  const upd = (i,key,val) => onChange(rows.map((r,idx)=>idx===i?{...r,[key]:val}:r));
+  const add = () => onChange([...rows, columns.reduce((o,c)=>({...o,[c.key]:""}),{})]);
+  const remove = (i) => onChange(rows.filter((_,idx)=>idx!==i));
+  if (!editable && !rows.length) return null;
+  return (
+    <div style={{overflowX:"auto"}}>
+      <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,minWidth:editable?520:0}}>
+        <thead>
+          <tr>
+            {columns.map(c=>(<th key={c.key} style={{textAlign:"left",padding:"7px 10px",background:"#27272a",color:R.white,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.4}}>{c.label}</th>))}
+            {editable && <th style={{background:"#27272a"}}/>}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r,i)=>(
+            <tr key={i} style={{borderBottom:`1px solid ${R.mid}`}}>
+              {columns.map(c=>(
+                <td key={c.key} style={{padding:editable?"4px 6px":"8px 10px"}}>
+                  {editable ? (<input style={{...inputStyle,fontSize:12,padding:"5px 7px"}} value={r[c.key]||""} onChange={e=>upd(i,c.key,e.target.value)}/>) : (<span style={{color:"#3f3f46"}}>{r[c.key]}</span>)}
+                </td>
+              ))}
+              {editable && (<td style={{padding:"4px 6px"}}><button onClick={()=>remove(i)} style={removeBtnStyle}>×</button></td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {editable && (<button onClick={add} style={{...addBtnStyle,marginTop:8}}>+ Add row</button>)}
+    </div>
+  );
+}
+
+function SocialGroupsEditor({groups, areas, editable, onChange}) {
+  const updGroup = (i,k,v) => onChange(groups.map((g,idx)=>idx===i?{...g,[k]:v}:g));
+  const updMetrics = (i,metrics) => updGroup(i,"metrics",metrics);
+  const addGroup = () => onChange([...groups, {id:`sg${Date.now()}`,brand:Object.keys(areas)[0],platform:"",metrics:[]}]);
+  const removeGroup = (i) => onChange(groups.filter((_,idx)=>idx!==i));
+
+  if (!editable && !groups.length) return null;
+
+  return (
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:16}}>
+      {groups.map((g,i)=>{
+        const a = areas[g.brand] || {label:g.brand,color:R.dark};
+        return (
+          <div key={g.id} style={{background:R.grey,borderRadius:12,padding:16}}>
+            {editable ? (
+              <div style={{display:"flex",gap:8,marginBottom:10}}>
+                <select style={{...selectStyle,fontSize:12}} value={g.brand} onChange={e=>updGroup(i,"brand",e.target.value)}>
+                  {Object.entries(areas).map(([k,v])=>(<option key={k} value={k}>{v.label}</option>))}
+                </select>
+                <input style={{...inputStyle,fontSize:12}} value={g.platform} onChange={e=>updGroup(i,"platform",e.target.value)} placeholder="Platform e.g. Facebook"/>
+                <button onClick={()=>removeGroup(i)} style={removeBtnStyle}>×</button>
+              </div>
+            ) : (
+              <div style={{fontSize:14,fontWeight:800,color:R.black,marginBottom:10}}>{a.label} <span style={{color:R.dark,fontWeight:600}}>// {g.platform}</span></div>
+            )}
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+              <tbody>
+                {g.metrics.map((m,mi)=>(
+                  <tr key={mi} style={{borderBottom:`1px solid ${R.mid}`}}>
+                    {editable ? (
+                      <>
+                        <td style={{padding:"4px 4px 4px 0"}}><input style={{...inputStyle,fontSize:12,padding:"5px 7px"}} value={m.label} onChange={e=>updMetrics(i,g.metrics.map((x,xi)=>xi===mi?{...x,label:e.target.value}:x))} placeholder="Metric"/></td>
+                        <td style={{padding:"4px 0"}}><input style={{...inputStyle,fontSize:12,padding:"5px 7px"}} value={m.value} onChange={e=>updMetrics(i,g.metrics.map((x,xi)=>xi===mi?{...x,value:e.target.value}:x))} placeholder="Value"/></td>
+                        <td style={{width:24}}><button onClick={()=>updMetrics(i,g.metrics.filter((_,xi)=>xi!==mi))} style={removeBtnStyle}>×</button></td>
+                      </>
+                    ) : (
+                      <><td style={{padding:"7px 0",fontWeight:700,color:R.black,width:"55%"}}>{m.label}</td><td style={{padding:"7px 0",color:"#3f3f46"}}>{m.value}</td></>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {editable && (<button onClick={()=>updMetrics(i,[...g.metrics,{label:"",value:""}])} style={{...addBtnStyle,marginTop:8,width:"100%"}}>+ Add metric</button>)}
+          </div>
+        );
+      })}
+      {editable && (<button onClick={addGroup} style={{...addBtnStyle,minHeight:80}}>+ Add platform / brand group</button>)}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   DELIVERABLES / ONGOING PROJECTS TRACKER
+   ══════════════════════════════════════════════ */
+function DeliverablesTracker({deliverables, areas, admin, onAdd, onUpdate, onRemove}) {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState({title:"",description:"",status:"in_planning",statusNote:"",area:""});
+
+  function submit() {
+    if (!draft.title.trim()) return;
+    onAdd(draft);
+    setDraft({title:"",description:"",status:"in_planning",statusNote:"",area:""});
+    setAdding(false);
+  }
+
+  return (
+    <div style={{marginBottom:28}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <Eyebrow>Ongoing Projects &amp; Activity</Eyebrow>
+        {admin && !adding && (<button onClick={()=>setAdding(true)} style={{background:R.black,color:R.white,border:"none",borderRadius:8,padding:"6px 14px",fontSize:11,fontWeight:700,cursor:"pointer"}}>+ New Project</button>)}
+      </div>
+      {adding && (
+        <div style={{background:R.white,border:`1px solid ${R.mid}`,borderRadius:12,padding:16,marginBottom:16}}>
+          <Field label="Title"><input style={inputStyle} value={draft.title} onChange={e=>setDraft(p=>({...p,title:e.target.value}))} placeholder="e.g. CRM Data Investigation"/></Field>
+          <Field label="Description"><textarea style={{...inputStyle,minHeight:60,resize:"vertical"}} value={draft.description} onChange={e=>setDraft(p=>({...p,description:e.target.value}))}/></Field>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            <Field label="Status">
+              <select style={selectStyle} value={draft.status} onChange={e=>setDraft(p=>({...p,status:e.target.value}))}>
+                {Object.entries(DELIVERABLE_STATUS).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
+              </select>
+            </Field>
+            <Field label="Brand (optional)">
+              <select style={selectStyle} value={draft.area} onChange={e=>setDraft(p=>({...p,area:e.target.value}))}>
+                <option value="">All / whole account</option>
+                {Object.entries(areas).map(([k,v])=>(<option key={k} value={k}>{v.label}</option>))}
+              </select>
+            </Field>
+          </div>
+          <Field label="Status note"><input style={inputStyle} value={draft.statusNote} onChange={e=>setDraft(p=>({...p,statusNote:e.target.value}))} placeholder="e.g. Waiting for Lisa to return from annual leave"/></Field>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={submit} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"9px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>Add Project</button>
+            <button onClick={()=>setAdding(false)} style={{padding:"9px 16px",background:R.white,color:R.dark,border:`1px solid ${R.mid}`,borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer"}}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {deliverables.length===0 && !adding && (<div style={{fontSize:12,color:R.dark,padding:20,textAlign:"center",background:R.grey,borderRadius:12}}>No ongoing projects tracked yet.</div>)}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:16}}>
+        {deliverables.map(d=>{
+          const st = DELIVERABLE_STATUS[d.status]||{};
+          return (
+            <div key={d.id} style={{background:R.grey,borderRadius:12,padding:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,marginBottom:6}}>
+                <div style={{fontSize:14,fontWeight:800,color:R.black}}>{d.title}</div>
+                {admin && (<button onClick={()=>onRemove(d.id)} style={removeBtnStyle}>×</button>)}
+              </div>
+              {d.area && (<div style={{marginBottom:6}}><ATag a={d.area} areas={areas} sm/></div>)}
+              <div style={{fontSize:12,color:"#3f3f46",lineHeight:1.6,marginBottom:10}}>{d.description}</div>
+              {admin ? (
+                <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                  <select style={{...selectStyle,fontSize:11,padding:"5px 7px",width:"auto"}} value={d.status} onChange={e=>onUpdate(d.id,{status:e.target.value})}>
+                    {Object.entries(DELIVERABLE_STATUS).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
+                  </select>
+                  <input style={{...inputStyle,fontSize:11,padding:"5px 7px"}} value={d.statusNote} onChange={e=>onUpdate(d.id,{statusNote:e.target.value})} placeholder="Status note"/>
+                </div>
+              ) : (
+                <div style={{fontSize:11,fontWeight:700,color:st.c}}>{st.l}{d.statusNote?`: ${d.statusNote}`:""}</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
    REPORTING
    ══════════════════════════════════════════════ */
-function ReportingView() {
+function ReportSectionHeading({children}) {
+  return (<h3 style={{fontSize:15,fontWeight:800,color:R.black,margin:"0 0 14px",paddingBottom:8,borderBottom:`2px solid ${R.black}`}}>{children}</h3>);
+}
+
+const REPORT_ACQ_COLS = [
+  {key:"channel",label:"Channel"},{key:"totalUsers",label:"Total Users"},{key:"newUsers",label:"New Users"},
+  {key:"returning",label:"Returning"},{key:"avgEngagement",label:"Avg Engagement"},{key:"pctTotal",label:"% of Total"},
+];
+const REPORT_PAGES_COLS = [
+  {key:"page",label:"Page"},{key:"views",label:"Views"},{key:"pctTotal",label:"% Total"},
+  {key:"users",label:"Users"},{key:"avgEngagement",label:"Avg Engagement"},
+];
+
+/* ══════════════════════════════════════════════
+   REPORT — editor (admin) + display (client), same component
+   ══════════════════════════════════════════════ */
+function ReportBody({report, areas, editable, onChange}) {
+  const upd = (k,v) => onChange({...report,[k]:v});
+  const updSummary = (k,v) => upd("summary",{...report.summary,[k]:v});
+  const updWebsite = (k,v) => upd("website",{...report.website,[k]:v});
+  const updContent = (k,v) => upd("content",{...report.content,[k]:v});
+
   return (
-    <div style={{maxWidth:680}}>
-      <div style={{background:R.white,borderRadius:16,padding:36,textAlign:"center",border:`1px solid ${R.mid}`}}>
-        <div style={{width:48,height:48,borderRadius:"50%",background:R.lime+"30",margin:"0 auto 12px",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{width:16,height:16,borderRadius:"50%",background:R.lime}}/></div>
-        <h3 style={{fontSize:17,fontWeight:800,color:R.black,marginBottom:6}}>August Report</h3>
-        <p style={{fontSize:12,color:R.dark,marginBottom:20}}>Available from 1 September</p>
-        <div style={{display:"flex",gap:8,justifyContent:"center",flexWrap:"wrap"}}>
-          {["July 2026","June 2026"].map(m=>(<span key={m} style={{fontSize:11,color:R.dark,background:R.grey,padding:"6px 12px",borderRadius:8,cursor:"pointer"}}>{m}</span>))}
+    <div>
+      <div style={{marginBottom:36}}>
+        <ReportSectionHeading>Summary</ReportSectionHeading>
+        {editable ? (
+          <textarea style={{...inputStyle,minHeight:120,resize:"vertical",lineHeight:1.6}} value={report.summary.narrative} onChange={e=>updSummary("narrative",e.target.value)} placeholder="Overview narrative — separate paragraphs with a blank line"/>
+        ) : (
+          report.summary.narrative.split("\n\n").map((p,i)=>(<p key={i} style={{fontSize:13,color:"#3f3f46",lineHeight:1.7,marginBottom:12}}>{p}</p>))
+        )}
+        <HeroStats stats={report.summary.stats} editable={editable} onChange={s=>updSummary("stats",s)}/>
+      </div>
+
+      <div style={{marginBottom:36}}>
+        <ReportSectionHeading>Social Media</ReportSectionHeading>
+        <SocialGroupsEditor groups={report.socialGroups} areas={areas} editable={editable} onChange={g=>upd("socialGroups",g)}/>
+        <div style={{marginTop:16}}>
+          {editable ? (
+            <Field label="Social Analysis (one point per line)"><textarea style={{...inputStyle,minHeight:80,resize:"vertical"}} value={report.socialAnalysis} onChange={e=>upd("socialAnalysis",e.target.value)}/></Field>
+          ) : (
+            <>
+              <div style={{fontSize:11,fontWeight:700,color:"#52525b",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>Social Analysis</div>
+              <BulletList text={report.socialAnalysis}/>
+            </>
+          )}
         </div>
       </div>
+
+      <div style={{marginBottom:36}}>
+        <ReportSectionHeading>Website Performance</ReportSectionHeading>
+        <HeroStats stats={report.website.stats} editable={editable} onChange={s=>updWebsite("stats",s)}/>
+        <div style={{fontSize:12,fontWeight:800,color:R.black,margin:"20px 0 8px"}}>User Acquisition by Channel</div>
+        <EditableTable rows={report.website.acquisition} columns={REPORT_ACQ_COLS} editable={editable} onChange={r=>updWebsite("acquisition",r)}/>
+        <div style={{fontSize:12,fontWeight:800,color:R.black,margin:"20px 0 8px"}}>Top Pages by Views</div>
+        <EditableTable rows={report.website.topPages} columns={REPORT_PAGES_COLS} editable={editable} onChange={r=>updWebsite("topPages",r)}/>
+        <div style={{marginTop:16}}>
+          {editable ? (
+            <Field label="Also of note (one point per line)"><textarea style={{...inputStyle,minHeight:70,resize:"vertical"}} value={report.website.notes} onChange={e=>updWebsite("notes",e.target.value)}/></Field>
+          ) : (report.website.notes && (
+            <>
+              <div style={{fontSize:11,fontWeight:700,color:"#52525b",textTransform:"uppercase",letterSpacing:.5,marginBottom:8}}>Also of Note</div>
+              <BulletList text={report.website.notes}/>
+            </>
+          ))}
+        </div>
+      </div>
+
+      <div style={{marginBottom:36}}>
+        <ReportSectionHeading>Content &amp; Activity</ReportSectionHeading>
+        <div style={{display:"grid",gridTemplateColumns:editable?"1fr":"repeat(auto-fit,minmax(260px,1fr))",gap:20}}>
+          <div>
+            {editable ? (
+              <Field label="Campaigns &amp; Content (one point per line)"><textarea style={{...inputStyle,minHeight:100,resize:"vertical"}} value={report.content.campaignsContent} onChange={e=>updContent("campaignsContent",e.target.value)}/></Field>
+            ) : (
+              <>
+                <div style={{fontSize:12,fontWeight:800,color:R.black,marginBottom:8}}>Campaigns &amp; Content</div>
+                <BulletList text={report.content.campaignsContent}/>
+              </>
+            )}
+          </div>
+          <div>
+            {editable ? (
+              <Field label="Assets Created / Pending (one point per line)"><textarea style={{...inputStyle,minHeight:80,resize:"vertical"}} value={report.content.assetsCreated} onChange={e=>updContent("assetsCreated",e.target.value)}/></Field>
+            ) : (report.content.assetsCreated && (
+              <>
+                <div style={{fontSize:12,fontWeight:800,color:R.black,marginBottom:8}}>Assets Created</div>
+                <div style={{fontSize:11,color:R.dark,marginBottom:6,fontStyle:"italic"}}>Pending sign-off and scheduling:</div>
+                <BulletList text={report.content.assetsCreated}/>
+              </>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <ReportSectionHeading>Ongoing Projects &amp; Activity</ReportSectionHeading>
+        {(!report.projectsSnapshot || report.projectsSnapshot.length===0) ? (
+          <div style={{fontSize:12,color:R.dark,fontStyle:"italic"}}>No projects were tracked at the time this report was generated.</div>
+        ) : (
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:16}}>
+            {report.projectsSnapshot.map(d=>{
+              const st = DELIVERABLE_STATUS[d.status]||{};
+              return (
+                <div key={d.id} style={{background:R.grey,borderRadius:12,padding:16}}>
+                  <div style={{fontSize:13,fontWeight:800,color:R.black,marginBottom:6}}>{d.title}</div>
+                  <div style={{fontSize:12,color:"#3f3f46",lineHeight:1.6,marginBottom:10}}>{d.description}</div>
+                  <div style={{fontSize:11,fontWeight:700,color:st.c}}>{st.l}{d.statusNote?`: ${d.statusNote}`:""}</div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   REPORTING
+   ══════════════════════════════════════════════ */
+function ReportingView({reports, deliverables, areas, admin, onCreateDraft, onUpdateReport, onPublishReport, onAddDeliverable, onUpdateDeliverable, onRemoveDeliverable}) {
+  const [openId, setOpenId] = useState(null);
+  const sorted = [...reports].sort((a,b)=> (b.year-a.year) || (b.month-a.month));
+  const visible = admin ? sorted : sorted.filter(r=>r.status==="published");
+  const open = reports.find(r=>r.id===openId);
+
+  const today = new Date();
+  const curKey = `${today.getFullYear()}-${today.getMonth()}`;
+  const hasCurrentDraft = reports.some(r=>`${r.year}-${r.month}`===curKey);
+  const isMonthEndOrLater = true; // simulated: in a live app this would check today's date is on/after the last day of the month
+
+  if (open) {
+    return (
+      <div style={{maxWidth:820}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexWrap:"wrap",gap:10}}>
+          <button onClick={()=>setOpenId(null)} style={{display:"flex",alignItems:"center",gap:4,background:"none",border:"none",cursor:"pointer",padding:0,fontSize:12,fontWeight:700,color:R.dark}}>← All reports</button>
+          <div style={{display:"flex",gap:8,alignItems:"center"}}>
+            <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:6,background:open.status==="published"?"#f0fdf4":"#fff7ed",color:open.status==="published"?"#16a34a":"#f59e42"}}>{open.status==="published"?"Published":"Draft"}</span>
+            {admin && open.status==="draft" && (<button onClick={()=>onPublishReport(open.id)} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"7px 14px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Publish to client</button>)}
+          </div>
+        </div>
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:10,fontWeight:700,color:R.lime==="#c8e63e"?"#8ab316":R.dark,textTransform:"uppercase",letterSpacing:1}}>Ulverscroft Group</div>
+          <h2 style={{fontSize:24,fontWeight:800,color:R.black,margin:"2px 0 0",letterSpacing:-.5}}>{MN_FULL[open.month]} {open.year} Report</h2>
+        </div>
+        <ReportBody report={open} areas={areas} editable={admin && open.status==="draft"} onChange={(r)=>onUpdateReport(open.id,r)}/>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{maxWidth:820}}>
+      {admin && !hasCurrentDraft && isMonthEndOrLater && (
+        <div style={{background:R.black,borderRadius:14,padding:"18px 22px",marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
+          <div>
+            <div style={{fontSize:13,fontWeight:800,color:R.white}}>{MN_FULL[today.getMonth()]} {today.getFullYear()} report not started</div>
+            <div style={{fontSize:11,color:"#999",marginTop:2}}>Auto-draft pulls in current projects — metrics still need entering.</div>
+          </div>
+          <button onClick={onCreateDraft} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"9px 16px",fontSize:12,fontWeight:700,cursor:"pointer",flexShrink:0}}>+ Generate Draft</button>
+        </div>
+      )}
+      <Eyebrow>Monthly Reports</Eyebrow>
+      {visible.length===0 && (<div style={{fontSize:12,color:R.dark,padding:24,textAlign:"center",background:R.white,borderRadius:12,border:`1px solid ${R.mid}`,marginBottom:24}}>No reports {admin?"yet":"published yet"}.</div>)}
+      <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:32}}>
+        {visible.map(r=>(
+          <button key={r.id} onClick={()=>setOpenId(r.id)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",width:"100%",background:R.white,border:`1px solid ${R.mid}`,borderRadius:12,padding:"14px 18px",cursor:"pointer",textAlign:"left"}}>
+            <span style={{fontSize:13,fontWeight:700,color:R.black}}>{MN_FULL[r.month]} {r.year}</span>
+            <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:6,background:r.status==="published"?"#f0fdf4":"#fff7ed",color:r.status==="published"?"#16a34a":"#f59e42"}}>{r.status==="published"?"Published":"Draft"}</span>
+          </button>
+        ))}
+      </div>
+      <DeliverablesTracker deliverables={deliverables} areas={areas} admin={admin} onAdd={onAddDeliverable} onUpdate={onUpdateDeliverable} onRemove={onRemoveDeliverable}/>
     </div>
   );
 }
@@ -1202,6 +1652,8 @@ export default function Portal() {
   const [strategies, setStrategies] = useState(DEFAULT_STRATEGIES);
   const [monthSummary, setMonthSummary] = useState(DEFAULT_MONTH_SUMMARY);
   const [events, setEvents] = useState(DEFAULT_EVENTS);
+  const [reports, setReports] = useState(DEFAULT_REPORTS);
+  const [deliverables, setDeliverables] = useState(DEFAULT_DELIVERABLES);
   const [areas] = useState(DEFAULT_AREAS);
   const [themes] = useState(DEFAULT_THEMES);
 
@@ -1225,6 +1677,8 @@ export default function Portal() {
         if (data.strategies) setStrategies(data.strategies);
         if (data.monthSummary) setMonthSummary(data.monthSummary);
         if (data.events) setEvents(data.events);
+        if (data.reports) setReports(data.reports);
+        if (data.deliverables) setDeliverables(data.deliverables);
       }
       setLoading(false);
     })();
@@ -1232,12 +1686,14 @@ export default function Portal() {
 
   // Save on changes
   const save = useCallback(async (patch) => {
-    await saveAll({ items, strategies, monthSummary, events, ...patch });
-  }, [items, strategies, monthSummary, events]);
+    await saveAll({ items, strategies, monthSummary, events, reports, deliverables, ...patch });
+  }, [items, strategies, monthSummary, events, reports, deliverables]);
 
   function updateItems(newItems) { setItems(newItems); save({items:newItems}); }
   function updateStrategies(ns) { setStrategies(ns); save({strategies:ns}); }
   function updateMonthSummary(ns) { setMonthSummary(ns); save({monthSummary:ns}); }
+  function updateReports(ns) { setReports(ns); save({reports:ns}); }
+  function updateDeliverables(ns) { setDeliverables(ns); save({deliverables:ns}); }
 
   function approve(id, ns, commentText) {
     const author = admin ? "Rate Team" : "Client";
@@ -1306,6 +1762,25 @@ export default function Portal() {
     updateStrategies(strategies.filter(s=>s.id!==id));
     setModal(null);
   }
+
+  function addDeliverable(draft) { updateDeliverables([...deliverables, {...draft, id:`dlv${Date.now()}`}]); }
+  function updateDeliverable(id, patch) { updateDeliverables(deliverables.map(d=>d.id===id?{...d,...patch}:d)); }
+  function removeDeliverable(id) { updateDeliverables(deliverables.filter(d=>d.id!==id)); }
+
+  function createDraftReport() {
+    const d = new Date();
+    const ni = [...reports, {
+      id:`rpt-${d.getFullYear()}-${d.getMonth()}`, year:d.getFullYear(), month:d.getMonth(), status:"draft",
+      summary:{narrative:"", stats:[]},
+      socialGroups:[], socialAnalysis:"",
+      website:{stats:[], acquisition:[], topPages:[], notes:""},
+      content:{campaignsContent:"", assetsCreated:""},
+      projectsSnapshot: deliverables,
+    }];
+    updateReports(ni);
+  }
+  function updateReport(id, updated) { updateReports(reports.map(r=>r.id===id?updated:r)); }
+  function publishReport(id) { updateReports(reports.map(r=>r.id===id?{...r, status:"published", projectsSnapshot:deliverables}:r)); }
 
   function openItem(it) { setSelEvent(null); setSelStack([]); setSel(it); }
   function selectLinked(li) { setSelEvent(null); setSelStack(s => sel ? [...s, sel] : s); setSel(li); }
@@ -1380,7 +1855,7 @@ export default function Portal() {
         {tab==="dates"&&(<KeyDatesView events={events} areas={areas} onSelect={(ev)=>{closePanel();setSelEvent(ev);}}/>)}
         {tab==="calendar"&&(<CalView items={items} events={events} areas={areas} fArea={fArea} fTypes={fTypes} fStates={fStates} onSelect={(it)=>{setSelEvent(null);openItem(it);}} onSelectEvent={(ev)=>{closePanel();setSelEvent(ev);}} sel={sel} admin={admin} onAdd={()=>openAddForDate(todayISO())} onAddOnDate={openAddForDate} month={calDate.month} year={calDate.year} onPrevMonth={prevMonth} onNextMonth={nextMonth} onToday={goToday}/>)}
         {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onSelect={(it)=>{setSelEvent(null);openItem(it);}}/>)}
-        {tab==="reporting"&&(<ReportingView/>)}
+        {tab==="reporting"&&(<ReportingView reports={reports} deliverables={deliverables} areas={areas} admin={admin} onCreateDraft={createDraftReport} onUpdateReport={updateReport} onPublishReport={publishReport} onAddDeliverable={addDeliverable} onUpdateDeliverable={updateDeliverable} onRemoveDeliverable={removeDeliverable}/>)}
       </div>
 
       {/* SIDE PANELS */}

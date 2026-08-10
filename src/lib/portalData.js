@@ -3,7 +3,7 @@
 export const CLIENT_SLUG = "ulverscroft";
 
 export async function getClientOrThrow(sb) {
-  const { data, error } = await sb.from("clients").select("id, name, slug, show_planning_reference").eq("slug", CLIENT_SLUG).single();
+  const { data, error } = await sb.from("clients").select("id, name, slug, show_planning_reference, sow_summary").eq("slug", CLIENT_SLUG).single();
   if (error || !data) throw new Error(error?.message || "Client not found");
   return data;
 }
@@ -169,5 +169,62 @@ export function reportToRow(r) {
   if ("website" in r) row.website = r.website;
   if ("content" in r) row.content = r.content;
   if ("projectsSnapshot" in r) row.projects_snapshot = r.projectsSnapshot;
+  return row;
+}
+
+export function rowToContact(row) {
+  return { id: row.id, name: row.name, email: orEmpty(row.email), role: orEmpty(row.role) };
+}
+
+export function contactToRow(c) {
+  const row = {};
+  if ("name" in c) row.name = c.name;
+  if ("email" in c) row.email = c.email;
+  if ("role" in c) row.role = c.role;
+  return row;
+}
+
+export function rowToRequest(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    requestedByContactId: row.requested_by_contact_id,
+    requestedByName: orEmpty(row.requested_by_name),
+    dateReceived: row.date_received,
+    source: row.source,
+    originalMessage: orEmpty(row.original_message),
+    description: orEmpty(row.description),
+    brand: orEmpty(row.brand),
+    requestType: row.request_type,
+    deadline: orEmpty(row.deadline),
+    urgency: row.urgency,
+    estimatedHours: row.estimated_hours,
+    inScope: row.in_scope,
+    deliverableFormat: orEmpty(row.deliverable_format),
+    requirementsChecklist: row.requirements_checklist || [],
+    status: row.status,
+    convertedItemId: row.converted_item_id,
+  };
+}
+
+export function requestToRow(r) {
+  const row = {};
+  if ("title" in r) row.title = r.title;
+  if ("requestedByContactId" in r) row.requested_by_contact_id = r.requestedByContactId || null;
+  if ("requestedByName" in r) row.requested_by_name = r.requestedByName;
+  if ("dateReceived" in r) row.date_received = r.dateReceived;
+  if ("source" in r) row.source = r.source;
+  if ("originalMessage" in r) row.original_message = r.originalMessage;
+  if ("description" in r) row.description = r.description;
+  if ("brand" in r) row.brand = r.brand;
+  if ("requestType" in r) row.request_type = r.requestType;
+  if ("deadline" in r) row.deadline = orNull(r.deadline);
+  if ("urgency" in r) row.urgency = r.urgency;
+  if ("estimatedHours" in r) row.estimated_hours = r.estimatedHours === "" ? null : r.estimatedHours;
+  if ("inScope" in r) row.in_scope = r.inScope;
+  if ("deliverableFormat" in r) row.deliverable_format = r.deliverableFormat;
+  if ("requirementsChecklist" in r) row.requirements_checklist = r.requirementsChecklist || [];
+  if ("status" in r) row.status = r.status;
+  if ("convertedItemId" in r) row.converted_item_id = r.convertedItemId || null;
   return row;
 }

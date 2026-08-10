@@ -21,6 +21,7 @@ create table clients (
   slug text unique not null,
   name text not null,
   show_planning_reference boolean not null default false,
+  sow_summary text not null default '',
   created_at timestamptz default now()
 );
 
@@ -195,6 +196,48 @@ create table planning_reference_dates (
 create index planning_reference_dates_month_idx on planning_reference_dates(year, month, sort_order);
 
 -- ══════════════════════════════════════════════
+-- CONTACTS (client-side people — request "Requested by" dropdown)
+-- ══════════════════════════════════════════════
+create table contacts (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid not null references clients(id) on delete cascade,
+  name text not null,
+  email text default '',
+  role text default '',
+  created_at timestamptz default now()
+);
+create index contacts_client_idx on contacts(client_id);
+
+-- ══════════════════════════════════════════════
+-- REQUESTS (admin-only ad-hoc request inbox — see docs/PRD.md)
+-- ══════════════════════════════════════════════
+create table requests (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid not null references clients(id) on delete cascade,
+  title text not null,
+  requested_by_contact_id uuid references contacts(id) on delete set null,
+  requested_by_name text not null default '',
+  date_received date not null default current_date,
+  source text not null default 'Email',
+  original_message text not null default '',
+  description text not null default '',
+  brand text not null default '',
+  request_type text not null default 'general_request',
+  deadline date,
+  urgency text not null default 'normal',
+  estimated_hours numeric,
+  in_scope text not null default 'review',
+  deliverable_format text not null default '',
+  requirements_checklist jsonb not null default '[]',
+  status text not null default 'new',
+  converted_item_id uuid references content_items(id) on delete set null,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index requests_client_idx on requests(client_id);
+create index requests_status_idx on requests(client_id, status);
+
+-- ══════════════════════════════════════════════
 -- Row Level Security — enabled with no policies (service_role only, see note above)
 -- ══════════════════════════════════════════════
 alter table clients enable row level security;
@@ -207,6 +250,8 @@ alter table key_events enable row level security;
 alter table monthly_reports enable row level security;
 alter table deliverables enable row level security;
 alter table planning_reference_dates enable row level security;
+alter table contacts enable row level security;
+alter table requests enable row level security;
 
 -- ══════════════════════════════════════════════
 -- BOOTSTRAP: the one client this prototype currently serves, plus its

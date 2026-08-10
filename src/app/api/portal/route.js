@@ -9,6 +9,8 @@ import {
   rowToReport,
   rowToDeliverable,
   rowToPlanningDate,
+  rowToContact,
+  rowToRequest,
 } from "../../../lib/portalData";
 
 export async function GET(request) {
@@ -56,6 +58,23 @@ export async function GET(request) {
     planningDates = data.map(rowToPlanningDate);
   }
 
+  // Request Inbox is admin-only, full stop — never sent to a non-admin request,
+  // not just hidden in the UI (see spec: "Clients do NOT see the request inbox").
+  let contacts = [];
+  let requests = [];
+  let sowSummary = "";
+  if (admin) {
+    const [contactsRes, requestsRes] = await Promise.all([
+      sb.from("contacts").select("*").eq("client_id", client.id).order("name"),
+      sb.from("requests").select("*").eq("client_id", client.id).order("date_received", { ascending: false }),
+    ]);
+    if (contactsRes.error) return NextResponse.json({ error: contactsRes.error.message }, { status: 500 });
+    if (requestsRes.error) return NextResponse.json({ error: requestsRes.error.message }, { status: 500 });
+    contacts = contactsRes.data.map(rowToContact);
+    requests = requestsRes.data.map(rowToRequest);
+    sowSummary = client.sow_summary || "";
+  }
+
   return NextResponse.json({
     admin,
     areas,
@@ -68,5 +87,8 @@ export async function GET(request) {
     deliverables: deliverablesRes.data.map(rowToDeliverable),
     showPlanningReference,
     planningDates,
+    contacts,
+    requests,
+    sowSummary,
   });
 }

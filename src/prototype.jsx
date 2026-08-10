@@ -30,7 +30,16 @@ const CH = {
   video:{l:"Video",i:"🎥",tag:"VID"},
   print:{l:"Print",i:"🖨️",tag:"PRT"},
   casestudy:{l:"Case Study",i:"📖",tag:"CS"},
+  copywriting_request:{l:"Copywriting Request",i:"✍️",tag:"CPW"},
+  research_request:{l:"Research Request",i:"🔍",tag:"RSCH"},
+  creative_request:{l:"Creative Request",i:"🖼️",tag:"CRE"},
+  admin_request:{l:"Admin Request",i:"🗂️",tag:"ADM"},
+  advisory_request:{l:"Advisory Request",i:"💬",tag:"ADV"},
+  general_request:{l:"General Request",i:"❓",tag:"GEN"},
 };
+
+// Converted from a Request Inbox entry — see REQUEST_TYPES below.
+const REQUEST_ITEM_TYPES = ["copywriting_request","research_request","creative_request","admin_request","advisory_request","general_request"];
 
 const ST = {
   todo:{l:"To Do",c:"#94a3b8",bg:"#f8fafc"},
@@ -170,6 +179,20 @@ const TYPE_FIELDS = {
   ]},
 };
 
+// Ad-hoc request types (Request Inbox → "Convert to Activity") share one
+// field set — the request-specific context that doesn't fit the universal
+// item fields (title/notes/checklist/etc.), carried over from the request.
+const REQUEST_TYPE_FIELDS = [
+  {key:"requestedBy",label:"Requested By",type:"text"},
+  {key:"dateReceived",label:"Date Received",type:"date"},
+  {key:"source",label:"Source",type:"select",options:["Email","Call","Meeting","Portal","Other"]},
+  {key:"originalMessage",label:"Original Message",type:"textarea"},
+  {key:"estimatedHours",label:"Estimated Time (hrs)",type:"number"},
+  {key:"inScope",label:"In Scope?",type:"select",options:["Yes","No","Review"]},
+  {key:"deliverableFormat",label:"Deliverable Format",type:"text"},
+];
+for (const t of REQUEST_ITEM_TYPES) TYPE_FIELDS[t] = {dateMode:"single",dateLabel:"Deadline",fields:REQUEST_TYPE_FIELDS};
+
 const DEFAULT_THEMES = {
   christie:{l:"Agatha Christie Exhibition",c:"#7c3aed",brief:"Major tentpole tied to the London Museum exhibition (Aug–Oct). Coordinated across Ulverscroft and Trade — social series, blog content and trade press outreach spotlighting large-print Christie titles."},
   booklovers:{l:"National Book Lovers Day",c:"#ec4899",brief:"Cross-brand awareness day (9 Aug). Pre-scheduled content across Ulverscroft, uLibrary and The Reading House — must be ready by the 7th."},
@@ -215,6 +238,34 @@ function todayISO(){ const d=new Date(); return `${d.getFullYear()}-${String(d.g
 function mkGrid(y,m){const f=new Date(y,m,1),l=new Date(y,m+1,0);let s=f.getDay()===0?6:f.getDay()-1;const d=[];for(let i=0;i<s;i++)d.push(null);for(let i=1;i<=l.getDate();i++)d.push(i);while(d.length%7)d.push(null);return d;}
 function fd(y,m,d){return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;}
 function fmtTs(ts){ try { return new Date(ts).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); } catch(e){ return ts; } }
+
+// Seeds the Add Item form when converting a Request Inbox entry to an activity item.
+function buildPrefillFromRequest(r, areas) {
+  return {
+    title: r.title,
+    date: r.deadline || todayISO(),
+    endDate: "",
+    area: r.brand || Object.keys(areas)[0],
+    ch: r.requestType,
+    state: "todo",
+    platform: "",
+    notes: r.description || "",
+    theme: "",
+    url: "",
+    comments: [], history: [],
+    checklist: (r.requirementsChecklist||[]).map(c=>({...c})),
+    attachments: [], linkedItemIds: [],
+    fields: {
+      requestedBy: r.requestedByName || "",
+      dateReceived: r.dateReceived || "",
+      source: r.source || "",
+      originalMessage: r.originalMessage || "",
+      estimatedHours: r.estimatedHours ?? "",
+      inScope: r.inScope ? r.inScope.charAt(0).toUpperCase()+r.inScope.slice(1) : "",
+      deliverableFormat: r.deliverableFormat || "",
+    },
+  };
+}
 
 /* ══════════════════════════════════════════════
    MICRO COMPONENTS
@@ -480,8 +531,8 @@ function TypeFieldsDisplay({ch, values}) {
 /* ══════════════════════════════════════════════
    ITEM FORM (add + edit)
    ══════════════════════════════════════════════ */
-function ItemForm({item, areas, themes, items, defaultDate, defaultArea, onSave, onDelete, onCancel}) {
-  const [f, setF] = useState(item || {title:"",date:defaultDate||todayISO(),endDate:"",area:defaultArea||Object.keys(areas)[0],ch:"social",state:"todo",platform:"",notes:"",theme:"",url:"",comments:[],history:[],checklist:[],attachments:[],linkedItemIds:[],fields:{}});
+function ItemForm({item, prefill, areas, themes, items, defaultDate, defaultArea, onSave, onDelete, onCancel}) {
+  const [f, setF] = useState(item || prefill || {title:"",date:defaultDate||todayISO(),endDate:"",area:defaultArea||Object.keys(areas)[0],ch:"social",state:"todo",platform:"",notes:"",theme:"",url:"",comments:[],history:[],checklist:[],attachments:[],linkedItemIds:[],fields:{}});
   const upd = (k,v) => setF(p=>({...p,[k]:v}));
   const updField = (k,v) => setF(p=>({...p,fields:{...(p.fields||{}),[k]:v}}));
 
@@ -1411,6 +1462,250 @@ function DeliverablesTracker({deliverables, areas, admin, onAdd, onUpdate, onRem
 }
 
 /* ══════════════════════════════════════════════
+   REQUEST INBOX (admin only — never shown to the client)
+   ══════════════════════════════════════════════ */
+const URGENCY = {
+  low:{l:"Low",c:"#71717a"},
+  normal:{l:"Normal",c:"#3b82f6"},
+  high:{l:"High",c:"#f59e42"},
+  asap:{l:"ASAP",c:"#ef4444"},
+};
+const IN_SCOPE = {
+  yes:{l:"In Scope",c:"#22c55e"},
+  no:{l:"Out of Scope",c:"#ef4444"},
+  review:{l:"Needs Review",c:"#f59e42"},
+};
+const REQUEST_STATUS = {
+  new:{l:"New",c:"#3b82f6"},
+  triaged:{l:"Triaged",c:"#f59e42"},
+  converted:{l:"Converted",c:"#22c55e"},
+  declined:{l:"Declined",c:"#71717a"},
+};
+
+function ContactsManager({contacts, onAdd, onRemove}) {
+  const [adding, setAdding] = useState(false);
+  const [draft, setDraft] = useState({name:"",email:"",role:""});
+  function submit() {
+    if (!draft.name.trim()) return;
+    onAdd(draft);
+    setDraft({name:"",email:"",role:""});
+    setAdding(false);
+  }
+  return (
+    <div style={{background:R.white,border:`1px solid ${R.mid}`,borderRadius:12,padding:16,marginBottom:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:adding||contacts.length?10:0}}>
+        <div style={{fontSize:11,fontWeight:800,color:R.black,textTransform:"uppercase",letterSpacing:.6}}>Client Contacts</div>
+        {!adding && (<button onClick={()=>setAdding(true)} style={{background:"none",border:"none",color:R.black,fontSize:11,fontWeight:700,cursor:"pointer",textDecoration:"underline"}}>+ Add contact</button>)}
+      </div>
+      {contacts.map(c=>(
+        <div key={c.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:`1px solid ${R.grey}`}}>
+          <div style={{flex:1,fontSize:12,color:R.black}}><strong>{c.name}</strong>{c.role?` · ${c.role}`:""}{c.email?` · ${c.email}`:""}</div>
+          <button onClick={()=>onRemove(c.id)} style={removeBtnStyle}>×</button>
+        </div>
+      ))}
+      {adding && (
+        <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}>
+          <input style={{...inputStyle,flex:"1 1 140px"}} value={draft.name} onChange={e=>setDraft(p=>({...p,name:e.target.value}))} placeholder="Name"/>
+          <input style={{...inputStyle,flex:"1 1 100px"}} value={draft.role} onChange={e=>setDraft(p=>({...p,role:e.target.value}))} placeholder="Role"/>
+          <input style={{...inputStyle,flex:"1 1 160px"}} value={draft.email} onChange={e=>setDraft(p=>({...p,email:e.target.value}))} placeholder="Email"/>
+          <button onClick={submit} style={{background:R.black,color:R.white,border:"none",borderRadius:8,padding:"0 14px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Add</button>
+          <button onClick={()=>setAdding(false)} style={{background:R.white,color:R.dark,border:`1px solid ${R.mid}`,borderRadius:8,padding:"0 14px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Cancel</button>
+        </div>
+      )}
+      {!contacts.length && !adding && (<div style={{fontSize:11,color:R.dark,marginTop:8}}>No contacts yet — add the people who send you requests.</div>)}
+    </div>
+  );
+}
+
+function RequestForm({contacts, areas, onSave, onCancel}) {
+  const [f, setF] = useState({
+    title:"", requestedByContactId:"", requestedByName:"", dateReceived:todayISO(), source:"Email",
+    originalMessage:"", description:"", brand:"", requestType:"general_request", deadline:"",
+    urgency:"normal", estimatedHours:"", inScope:"review", deliverableFormat:"", requirementsChecklist:[], status:"new",
+  });
+  const upd = (k,v) => setF(p=>({...p,[k]:v}));
+  const [taskDraft, setTaskDraft] = useState("");
+  function addTask() {
+    if (!taskDraft.trim()) return;
+    upd("requirementsChecklist", [...f.requirementsChecklist, {id:`rc${Date.now()}`, text:taskDraft.trim(), done:false}]);
+    setTaskDraft("");
+  }
+  function removeTask(id) { upd("requirementsChecklist", f.requirementsChecklist.filter(t=>t.id!==id)); }
+
+  function submit() {
+    if (!f.title.trim()) return;
+    const contact = contacts.find(c=>c.id===f.requestedByContactId);
+    onSave({...f, requestedByName: contact ? contact.name : f.requestedByName, estimatedHours: f.estimatedHours===""?null:Number(f.estimatedHours)});
+  }
+
+  return (
+    <div>
+      <Field label="Title"><input style={inputStyle} value={f.title} onChange={e=>upd("title",e.target.value)} placeholder="e.g. RBMedia company bio"/></Field>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Field label="Requested By">
+          <select style={selectStyle} value={f.requestedByContactId} onChange={e=>upd("requestedByContactId",e.target.value)}>
+            <option value="">Type a name instead...</option>
+            {contacts.map(c=>(<option key={c.id} value={c.id}>{c.name}</option>))}
+          </select>
+        </Field>
+        <Field label="Date Received"><input type="date" style={inputStyle} value={f.dateReceived} onChange={e=>upd("dateReceived",e.target.value)}/></Field>
+      </div>
+      {!f.requestedByContactId && (<Field label="Name"><input style={inputStyle} value={f.requestedByName} onChange={e=>upd("requestedByName",e.target.value)} placeholder="Requester's name"/></Field>)}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Field label="Source">
+          <select style={selectStyle} value={f.source} onChange={e=>upd("source",e.target.value)}>
+            {["Email","Call","Meeting","Portal","Other"].map(s=>(<option key={s} value={s}>{s}</option>))}
+          </select>
+        </Field>
+        <Field label="Request Type">
+          <select style={selectStyle} value={f.requestType} onChange={e=>upd("requestType",e.target.value)}>
+            {REQUEST_ITEM_TYPES.map(t=>(<option key={t} value={t}>{CH[t].l}</option>))}
+          </select>
+        </Field>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Field label="Brand">
+          <select style={selectStyle} value={f.brand} onChange={e=>upd("brand",e.target.value)}>
+            <option value="">Not sure yet</option>
+            {Object.entries(areas).map(([k,v])=>(<option key={k} value={k}>{v.label}</option>))}
+          </select>
+        </Field>
+        <Field label="Deadline (if stated)"><input type="date" style={inputStyle} value={f.deadline} onChange={e=>upd("deadline",e.target.value)}/></Field>
+      </div>
+      <Field label="Original Message"><textarea style={{...inputStyle,minHeight:70,resize:"vertical"}} value={f.originalMessage} onChange={e=>upd("originalMessage",e.target.value)} placeholder="Paste the email or message..."/></Field>
+      <Field label="Description — what's being asked"><textarea style={{...inputStyle,minHeight:70,resize:"vertical"}} value={f.description} onChange={e=>upd("description",e.target.value)}/></Field>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Field label="Urgency">
+          <select style={selectStyle} value={f.urgency} onChange={e=>upd("urgency",e.target.value)}>
+            {Object.entries(URGENCY).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
+          </select>
+        </Field>
+        <Field label="Estimated Time (hrs)"><input type="number" step="0.5" style={inputStyle} value={f.estimatedHours} onChange={e=>upd("estimatedHours",e.target.value)}/></Field>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+        <Field label="In Scope?">
+          <select style={selectStyle} value={f.inScope} onChange={e=>upd("inScope",e.target.value)}>
+            {Object.entries(IN_SCOPE).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
+          </select>
+        </Field>
+        <Field label="Deliverable Format"><input style={inputStyle} value={f.deliverableFormat} onChange={e=>upd("deliverableFormat",e.target.value)} placeholder="e.g. 250-word bio"/></Field>
+      </div>
+      <Field label="Requirements Checklist">
+        {f.requirementsChecklist.map(t=>(
+          <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",background:R.grey,borderRadius:8,marginBottom:4}}>
+            <span style={{flex:1,fontSize:11,color:R.black}}>{t.text}</span>
+            <button type="button" onClick={()=>removeTask(t.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#a1a1aa",fontSize:14,flexShrink:0}}>×</button>
+          </div>
+        ))}
+        <div style={{display:"flex",gap:6}}>
+          <input style={{...inputStyle,flex:1}} value={taskDraft} onChange={e=>setTaskDraft(e.target.value)} placeholder="e.g. Draft bio" onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();addTask();}}}/>
+          <button type="button" onClick={addTask} style={{background:R.black,color:R.white,border:"none",borderRadius:8,padding:"0 12px",fontSize:11,fontWeight:700,cursor:"pointer",flexShrink:0}}>Add</button>
+        </div>
+      </Field>
+      <div style={{display:"flex",gap:8,marginTop:16}}>
+        <button onClick={submit} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"10px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>Log Request</button>
+        <button onClick={onCancel} style={{padding:"10px 16px",background:R.white,color:R.dark,border:`1px solid ${R.mid}`,borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer"}}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+function RequestCard({r, areas, onUpdate, onConvert, onDecline}) {
+  const urg = URGENCY[r.urgency]||URGENCY.normal;
+  const scope = IN_SCOPE[r.inScope]||IN_SCOPE.review;
+  return (
+    <div style={{background:R.white,border:`1px solid ${R.mid}`,borderRadius:12,padding:16,marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:8}}>
+        <div>
+          <div style={{fontSize:14,fontWeight:800,color:R.black,marginBottom:3}}>{r.title}</div>
+          <div style={{fontSize:11,color:R.dark}}>{r.requestedByName||"Unknown requester"} · {new Date(r.dateReceived).toLocaleDateString("en-GB",{day:"numeric",month:"short"})} · {r.source}</div>
+        </div>
+        <div style={{display:"flex",gap:6,flexShrink:0,flexWrap:"wrap",justifyContent:"flex-end"}}>
+          <span style={{fontSize:10,fontWeight:700,color:urg.c,background:urg.c+"14",padding:"3px 8px",borderRadius:6}}>{urg.l}</span>
+          <span style={{fontSize:10,fontWeight:700,color:scope.c,background:scope.c+"14",padding:"3px 8px",borderRadius:6}}>{scope.l}</span>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+        <TypeTag ch={r.requestType} size={14}/>
+        <span style={{fontSize:11,color:R.dark}}>{CH[r.requestType]?.l}</span>
+        {r.brand && (<ATag a={r.brand} areas={areas} sm/>)}
+        {r.deadline && (<span style={{fontSize:10,color:"#b45309",background:"#fffbeb",padding:"3px 8px",borderRadius:6,fontWeight:700}}>Due {new Date(r.deadline).toLocaleDateString("en-GB",{day:"numeric",month:"short"})}</span>)}
+        {r.estimatedHours!=null && (<span style={{fontSize:10,color:R.dark,background:R.grey,padding:"3px 8px",borderRadius:6,fontWeight:700}}>~{r.estimatedHours}h</span>)}
+      </div>
+      {r.description && (<div style={{fontSize:12,color:"#3f3f46",lineHeight:1.6,marginBottom:10}}>{r.description}</div>)}
+      <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+        <select style={{...selectStyle,fontSize:11,padding:"5px 7px",width:"auto"}} value={r.status} onChange={e=>onUpdate(r.id,{status:e.target.value})}>
+          {Object.entries(REQUEST_STATUS).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
+        </select>
+        {r.status!=="converted" && r.status!=="declined" && (
+          <>
+            <button onClick={()=>onConvert(r)} style={{background:R.lime,color:R.black,border:"none",borderRadius:8,padding:"6px 12px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Convert to Activity →</button>
+            <button onClick={()=>onDecline(r.id)} style={{background:R.white,color:R.dark,border:`1px solid ${R.mid}`,borderRadius:8,padding:"6px 12px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Decline</button>
+          </>
+        )}
+        {r.status==="converted" && (<span style={{fontSize:11,color:"#22c55e",fontWeight:700}}>✓ Converted to activity item</span>)}
+      </div>
+    </div>
+  );
+}
+
+function RequestInboxView({requests, contacts, areas, sowSummary, onUpdateSowSummary, onAddContact, onRemoveContact, onCreateRequest, onUpdateRequest, onConvert, onDecline}) {
+  const [showForm, setShowForm] = useState(false);
+  const [filter, setFilter] = useState("open");
+  const [editingSow, setEditingSow] = useState(false);
+  const [sowDraft, setSowDraft] = useState(sowSummary);
+
+  const filtered = requests.filter(r => filter==="all" ? true : filter==="open" ? (r.status==="new"||r.status==="triaged") : r.status===filter);
+
+  return (
+    <div style={{maxWidth:820}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
+        <div>
+          <Eyebrow>Request Inbox</Eyebrow>
+          <h2 style={{fontSize:22,fontWeight:800,color:R.black,margin:0,letterSpacing:-.5}}>Ad-hoc requests, triaged before they hit the calendar.</h2>
+        </div>
+        {!showForm && (<button onClick={()=>setShowForm(true)} style={{background:R.black,color:R.white,border:"none",borderRadius:10,padding:"10px 16px",fontSize:12,fontWeight:700,cursor:"pointer",flexShrink:0}}>+ Log Request</button>)}
+      </div>
+
+      <div style={{background:R.black,borderRadius:14,padding:18,marginBottom:20}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <span style={{fontSize:10,fontWeight:800,color:"#a3e635",textTransform:"uppercase",letterSpacing:1}}>SOW Summary — scope reference</span>
+          {!editingSow && (<button onClick={()=>{setSowDraft(sowSummary);setEditingSow(true);}} style={{background:"rgba(255,255,255,.15)",color:R.white,border:"none",borderRadius:6,padding:"3px 9px",fontSize:9,fontWeight:600,cursor:"pointer"}}>Edit</button>)}
+        </div>
+        {editingSow ? (
+          <div>
+            <textarea style={{width:"100%",minHeight:70,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.2)",borderRadius:8,color:R.white,fontSize:13,padding:10,resize:"vertical",boxSizing:"border-box"}} value={sowDraft} onChange={e=>setSowDraft(e.target.value)}/>
+            <div style={{display:"flex",gap:8,marginTop:8}}>
+              <button onClick={()=>{onUpdateSowSummary(sowDraft);setEditingSow(false);}} style={{background:R.lime,color:R.black,border:"none",borderRadius:6,padding:"6px 14px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Save</button>
+              <button onClick={()=>setEditingSow(false)} style={{background:"rgba(255,255,255,.1)",color:R.white,border:"none",borderRadius:6,padding:"6px 14px",fontSize:11,fontWeight:600,cursor:"pointer"}}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <p style={{fontSize:13,lineHeight:1.7,margin:0,color:"#bbb"}}>{sowSummary || "No SOW summary yet — add what's covered by the retainer so scope checks have something to reference."}</p>
+        )}
+      </div>
+
+      <ContactsManager contacts={contacts} onAdd={onAddContact} onRemove={onRemoveContact}/>
+
+      {showForm && (
+        <div style={{background:R.grey,borderRadius:14,padding:18,marginBottom:20}}>
+          <RequestForm contacts={contacts} areas={areas} onSave={(draft)=>{onCreateRequest(draft);setShowForm(false);}} onCancel={()=>setShowForm(false)}/>
+        </div>
+      )}
+
+      <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+        {[{k:"open",l:"Open"},{k:"all",l:"All"},{k:"new",l:"New"},{k:"triaged",l:"Triaged"},{k:"converted",l:"Converted"},{k:"declined",l:"Declined"}].map(t=>(
+          <button key={t.k} onClick={()=>setFilter(t.k)} style={{padding:"5px 12px",borderRadius:8,fontSize:10,fontWeight:700,cursor:"pointer",background:filter===t.k?R.black:R.white,color:filter===t.k?R.white:R.dark,border:`1px solid ${filter===t.k?R.black:R.mid}`}}>{t.l}</button>
+        ))}
+      </div>
+
+      {!filtered.length && (<div style={{fontSize:12,color:R.dark,padding:20,textAlign:"center",background:R.grey,borderRadius:12}}>No requests here.</div>)}
+      {filtered.map(r=>(<RequestCard key={r.id} r={r} areas={areas} onUpdate={onUpdateRequest} onConvert={onConvert} onDecline={onDecline}/>))}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
    REPORTING
    ══════════════════════════════════════════════ */
 function ReportSectionHeading({children}) {
@@ -1611,6 +1906,9 @@ export default function Portal() {
   const [themes, setThemes] = useState({});
   const [planningDates, setPlanningDates] = useState([]);
   const [showPlanningReference, setShowPlanningReference] = useState(false);
+  const [contacts, setContacts] = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [sowSummary, setSowSummary] = useState("");
 
   const [tab, setTab] = useState("calendar");
   const [fArea, setFA] = useState(null);
@@ -1619,7 +1917,7 @@ export default function Portal() {
   const [sel, setSel] = useState(null);
   const [selStack, setSelStack] = useState([]);
   const [selEvent, setSelEvent] = useState(null);
-  const [modal, setModal] = useState(null); // null | "add" | {editing: item} | "addStrategy" | {editingStrategy: s}
+  const [modal, setModal] = useState(null); // null | "add" | {editing: item} | {creatingFromRequest: request} | "addStrategy" | {editingStrategy: s}
   const [addDefaults, setAddDefaults] = useState(null); // {date} to prefill the Add Item form
   const [calDate, setCalDate] = useState(() => { const d = new Date(); return {year:d.getFullYear(), month:d.getMonth()}; });
 
@@ -1639,6 +1937,9 @@ export default function Portal() {
         setDeliverables(data.deliverables);
         setPlanningDates(data.planningDates);
         setShowPlanningReference(data.showPlanningReference);
+        setContacts(data.contacts);
+        setRequests(data.requests);
+        setSowSummary(data.sowSummary);
       } catch (e) {
         console.error("Failed to load portal data", e);
       }
@@ -1653,8 +1954,11 @@ export default function Portal() {
       setAdmin(true);
       setShowLogin(false);
       setAdminInput("");
-      const data = await api("/api/portal"); // re-fetch so draft reports become visible
+      const data = await api("/api/portal"); // re-fetch so draft reports + admin-only data become visible
       setReports(data.reports);
+      setContacts(data.contacts);
+      setRequests(data.requests);
+      setSowSummary(data.sowSummary);
     } catch (e) {
       setLoginError("Incorrect passcode");
     }
@@ -1663,6 +1967,10 @@ export default function Portal() {
     await api("/api/admin/logout", {method:"POST"}).catch(()=>{});
     setAdmin(false);
     setReports(rs => rs.filter(r=>r.status==="published"));
+    setContacts([]);
+    setRequests([]);
+    setSowSummary("");
+    if (tab==="requests") setTab("calendar");
   }
 
   function patchItemLocal(id, patch) { setItems(prev => prev.map(i => i.id===id ? {...i, ...patch} : i)); }
@@ -1722,6 +2030,7 @@ export default function Portal() {
   }
 
   async function handleSaveItem(formData) {
+    const convertingRequestId = modal?.creatingFromRequest?.id;
     setModal(null);
     setAddDefaults(null);
     if (modal && modal.editing) {
@@ -1733,6 +2042,7 @@ export default function Portal() {
       try {
         const created = await api("/api/items", {method:"POST", body:formData});
         setItems(prev => [...prev, created]);
+        if (convertingRequestId) await updateRequest(convertingRequestId, {status:"converted", convertedItemId:created.id});
       } catch (e) { console.error("Failed to create item", e); }
     }
   }
@@ -1784,6 +2094,42 @@ export default function Portal() {
       setShowPlanningReference(updated.showPlanningReference);
     } catch (e) { console.error("Failed to save setting", e); }
   }
+
+  async function updateSowSummary(text) {
+    setSowSummary(text);
+    try {
+      const updated = await api("/api/settings", {method:"PATCH", body:{sowSummary:text}});
+      setSowSummary(updated.sowSummary);
+    } catch (e) { console.error("Failed to save SOW summary", e); }
+  }
+
+  async function addContact(draft) {
+    try {
+      const created = await api("/api/contacts", {method:"POST", body:draft});
+      setContacts(prev => [...prev, created]);
+    } catch (e) { console.error("Failed to add contact", e); }
+  }
+  async function removeContact(id) {
+    setContacts(prev => prev.filter(c=>c.id!==id));
+    try { await api(`/api/contacts/${id}`, {method:"DELETE"}); }
+    catch (e) { console.error("Failed to remove contact", e); }
+  }
+
+  async function createRequest(draft) {
+    try {
+      const created = await api("/api/requests", {method:"POST", body:draft});
+      setRequests(prev => [created, ...prev]);
+    } catch (e) { console.error("Failed to log request", e); }
+  }
+  async function updateRequest(id, patch) {
+    setRequests(prev => prev.map(r=>r.id===id?{...r,...patch}:r));
+    try {
+      const updated = await api(`/api/requests/${id}`, {method:"PATCH", body:patch});
+      setRequests(prev => prev.map(r=>r.id===id?updated:r));
+    } catch (e) { console.error("Failed to update request", e); }
+  }
+  function declineRequest(id) { updateRequest(id, {status:"declined"}); }
+  function convertRequestToItem(request) { setModal({creatingFromRequest:request}); }
 
   async function addDeliverable(draft) {
     try {
@@ -1871,7 +2217,7 @@ export default function Portal() {
         )}
         {/* Tabs */}
         <div style={{display:"flex",gap:0,overflowX:"auto"}}>
-          {[{k:"strategy",l:"Strategy"},{k:"dates",l:"Key Dates"},{k:"calendar",l:"Calendar"},{k:"approvals",l:"Approvals",count:rc+ic},{k:"reporting",l:"Reporting"}].map(t=>(
+          {[{k:"strategy",l:"Strategy"},{k:"dates",l:"Key Dates"},{k:"calendar",l:"Calendar"},{k:"approvals",l:"Approvals",count:rc+ic},{k:"reporting",l:"Reporting"},...(admin?[{k:"requests",l:"Requests",count:requests.filter(r=>r.status==="new").length}]:[])].map(t=>(
             <button key={t.k} onClick={()=>{setTab(t.k);closePanel();setSelEvent(null);}} style={{
               background:"none",border:"none",cursor:"pointer",padding:"14px 20px",fontSize:15,fontWeight:700,
               color:tab===t.k?R.lime:R.white,borderBottom:tab===t.k?`3px solid ${R.lime}`:"3px solid transparent",
@@ -1902,6 +2248,7 @@ export default function Portal() {
         {tab==="calendar"&&(<CalView items={items} events={events} areas={areas} fArea={fArea} fTypes={fTypes} fStates={fStates} onSelect={(it)=>{setSelEvent(null);openItem(it);}} onSelectEvent={(ev)=>{closePanel();setSelEvent(ev);}} sel={sel} admin={admin} onAdd={()=>openAddForDate(todayISO())} onAddOnDate={openAddForDate} month={calDate.month} year={calDate.year} onPrevMonth={prevMonth} onNextMonth={nextMonth} onToday={goToday}/>)}
         {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onSelect={(it)=>{setSelEvent(null);openItem(it);}}/>)}
         {tab==="reporting"&&(<ReportingView reports={reports} deliverables={deliverables} areas={areas} admin={admin} onCreateDraft={createDraftReport} onUpdateReport={updateReport} onPublishReport={publishReport} onAddDeliverable={addDeliverable} onUpdateDeliverable={updateDeliverable} onRemoveDeliverable={removeDeliverable}/>)}
+        {tab==="requests"&&admin&&(<RequestInboxView requests={requests} contacts={contacts} areas={areas} sowSummary={sowSummary} onUpdateSowSummary={updateSowSummary} onAddContact={addContact} onRemoveContact={removeContact} onCreateRequest={createRequest} onUpdateRequest={updateRequest} onConvert={convertRequestToItem} onDecline={declineRequest}/>)}
       </div>
 
       {/* SIDE PANELS */}
@@ -1914,6 +2261,9 @@ export default function Portal() {
       </FormPanel>
       <FormPanel open={modal&&modal.editing} onClose={()=>setModal(null)} title="Edit Item">
         {modal&&modal.editing&&(<ItemForm item={modal.editing} areas={areas} themes={themes} items={items} onSave={handleSaveItem} onDelete={handleDeleteItem} onCancel={()=>setModal(null)}/>)}
+      </FormPanel>
+      <FormPanel open={modal&&modal.creatingFromRequest} onClose={()=>setModal(null)} title="Convert Request to Activity">
+        {modal&&modal.creatingFromRequest&&(<ItemForm prefill={buildPrefillFromRequest(modal.creatingFromRequest, areas)} areas={areas} themes={themes} items={items} onSave={handleSaveItem} onCancel={()=>setModal(null)}/>)}
       </FormPanel>
       <Modal open={modal==="addStrategy"} onClose={()=>setModal(null)} title="New Strategy" wide>
         <StrategyForm areas={areas} onSave={handleSaveStrategy} onCancel={()=>setModal(null)}/>

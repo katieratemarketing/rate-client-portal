@@ -1829,7 +1829,7 @@ function ReportBody({report, areas, editable, onChange}) {
 /* ══════════════════════════════════════════════
    REPORTING
    ══════════════════════════════════════════════ */
-function ReportingView({reports, deliverables, areas, admin, onCreateDraft, onUpdateReport, onPublishReport, onAddDeliverable, onUpdateDeliverable, onRemoveDeliverable}) {
+function ReportingView({reports, deliverables, areas, admin, clientName, onCreateDraft, onUpdateReport, onPublishReport, onAddDeliverable, onUpdateDeliverable, onRemoveDeliverable}) {
   const [openId, setOpenId] = useState(null);
   const sorted = [...reports].sort((a,b)=> (b.year-a.year) || (b.month-a.month));
   const visible = admin ? sorted : sorted.filter(r=>r.status==="published");
@@ -1851,7 +1851,7 @@ function ReportingView({reports, deliverables, areas, admin, onCreateDraft, onUp
           </div>
         </div>
         <div style={{marginBottom:20}}>
-          <div style={{fontSize:10,fontWeight:700,color:R.lime==="#c8e63e"?"#8ab316":R.dark,textTransform:"uppercase",letterSpacing:1}}>Ulverscroft Group</div>
+          <div style={{fontSize:10,fontWeight:700,color:R.lime==="#c8e63e"?"#8ab316":R.dark,textTransform:"uppercase",letterSpacing:1}}>{clientName}</div>
           <h2 style={{fontSize:24,fontWeight:800,color:R.black,margin:"2px 0 0",letterSpacing:-.5}}>{MN_FULL[open.month]} {open.year} Report</h2>
         </div>
         <ReportBody report={open} areas={areas} editable={admin && open.status==="draft"} onChange={(r)=>onUpdateReport(open.id,r)}/>
@@ -1886,6 +1886,94 @@ function ReportingView({reports, deliverables, areas, admin, onCreateDraft, onUp
 }
 
 /* ══════════════════════════════════════════════
+   CLIENT SWITCHER (admin only — a client viewer just sees their own name)
+   ══════════════════════════════════════════════ */
+function ClientSwitcher({clientInfo, clientsList, admin, onSwitch, onOpenBrands, onCreateClient}) {
+  const [open, setOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const ref = useRef(null);
+  useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target)){setOpen(false);setCreating(false);}};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
+
+  if (!admin) {
+    return (<h1 style={{fontSize:20,fontWeight:800,margin:0,color:R.white,letterSpacing:-.5}}>{clientInfo.name||"Loading..."}</h1>);
+  }
+
+  function submitNewClient() {
+    if (!newName.trim()) return;
+    onCreateClient(newName.trim());
+    setNewName("");
+    setCreating(false);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={ref} style={{position:"relative"}}>
+      <button onClick={()=>setOpen(!open)} style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",cursor:"pointer",padding:0}}>
+        <h1 style={{fontSize:20,fontWeight:800,margin:0,color:R.white,letterSpacing:-.5}}>{clientInfo.name||"Loading..."}</h1>
+        <span style={{color:"#666",fontSize:11,marginTop:2}}>▾</span>
+      </button>
+      {open&&(
+        <div style={{position:"absolute",top:"100%",left:0,marginTop:8,zIndex:60,background:R.white,borderRadius:14,border:`1px solid ${R.mid}`,boxShadow:"0 12px 32px rgba(0,0,0,.25)",overflow:"hidden",width:260}}>
+          <div style={{padding:"6px 0",maxHeight:260,overflowY:"auto"}}>
+            {clientsList.map(c=>(
+              <button key={c.id} onClick={()=>{onSwitch(c.slug);setOpen(false);}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",textAlign:"left",padding:"9px 16px",background:c.slug===clientInfo.slug?R.grey:"none",border:"none",cursor:"pointer",fontSize:13,color:R.black,fontWeight:c.slug===clientInfo.slug?700:500}}>
+                {c.name}
+                {c.slug===clientInfo.slug && (<span style={{color:"#8ab316",fontSize:11}}>✓</span>)}
+              </button>
+            ))}
+            {!clientsList.length && (<div style={{padding:"9px 16px",fontSize:12,color:R.dark}}>Loading clients...</div>)}
+          </div>
+          <div style={{borderTop:`1px solid ${R.mid}`,padding:8}}>
+            <button onClick={()=>{onOpenBrands();setOpen(false);}} style={{display:"block",width:"100%",textAlign:"left",padding:"8px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:600,color:R.black,borderRadius:8}}>Manage Brands</button>
+            {creating ? (
+              <div style={{display:"flex",gap:6,padding:"4px 4px 0"}}>
+                <input autoFocus style={{...inputStyle,flex:1,fontSize:12}} value={newName} onChange={e=>setNewName(e.target.value)} placeholder="New client name" onKeyDown={e=>{if(e.key==="Enter")submitNewClient();}}/>
+                <button onClick={submitNewClient} style={{background:R.black,color:R.white,border:"none",borderRadius:8,padding:"0 12px",fontSize:11,fontWeight:700,cursor:"pointer"}}>Add</button>
+              </div>
+            ) : (
+              <button onClick={()=>setCreating(true)} style={{display:"block",width:"100%",textAlign:"left",padding:"8px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:600,color:R.black,borderRadius:8}}>+ New Client</button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   BRAND MANAGER (admin only)
+   ══════════════════════════════════════════════ */
+function BrandManager({open, onClose, brands, onAdd, onRemove}) {
+  const [draft, setDraft] = useState({label:"",color:"#1e4d91",short:""});
+  function submit() {
+    if (!draft.label.trim()) return;
+    onAdd({label:draft.label.trim(), color:draft.color, short:(draft.short||draft.label.slice(0,3)).toUpperCase()});
+    setDraft({label:"",color:"#1e4d91",short:""});
+  }
+  return (
+    <Modal open={open} onClose={onClose} title="Manage Brands">
+      {brands.map(b=>(
+        <div key={b.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`1px solid ${R.grey}`}}>
+          <Dot c={b.color} s={10}/>
+          <div style={{flex:1,fontSize:13,color:R.black,fontWeight:600}}>{b.label} <span style={{color:R.dark,fontWeight:400}}>· {b.short}</span></div>
+          <button onClick={()=>onRemove(b.id)} style={removeBtnStyle}>×</button>
+        </div>
+      ))}
+      {!brands.length && (<div style={{fontSize:12,color:R.dark,padding:"12px 0"}}>No brands yet — add at least one so content can be tagged.</div>)}
+      <div style={{marginTop:16,paddingTop:16,borderTop:`1px solid ${R.mid}`}}>
+        <div style={{display:"flex",gap:8,marginBottom:8}}>
+          <input style={{...inputStyle,flex:1}} value={draft.label} onChange={e=>setDraft(p=>({...p,label:e.target.value}))} placeholder="Brand name, e.g. uLibrary"/>
+          <input style={{...inputStyle,width:70}} value={draft.short} onChange={e=>setDraft(p=>({...p,short:e.target.value}))} placeholder="Tag"/>
+          <input type="color" value={draft.color} onChange={e=>setDraft(p=>({...p,color:e.target.value}))} style={{width:40,height:38,border:`1px solid ${R.mid}`,borderRadius:8,padding:2,cursor:"pointer"}}/>
+        </div>
+        <button onClick={submit} style={{width:"100%",background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"9px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>+ Add Brand</button>
+      </div>
+    </Modal>
+  );
+}
+
+/* ══════════════════════════════════════════════
    MAIN PORTAL
    ══════════════════════════════════════════════ */
 export default function Portal() {
@@ -1895,6 +1983,14 @@ export default function Portal() {
   const [showLogin, setShowLogin] = useState(false);
 
   const [loginError, setLoginError] = useState("");
+
+  const [clientSlug, setClientSlug] = useState(() => {
+    if (typeof window === "undefined") return "ulverscroft";
+    return new URLSearchParams(window.location.search).get("client") || "ulverscroft";
+  });
+  const [clientInfo, setClientInfo] = useState({slug:clientSlug, name:""});
+  const [clientsList, setClientsList] = useState([]); // admin-only, for the switcher
+  const [brands, setBrands] = useState([]); // admin-only, brand rows (id+key+label+color+short) for management
 
   const [items, setItems] = useState([]);
   const [strategies, setStrategies] = useState([]);
@@ -1910,6 +2006,8 @@ export default function Portal() {
   const [requests, setRequests] = useState([]);
   const [sowSummary, setSowSummary] = useState("");
 
+  function withClient(path) { return `${path}${path.includes("?")?"&":"?"}client=${encodeURIComponent(clientSlug)}`; }
+
   const [tab, setTab] = useState("calendar");
   const [fArea, setFA] = useState(null);
   const [fTypes, setFTypes] = useState([]);
@@ -1920,32 +2018,61 @@ export default function Portal() {
   const [modal, setModal] = useState(null); // null | "add" | {editing: item} | {creatingFromRequest: request} | "addStrategy" | {editingStrategy: s}
   const [addDefaults, setAddDefaults] = useState(null); // {date} to prefill the Add Item form
   const [calDate, setCalDate] = useState(() => { const d = new Date(); return {year:d.getFullYear(), month:d.getMonth()}; });
+  const [showBrandManager, setShowBrandManager] = useState(false);
 
-  // Load data
+  async function loadPortal() {
+    const data = await api(withClient("/api/portal"));
+    setAdmin(data.admin);
+    setClientInfo(data.client);
+    setAreas(data.areas);
+    setBrands(data.brands);
+    setThemes(data.themes);
+    setItems(data.items);
+    setStrategies(data.strategies);
+    setMonthSummary(data.monthSummary);
+    setEvents(data.events);
+    setReports(data.reports);
+    setDeliverables(data.deliverables);
+    setPlanningDates(data.planningDates);
+    setShowPlanningReference(data.showPlanningReference);
+    setContacts(data.contacts);
+    setRequests(data.requests);
+    setSowSummary(data.sowSummary);
+    return data;
+  }
+
+  // Load data — re-runs whenever the selected client changes.
   useEffect(() => {
     (async () => {
-      try {
-        const data = await api("/api/portal");
-        setAdmin(data.admin);
-        setAreas(data.areas);
-        setThemes(data.themes);
-        setItems(data.items);
-        setStrategies(data.strategies);
-        setMonthSummary(data.monthSummary);
-        setEvents(data.events);
-        setReports(data.reports);
-        setDeliverables(data.deliverables);
-        setPlanningDates(data.planningDates);
-        setShowPlanningReference(data.showPlanningReference);
-        setContacts(data.contacts);
-        setRequests(data.requests);
-        setSowSummary(data.sowSummary);
-      } catch (e) {
-        console.error("Failed to load portal data", e);
-      }
+      try { await loadPortal(); }
+      catch (e) { console.error("Failed to load portal data", e); }
       setLoading(false);
     })();
-  }, []);
+  }, [clientSlug]);
+
+  // Keep the switcher's client list in sync — covers reload-while-logged-in,
+  // not just the explicit login action.
+  useEffect(() => { if (admin) loadClientsList(); }, [admin]);
+
+  function switchClient(slug) {
+    setLoading(true);
+    const url = new URL(window.location.href);
+    url.searchParams.set("client", slug);
+    window.history.pushState({}, "", url);
+    setClientSlug(slug);
+  }
+
+  async function loadClientsList() {
+    try { setClientsList(await api("/api/clients")); }
+    catch (e) { console.error("Failed to load clients list", e); }
+  }
+
+  async function createClient(name) {
+    const created = await api("/api/clients", {method:"POST", body:{name}});
+    setClientsList(prev => [...prev, created].sort((a,b)=>a.name.localeCompare(b.name)));
+    switchClient(created.slug);
+    return created;
+  }
 
   async function handleLoginSubmit() {
     setLoginError("");
@@ -1954,11 +2081,8 @@ export default function Portal() {
       setAdmin(true);
       setShowLogin(false);
       setAdminInput("");
-      const data = await api("/api/portal"); // re-fetch so draft reports + admin-only data become visible
-      setReports(data.reports);
-      setContacts(data.contacts);
-      setRequests(data.requests);
-      setSowSummary(data.sowSummary);
+      await loadPortal(); // re-fetch so draft reports + admin-only data become visible
+      loadClientsList();
     } catch (e) {
       setLoginError("Incorrect passcode");
     }
@@ -1970,6 +2094,8 @@ export default function Portal() {
     setContacts([]);
     setRequests([]);
     setSowSummary("");
+    setBrands([]);
+    setClientsList([]);
     if (tab==="requests") setTab("calendar");
   }
 
@@ -2040,7 +2166,7 @@ export default function Portal() {
       await persistItemPatch(id, formData);
     } else {
       try {
-        const created = await api("/api/items", {method:"POST", body:formData});
+        const created = await api(withClient("/api/items"), {method:"POST", body:formData});
         setItems(prev => [...prev, created]);
         if (convertingRequestId) await updateRequest(convertingRequestId, {status:"converted", convertedItemId:created.id});
       } catch (e) { console.error("Failed to create item", e); }
@@ -2066,7 +2192,7 @@ export default function Portal() {
       } catch (e) { console.error("Failed to save strategy", e); }
     } else {
       try {
-        const created = await api("/api/strategies", {method:"POST", body:formData});
+        const created = await api(withClient("/api/strategies"), {method:"POST", body:formData});
         setStrategies(prev => [...prev, created]);
       } catch (e) { console.error("Failed to create strategy", e); }
     }
@@ -2082,7 +2208,7 @@ export default function Portal() {
   async function updateMonthSummary(ns) {
     setMonthSummary(ns);
     try {
-      const updated = await api("/api/month-summary", {method:"PATCH", body:ns});
+      const updated = await api(withClient("/api/month-summary"), {method:"PATCH", body:ns});
       setMonthSummary(updated);
     } catch (e) { console.error("Failed to save month summary", e); }
   }
@@ -2090,7 +2216,7 @@ export default function Portal() {
   async function updateShowPlanningReference(v) {
     setShowPlanningReference(v);
     try {
-      const updated = await api("/api/settings", {method:"PATCH", body:{showPlanningReference:v}});
+      const updated = await api(withClient("/api/settings"), {method:"PATCH", body:{showPlanningReference:v}});
       setShowPlanningReference(updated.showPlanningReference);
     } catch (e) { console.error("Failed to save setting", e); }
   }
@@ -2098,14 +2224,14 @@ export default function Portal() {
   async function updateSowSummary(text) {
     setSowSummary(text);
     try {
-      const updated = await api("/api/settings", {method:"PATCH", body:{sowSummary:text}});
+      const updated = await api(withClient("/api/settings"), {method:"PATCH", body:{sowSummary:text}});
       setSowSummary(updated.sowSummary);
     } catch (e) { console.error("Failed to save SOW summary", e); }
   }
 
   async function addContact(draft) {
     try {
-      const created = await api("/api/contacts", {method:"POST", body:draft});
+      const created = await api(withClient("/api/contacts"), {method:"POST", body:draft});
       setContacts(prev => [...prev, created]);
     } catch (e) { console.error("Failed to add contact", e); }
   }
@@ -2115,9 +2241,24 @@ export default function Portal() {
     catch (e) { console.error("Failed to remove contact", e); }
   }
 
+  async function addBrand(draft) {
+    try {
+      const created = await api(withClient("/api/brands"), {method:"POST", body:draft});
+      setBrands(prev => [...prev, created]);
+      setAreas(prev => ({...prev, [created.key]: {label:created.label, color:created.color, short:created.short}}));
+    } catch (e) { console.error("Failed to add brand", e); }
+  }
+  async function removeBrand(id) {
+    const b = brands.find(x=>x.id===id);
+    setBrands(prev => prev.filter(x=>x.id!==id));
+    if (b) setAreas(prev => { const n = {...prev}; delete n[b.key]; return n; });
+    try { await api(`/api/brands/${id}`, {method:"DELETE"}); }
+    catch (e) { console.error("Failed to remove brand", e); }
+  }
+
   async function createRequest(draft) {
     try {
-      const created = await api("/api/requests", {method:"POST", body:draft});
+      const created = await api(withClient("/api/requests"), {method:"POST", body:draft});
       setRequests(prev => [created, ...prev]);
     } catch (e) { console.error("Failed to log request", e); }
   }
@@ -2133,7 +2274,7 @@ export default function Portal() {
 
   async function addDeliverable(draft) {
     try {
-      const created = await api("/api/deliverables", {method:"POST", body:draft});
+      const created = await api(withClient("/api/deliverables"), {method:"POST", body:draft});
       setDeliverables(prev => [...prev, created]);
     } catch (e) { console.error("Failed to add deliverable", e); }
   }
@@ -2152,7 +2293,7 @@ export default function Portal() {
 
   async function createDraftReport() {
     try {
-      const created = await api("/api/reports", {method:"POST"});
+      const created = await api(withClient("/api/reports"), {method:"POST"});
       setReports(prev => [...prev, created]);
     } catch (e) { console.error("Failed to create draft report", e); }
   }
@@ -2195,7 +2336,7 @@ export default function Portal() {
       <div style={{background:R.black,padding:"18px 24px 0"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
           <div>
-            <h1 style={{fontSize:20,fontWeight:800,margin:0,color:R.white,letterSpacing:-.5}}>Ulverscroft Group</h1>
+            <ClientSwitcher clientInfo={clientInfo} clientsList={clientsList} admin={admin} onSwitch={switchClient} onOpenBrands={()=>setShowBrandManager(true)} onCreateClient={createClient}/>
             <div style={{fontSize:10,color:"#555",marginTop:2}}>August 2026</div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -2247,7 +2388,7 @@ export default function Portal() {
         {tab==="dates"&&(<KeyDatesView events={events} areas={areas} onSelect={(ev)=>{closePanel();setSelEvent(ev);}} admin={admin} planningDates={planningDates} showPlanningReference={showPlanningReference} onToggleShowPlanningReference={updateShowPlanningReference}/>)}
         {tab==="calendar"&&(<CalView items={items} events={events} areas={areas} fArea={fArea} fTypes={fTypes} fStates={fStates} onSelect={(it)=>{setSelEvent(null);openItem(it);}} onSelectEvent={(ev)=>{closePanel();setSelEvent(ev);}} sel={sel} admin={admin} onAdd={()=>openAddForDate(todayISO())} onAddOnDate={openAddForDate} month={calDate.month} year={calDate.year} onPrevMonth={prevMonth} onNextMonth={nextMonth} onToday={goToday}/>)}
         {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onSelect={(it)=>{setSelEvent(null);openItem(it);}}/>)}
-        {tab==="reporting"&&(<ReportingView reports={reports} deliverables={deliverables} areas={areas} admin={admin} onCreateDraft={createDraftReport} onUpdateReport={updateReport} onPublishReport={publishReport} onAddDeliverable={addDeliverable} onUpdateDeliverable={updateDeliverable} onRemoveDeliverable={removeDeliverable}/>)}
+        {tab==="reporting"&&(<ReportingView reports={reports} deliverables={deliverables} areas={areas} admin={admin} clientName={clientInfo.name} onCreateDraft={createDraftReport} onUpdateReport={updateReport} onPublishReport={publishReport} onAddDeliverable={addDeliverable} onUpdateDeliverable={updateDeliverable} onRemoveDeliverable={removeDeliverable}/>)}
         {tab==="requests"&&admin&&(<RequestInboxView requests={requests} contacts={contacts} areas={areas} sowSummary={sowSummary} onUpdateSowSummary={updateSowSummary} onAddContact={addContact} onRemoveContact={removeContact} onCreateRequest={createRequest} onUpdateRequest={updateRequest} onConvert={convertRequestToItem} onDecline={declineRequest}/>)}
       </div>
 
@@ -2271,6 +2412,7 @@ export default function Portal() {
       <Modal open={modal&&modal.editingStrategy} onClose={()=>setModal(null)} title="Edit Strategy" wide>
         {modal&&modal.editingStrategy&&(<StrategyForm strategy={modal.editingStrategy} areas={areas} onSave={handleSaveStrategy} onDelete={handleDeleteStrategy} onCancel={()=>setModal(null)}/>)}
       </Modal>
+      <BrandManager open={showBrandManager} onClose={()=>setShowBrandManager(false)} brands={brands} onAdd={addBrand} onRemove={removeBrand}/>
     </div>
   );
 }

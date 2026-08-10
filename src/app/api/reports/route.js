@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabaseServer";
 import { isAdminRequest } from "../../../lib/adminSession";
-import { getClientOrThrow, rowToReport, rowToDeliverable } from "../../../lib/portalData";
+import { getClientOrThrow, clientSlugFromRequest, rowToReport, rowToDeliverable } from "../../../lib/portalData";
 
 // Creates a draft for the current month, snapshotting today's deliverables —
 // mirrors the old createDraftReport() behaviour, just computed server-side.
 export async function POST(request) {
   if (!isAdminRequest(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const sb = supabaseAdmin();
-  const client = await getClientOrThrow(sb);
+  const client = await getClientOrThrow(sb, clientSlugFromRequest(request));
 
   const now = new Date();
   const { year, month } = { year: now.getFullYear(), month: now.getMonth() };

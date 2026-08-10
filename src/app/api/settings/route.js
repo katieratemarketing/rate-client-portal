@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabaseServer";
 import { isAdminRequest } from "../../../lib/adminSession";
-import { getClientOrThrow } from "../../../lib/portalData";
+import { getClientOrThrow, clientSlugFromRequest } from "../../../lib/portalData";
 
 export async function PATCH(request) {
   if (!isAdminRequest(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await request.json();
   const sb = supabaseAdmin();
-  const client = await getClientOrThrow(sb);
+  const client = await getClientOrThrow(sb, clientSlugFromRequest(request));
 
   const row = {};
   if ("showPlanningReference" in body) row.show_planning_reference = body.showPlanningReference;

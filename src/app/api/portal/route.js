@@ -3,6 +3,7 @@ import { supabaseAdmin } from "../../../lib/supabaseServer";
 import { isAdminRequest } from "../../../lib/adminSession";
 import {
   getClientOrThrow,
+  clientSlugFromRequest,
   rowToItem,
   rowToStrategy,
   rowToEvent,
@@ -11,6 +12,7 @@ import {
   rowToPlanningDate,
   rowToContact,
   rowToRequest,
+  rowToBrand,
 } from "../../../lib/portalData";
 
 export async function GET(request) {
@@ -19,7 +21,7 @@ export async function GET(request) {
 
   let client;
   try {
-    client = await getClientOrThrow(sb);
+    client = await getClientOrThrow(sb, clientSlugFromRequest(request));
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 404 });
   }
@@ -77,7 +79,9 @@ export async function GET(request) {
 
   return NextResponse.json({
     admin,
+    client: { slug: client.slug, name: client.name },
     areas,
+    brands: admin ? brandsRes.data.map(rowToBrand) : [],
     themes,
     items: itemsRes.data.map(rowToItem),
     strategies: strategiesRes.data.map(rowToStrategy),

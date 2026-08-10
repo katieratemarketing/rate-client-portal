@@ -1,11 +1,40 @@
-// Single-client prototype — becomes dynamic (per-request client resolution)
-// when the multi-client admin switcher from the PRD gets built.
-export const CLIENT_SLUG = "ulverscroft";
+// Falls back to the original single client when a request doesn't specify
+// ?client=<slug> — keeps existing bookmarks/links working now that the app
+// supports multiple clients.
+export const DEFAULT_CLIENT_SLUG = "ulverscroft";
 
-export async function getClientOrThrow(sb) {
-  const { data, error } = await sb.from("clients").select("id, name, slug, show_planning_reference, sow_summary").eq("slug", CLIENT_SLUG).single();
+export async function getClientOrThrow(sb, slug) {
+  const { data, error } = await sb.from("clients").select("id, name, slug, show_planning_reference, sow_summary").eq("slug", slug || DEFAULT_CLIENT_SLUG).single();
   if (error || !data) throw new Error(error?.message || "Client not found");
   return data;
+}
+
+export function clientSlugFromRequest(request) {
+  return request.nextUrl.searchParams.get("client") || DEFAULT_CLIENT_SLUG;
+}
+
+export async function listClients(sb) {
+  const { data, error } = await sb.from("clients").select("id, slug, name").order("name");
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export function rowToBrand(row) {
+  return { id: row.id, key: row.key, label: row.label, color: row.color, short: row.short, sortOrder: row.sort_order };
+}
+
+export function brandToRow(b) {
+  const row = {};
+  if ("key" in b) row.key = b.key;
+  if ("label" in b) row.label = b.label;
+  if ("color" in b) row.color = b.color;
+  if ("short" in b) row.short = b.short;
+  if ("sortOrder" in b) row.sort_order = b.sortOrder;
+  return row;
+}
+
+export function slugify(text) {
+  return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "client";
 }
 
 export function rowToPlanningDate(row) {

@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabaseServer";
 import { isAdminRequest } from "../../../../lib/adminSession";
-import { getClientOrThrow, rowToReport, reportToRow, rowToDeliverable } from "../../../../lib/portalData";
+import { rowToReport, reportToRow, rowToDeliverable } from "../../../../lib/portalData";
 
 // Handles both field edits and publish. On publish, re-snapshots the
 // current deliverables (matches the old publishReport() behaviour) rather
-// than trusting whatever projectsSnapshot the client sent.
+// than trusting whatever projectsSnapshot the client sent. Resolves the
+// client from the report's own client_id, not the URL's ?client= — which
+// client is "selected" in the admin switcher is irrelevant when acting on
+// a specific report by id.
 export async function PATCH(request, { params }) {
   if (!isAdminRequest(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const body = await request.json();
@@ -13,11 +16,12 @@ export async function PATCH(request, { params }) {
   const row = { ...reportToRow(body), updated_at: new Date().toISOString() };
 
   if (body.status === "published") {
-    const client = await getClientOrThrow(sb);
+    const { data: existing, error: existingErr } = await sb.from("monthly_reports").select("client_id").eq("id", params.id).single();
+    if (existingErr) return NextResponse.json({ error: existingErr.message }, { status: 500 });
     const { data: deliverableRows, error: deliverableErr } = await sb
       .from("deliverables")
       .select("*")
-      .eq("client_id", client.id);
+      .eq("client_id", existing.client_id);
     if (deliverableErr) return NextResponse.json({ error: deliverableErr.message }, { status: 500 });
     row.projects_snapshot = deliverableRows.map(rowToDeliverable);
   }

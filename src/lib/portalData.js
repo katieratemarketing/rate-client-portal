@@ -70,6 +70,7 @@ export function rowToItem(row) {
     history: row.history || [],
     attachments: row.attachments || [],
     linkedItemIds: row.linked_item_ids || [],
+    assigneeId: row.assignee_id,
   };
 }
 
@@ -91,6 +92,7 @@ export function itemToRow(item) {
   if ("history" in item) row.history = item.history || [];
   if ("attachments" in item) row.attachments = item.attachments || [];
   if ("linkedItemIds" in item) row.linked_item_ids = item.linkedItemIds || [];
+  if ("assigneeId" in item) row.assignee_id = item.assigneeId || null;
   return row;
 }
 
@@ -233,6 +235,7 @@ export function rowToRequest(row) {
     requirementsChecklist: row.requirements_checklist || [],
     status: row.status,
     convertedItemId: row.converted_item_id,
+    assigneeId: row.assignee_id,
   };
 }
 
@@ -255,5 +258,19 @@ export function requestToRow(r) {
   if ("requirementsChecklist" in r) row.requirements_checklist = r.requirementsChecklist || [];
   if ("status" in r) row.status = r.status;
   if ("convertedItemId" in r) row.converted_item_id = r.convertedItemId || null;
+  if ("assigneeId" in r) row.assignee_id = r.assigneeId || null;
+  return row;
+}
+
+export function rowToMember(row) {
+  return { id: row.id, name: row.name, email: orEmpty(row.email), role: row.role, color: row.color };
+}
+
+export function memberToRow(m) {
+  const row = {};
+  if ("name" in m) row.name = m.name;
+  if ("email" in m) row.email = m.email;
+  if ("role" in m) row.role = m.role;
+  if ("color" in m) row.color = m.color;
   return row;
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabaseServer";
 import { isAdminRequest } from "../../../lib/adminSession";
+import { selectedMemberId } from "../../../lib/memberSession";
 import {
   getClientOrThrow,
   clientSlugFromRequest,
@@ -13,6 +14,7 @@ import {
   rowToContact,
   rowToRequest,
   rowToBrand,
+  rowToMember,
 } from "../../../lib/portalData";
 
 export async function GET(request) {
@@ -77,6 +79,19 @@ export async function GET(request) {
     sowSummary = client.sow_summary || "";
   }
 
+  // Team roster + "who's currently selected" — staff-only, same boundary as
+  // Requests. A dangling cookie (member row since deleted) resolves to
+  // null here, same as "no member chosen yet" — the picker just reappears.
+  let teamMembers = [];
+  let currentMember = null;
+  if (admin) {
+    const { data, error } = await sb.from("team_members").select("*").order("name");
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    teamMembers = data.map(rowToMember);
+    const memberId = selectedMemberId(request);
+    currentMember = memberId ? teamMembers.find((m) => m.id === memberId) || null : null;
+  }
+
   return NextResponse.json({
     admin,
     client: { slug: client.slug, name: client.name },
@@ -94,5 +109,7 @@ export async function GET(request) {
     contacts,
     requests,
     sowSummary,
+    teamMembers,
+    currentMember,
   });
 }

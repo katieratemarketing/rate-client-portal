@@ -238,6 +238,34 @@ create index requests_client_idx on requests(client_id);
 create index requests_status_idx on requests(client_id, status);
 
 -- ══════════════════════════════════════════════
+-- TEAM MEMBERS (Rate staff roster — global, not client-scoped, since staff
+-- work across every client, unlike the client-side `contacts` table).
+-- Stage 1 identity: no real per-person login yet, just attribution once
+-- someone's picked their name after the shared passcode. Role values are
+-- 'lead' / 'member', deliberately not 'admin', to avoid colliding with the
+-- existing passcode-gate concept of "admin" used throughout the app.
+-- ══════════════════════════════════════════════
+create table team_members (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  email text not null default '',
+  role text not null default 'member', -- lead | member
+  color text not null default '#3b82f6',
+  created_at timestamptz default now()
+);
+
+-- Assignment is a first-class, cross-cutting concept (needed for the
+-- cross-client "My Tasks" query), not type-specific data — a real column,
+-- not another entry in the fields/checklist JSONB blobs. Deliberately
+-- separate from content_items.checklist's ownerType/ownerName, which is
+-- per-subtask free-text attribution (often "client", not staff) — a
+-- different concept, not to be unified with this.
+alter table content_items add column assignee_id uuid references team_members(id) on delete set null;
+alter table requests add column assignee_id uuid references team_members(id) on delete set null;
+create index content_items_assignee_idx on content_items(assignee_id);
+create index requests_assignee_idx on requests(assignee_id);
+
+-- ══════════════════════════════════════════════
 -- Row Level Security — enabled with no policies (service_role only, see note above)
 -- ══════════════════════════════════════════════
 alter table clients enable row level security;
@@ -252,6 +280,7 @@ alter table deliverables enable row level security;
 alter table planning_reference_dates enable row level security;
 alter table contacts enable row level security;
 alter table requests enable row level security;
+alter table team_members enable row level security;
 
 -- ══════════════════════════════════════════════
 -- BOOTSTRAP: the one client this prototype currently serves, plus its
@@ -284,3 +313,6 @@ where clients.slug = 'ulverscroft';
 insert into month_summaries (client_id, enabled, text)
 select id, true, 'Leverage the Agatha Christie exhibition as a tentpole across Ulverscroft and Trade. Drive uLibrary retention through Book Club engagement. Build consistent social presence for The Reading House.'
 from clients where slug = 'ulverscroft';
+
+insert into team_members (name, email, role, color) values
+('Katie', 'katie@ratemarketing.co.uk', 'lead', '#c8e63e');

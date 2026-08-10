@@ -255,6 +255,7 @@ function buildPrefillFromRequest(r, areas) {
     comments: [], history: [],
     checklist: (r.requirementsChecklist||[]).map(c=>({...c})),
     attachments: [], linkedItemIds: [],
+    assigneeId: r.assigneeId || "",
     fields: {
       requestedBy: r.requestedByName || "",
       dateReceived: r.dateReceived || "",
@@ -531,8 +532,8 @@ function TypeFieldsDisplay({ch, values}) {
 /* ══════════════════════════════════════════════
    ITEM FORM (add + edit)
    ══════════════════════════════════════════════ */
-function ItemForm({item, prefill, areas, themes, items, defaultDate, defaultArea, onSave, onDelete, onCancel}) {
-  const [f, setF] = useState(item || prefill || {title:"",date:defaultDate||todayISO(),endDate:"",area:defaultArea||Object.keys(areas)[0],ch:"social",state:"todo",platform:"",notes:"",theme:"",url:"",comments:[],history:[],checklist:[],attachments:[],linkedItemIds:[],fields:{}});
+function ItemForm({item, prefill, areas, themes, items, teamMembers, defaultDate, defaultArea, onSave, onDelete, onCancel}) {
+  const [f, setF] = useState(item || prefill || {title:"",date:defaultDate||todayISO(),endDate:"",area:defaultArea||Object.keys(areas)[0],ch:"social",state:"todo",platform:"",notes:"",theme:"",url:"",comments:[],history:[],checklist:[],attachments:[],linkedItemIds:[],fields:{},assigneeId:""});
   const upd = (k,v) => setF(p=>({...p,[k]:v}));
   const updField = (k,v) => setF(p=>({...p,fields:{...(p.fields||{}),[k]:v}}));
 
@@ -577,6 +578,14 @@ function ItemForm({item, prefill, areas, themes, items, defaultDate, defaultArea
           </select>
         </Field>
       </div>
+      {teamMembers && (
+        <Field label="Assignee">
+          <select style={selectStyle} value={f.assigneeId||""} onChange={e=>upd("assigneeId",e.target.value)}>
+            <option value="">Unassigned</option>
+            {teamMembers.map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
+          </select>
+        </Field>
+      )}
       {isRange ? (
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           <Field label="Start Date"><input type="date" style={inputStyle} value={f.date} onChange={e=>upd("date",e.target.value)}/></Field>
@@ -1517,11 +1526,11 @@ function ContactsManager({contacts, onAdd, onRemove}) {
   );
 }
 
-function RequestForm({contacts, areas, onSave, onCancel}) {
+function RequestForm({contacts, areas, teamMembers, onSave, onCancel}) {
   const [f, setF] = useState({
     title:"", requestedByContactId:"", requestedByName:"", dateReceived:todayISO(), source:"Email",
     originalMessage:"", description:"", brand:"", requestType:"general_request", deadline:"",
-    urgency:"normal", estimatedHours:"", inScope:"review", deliverableFormat:"", requirementsChecklist:[], status:"new",
+    urgency:"normal", estimatedHours:"", inScope:"review", deliverableFormat:"", requirementsChecklist:[], status:"new", assigneeId:"",
   });
   const upd = (k,v) => setF(p=>({...p,[k]:v}));
   const [taskDraft, setTaskDraft] = useState("");
@@ -1590,6 +1599,14 @@ function RequestForm({contacts, areas, onSave, onCancel}) {
         </Field>
         <Field label="Deliverable Format"><input style={inputStyle} value={f.deliverableFormat} onChange={e=>upd("deliverableFormat",e.target.value)} placeholder="e.g. 250-word bio"/></Field>
       </div>
+      {teamMembers && (
+        <Field label="Assignee">
+          <select style={selectStyle} value={f.assigneeId||""} onChange={e=>upd("assigneeId",e.target.value)}>
+            <option value="">Unassigned</option>
+            {teamMembers.map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
+          </select>
+        </Field>
+      )}
       <Field label="Requirements Checklist">
         {f.requirementsChecklist.map(t=>(
           <div key={t.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",background:R.grey,borderRadius:8,marginBottom:4}}>
@@ -1649,7 +1666,54 @@ function RequestCard({r, areas, onUpdate, onConvert, onDecline}) {
   );
 }
 
-function RequestInboxView({requests, contacts, areas, sowSummary, onUpdateSowSummary, onAddContact, onRemoveContact, onCreateRequest, onUpdateRequest, onConvert, onDecline}) {
+/* ══════════════════════════════════════════════
+   HOME — the one cross-client view in the app: everything assigned to the
+   current team member, across every client. Deliberately minimal — the
+   seed of a proper "Agency" area, not a full rebuild of one.
+   ══════════════════════════════════════════════ */
+function HomeView({currentMember, tasks, onOpen}) {
+  const items = tasks.filter(t=>t.kind==="item");
+  const reqs = tasks.filter(t=>t.kind==="request");
+  return (
+    <div style={{maxWidth:680}}>
+      <Eyebrow>Home</Eyebrow>
+      <h2 style={{fontSize:22,fontWeight:800,color:R.black,margin:"0 0 20px",letterSpacing:-.5}}>{currentMember?.name}'s Tasks</h2>
+      {!tasks.length && (<div style={{fontSize:12,color:R.dark,padding:20,textAlign:"center",background:R.grey,borderRadius:12}}>Nothing assigned to you yet, across any client.</div>)}
+      {items.length>0 && (
+        <div style={{marginBottom:24}}>
+          <div style={{fontSize:11,fontWeight:800,color:R.black,textTransform:"uppercase",letterSpacing:.6,marginBottom:8}}>Activity Items</div>
+          {items.map(t=>(
+            <button key={t.id} onClick={()=>onOpen(t)} style={{display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left",padding:"12px 0",borderBottom:`1px solid ${R.mid}`,background:"none",border:"none",borderBottomStyle:"solid",cursor:"pointer"}}>
+              <TypeTag ch={t.type} size={16}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:700,color:R.black,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title}</div>
+                <div style={{fontSize:10,color:R.dark}}>{t.clientName} · {t.date?new Date(t.date).toLocaleDateString("en-GB",{day:"numeric",month:"short"}):"No date"}</div>
+              </div>
+              <SDot s={t.status}/>
+            </button>
+          ))}
+        </div>
+      )}
+      {reqs.length>0 && (
+        <div>
+          <div style={{fontSize:11,fontWeight:800,color:R.black,textTransform:"uppercase",letterSpacing:.6,marginBottom:8}}>Requests</div>
+          {reqs.map(t=>(
+            <button key={t.id} onClick={()=>onOpen(t)} style={{display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left",padding:"12px 0",borderBottom:`1px solid ${R.mid}`,background:"none",border:"none",borderBottomStyle:"solid",cursor:"pointer"}}>
+              <TypeTag ch={t.type} size={16}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:700,color:R.black,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title}</div>
+                <div style={{fontSize:10,color:R.dark}}>{t.clientName} · {t.date?new Date(t.date).toLocaleDateString("en-GB",{day:"numeric",month:"short"}):"No deadline"}</div>
+              </div>
+              <span style={{fontSize:10,fontWeight:700,color:(REQUEST_STATUS[t.status]||{}).c}}>{(REQUEST_STATUS[t.status]||{}).l}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RequestInboxView({requests, contacts, areas, teamMembers, sowSummary, onUpdateSowSummary, onAddContact, onRemoveContact, onCreateRequest, onUpdateRequest, onConvert, onDecline}) {
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState("open");
   const [editingSow, setEditingSow] = useState(false);
@@ -1689,7 +1753,7 @@ function RequestInboxView({requests, contacts, areas, sowSummary, onUpdateSowSum
 
       {showForm && (
         <div style={{background:R.grey,borderRadius:14,padding:18,marginBottom:20}}>
-          <RequestForm contacts={contacts} areas={areas} onSave={(draft)=>{onCreateRequest(draft);setShowForm(false);}} onCancel={()=>setShowForm(false)}/>
+          <RequestForm contacts={contacts} areas={areas} teamMembers={teamMembers} onSave={(draft)=>{onCreateRequest(draft);setShowForm(false);}} onCancel={()=>setShowForm(false)}/>
         </div>
       )}
 
@@ -1888,7 +1952,7 @@ function ReportingView({reports, deliverables, areas, admin, clientName, onCreat
 /* ══════════════════════════════════════════════
    CLIENT SWITCHER (admin only — a client viewer just sees their own name)
    ══════════════════════════════════════════════ */
-function ClientSwitcher({clientInfo, clientsList, admin, onSwitch, onOpenBrands, onCreateClient}) {
+function ClientSwitcher({clientInfo, clientsList, admin, onSwitch, onOpenBrands, onManageTeam, onCreateClient}) {
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
@@ -1926,6 +1990,7 @@ function ClientSwitcher({clientInfo, clientsList, admin, onSwitch, onOpenBrands,
           </div>
           <div style={{borderTop:`1px solid ${R.mid}`,padding:8}}>
             <button onClick={()=>{onOpenBrands();setOpen(false);}} style={{display:"block",width:"100%",textAlign:"left",padding:"8px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:600,color:R.black,borderRadius:8}}>Manage Brands</button>
+            <button onClick={()=>{onManageTeam();setOpen(false);}} style={{display:"block",width:"100%",textAlign:"left",padding:"8px",background:"none",border:"none",cursor:"pointer",fontSize:12,fontWeight:600,color:R.black,borderRadius:8}}>Manage Team</button>
             {creating ? (
               <div style={{display:"flex",gap:6,padding:"4px 4px 0"}}>
                 <input autoFocus style={{...inputStyle,flex:1,fontSize:12}} value={newName} onChange={e=>setNewName(e.target.value)} placeholder="New client name" onKeyDown={e=>{if(e.key==="Enter")submitNewClient();}}/>
@@ -1973,6 +2038,80 @@ function BrandManager({open, onClose, brands, onAdd, onRemove}) {
   );
 }
 
+function MemberAvatar({member, size}) {
+  const s = size||28;
+  return (
+    <div style={{width:s,height:s,borderRadius:"50%",background:member.color,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:s*0.4,fontWeight:800,flexShrink:0}}>
+      {(member.name||"?").charAt(0).toUpperCase()}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   MEMBER PICKER — "who's this?" shown after the shared passcode, before
+   anything else, so personalized views and assignment know who's looking.
+   Not real security: anyone who knows the passcode can pick anyone's name.
+   ══════════════════════════════════════════════ */
+function MemberPicker({teamMembers, onSelect, onManageTeam}) {
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(15,15,15,.92)",zIndex:190,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <div style={{background:R.white,borderRadius:20,padding:32,width:"100%",maxWidth:420,textAlign:"center"}}>
+        <div style={{fontSize:18,fontWeight:800,color:R.black,marginBottom:6}}>Who's this?</div>
+        <div style={{fontSize:12,color:R.dark,marginBottom:20}}>Pick your name so your tasks and assignments follow you.</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:12,justifyContent:"center",marginBottom:20}}>
+          {teamMembers.map(m=>(
+            <button key={m.id} onClick={()=>onSelect(m.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",width:76}}>
+              <MemberAvatar member={m} size={48}/>
+              <span style={{fontSize:11,fontWeight:700,color:R.black,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:76}}>{m.name}</span>
+            </button>
+          ))}
+        </div>
+        {!teamMembers.length && (<div style={{fontSize:12,color:R.dark,marginBottom:16}}>No team members yet.</div>)}
+        <button onClick={onManageTeam} style={{background:"none",border:"none",color:R.dark,fontSize:11,fontWeight:600,cursor:"pointer",textDecoration:"underline"}}>Manage team</button>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   TEAM MANAGER (admin only) — the Rate staff roster, reuses the
+   ContactsManager add/remove-only pattern.
+   ══════════════════════════════════════════════ */
+function TeamManager({open, onClose, teamMembers, onAdd, onRemove}) {
+  const [draft, setDraft] = useState({name:"",email:"",role:"member",color:"#3b82f6"});
+  function submit() {
+    if (!draft.name.trim()) return;
+    onAdd(draft);
+    setDraft({name:"",email:"",role:"member",color:"#3b82f6"});
+  }
+  return (
+    <Modal open={open} onClose={onClose} title="Manage Team">
+      {teamMembers.map(m=>(
+        <div key={m.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:`1px solid ${R.grey}`}}>
+          <MemberAvatar member={m}/>
+          <div style={{flex:1,fontSize:13,color:R.black,fontWeight:600}}>{m.name} <span style={{color:R.dark,fontWeight:400}}>· {m.role==="lead"?"Lead":"Member"}</span></div>
+          <button onClick={()=>onRemove(m.id)} style={removeBtnStyle}>×</button>
+        </div>
+      ))}
+      {!teamMembers.length && (<div style={{fontSize:12,color:R.dark,padding:"12px 0"}}>No team members yet.</div>)}
+      <div style={{marginTop:16,paddingTop:16,borderTop:`1px solid ${R.mid}`}}>
+        <div style={{display:"flex",gap:8,marginBottom:8}}>
+          <input style={{...inputStyle,flex:1}} value={draft.name} onChange={e=>setDraft(p=>({...p,name:e.target.value}))} placeholder="Name"/>
+          <input style={{...inputStyle,flex:1}} value={draft.email} onChange={e=>setDraft(p=>({...p,email:e.target.value}))} placeholder="Email (optional)"/>
+        </div>
+        <div style={{display:"flex",gap:8,marginBottom:8}}>
+          <select style={{...selectStyle,flex:1}} value={draft.role} onChange={e=>setDraft(p=>({...p,role:e.target.value}))}>
+            <option value="member">Member</option>
+            <option value="lead">Lead</option>
+          </select>
+          <input type="color" value={draft.color} onChange={e=>setDraft(p=>({...p,color:e.target.value}))} style={{width:44,height:38,border:`1px solid ${R.mid}`,borderRadius:8,padding:2,cursor:"pointer"}}/>
+        </div>
+        <button onClick={submit} style={{width:"100%",background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"9px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>+ Add Team Member</button>
+      </div>
+    </Modal>
+  );
+}
+
 /* ══════════════════════════════════════════════
    MAIN PORTAL
    ══════════════════════════════════════════════ */
@@ -2005,6 +2144,10 @@ export default function Portal() {
   const [contacts, setContacts] = useState([]);
   const [requests, setRequests] = useState([]);
   const [sowSummary, setSowSummary] = useState("");
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [currentMember, setCurrentMember] = useState(null);
+  const [showTeamManager, setShowTeamManager] = useState(false);
+  const [myTasks, setMyTasks] = useState([]);
 
   function withClient(path) { return `${path}${path.includes("?")?"&":"?"}client=${encodeURIComponent(clientSlug)}`; }
 
@@ -2038,6 +2181,8 @@ export default function Portal() {
     setContacts(data.contacts);
     setRequests(data.requests);
     setSowSummary(data.sowSummary);
+    setTeamMembers(data.teamMembers);
+    setCurrentMember(data.currentMember);
     return data;
   }
 
@@ -2049,6 +2194,25 @@ export default function Portal() {
       setLoading(false);
     })();
   }, [clientSlug]);
+
+  // Jumping to a task from the cross-client Home view: switching clients is
+  // async (re-fetches /api/portal), so opening the target has to wait for
+  // items/requests to actually land rather than happening inline.
+  const [pendingOpen, setPendingOpen] = useState(null); // {kind:"item"|"request", id}
+  function openMyTask(task) {
+    setPendingOpen({kind:task.kind, id:task.id});
+    if (task.clientSlug && task.clientSlug!==clientSlug) switchClient(task.clientSlug);
+  }
+  useEffect(() => {
+    if (!pendingOpen) return;
+    if (pendingOpen.kind==="item") {
+      const it = items.find(i=>i.id===pendingOpen.id);
+      if (it) { setTab("calendar"); openItem(it); setPendingOpen(null); }
+    } else {
+      const found = requests.find(r=>r.id===pendingOpen.id);
+      if (found) { setTab("requests"); setPendingOpen(null); }
+    }
+  }, [items, requests, pendingOpen]);
 
   // Keep the switcher's client list in sync — covers reload-while-logged-in,
   // not just the explicit login action.
@@ -2088,7 +2252,7 @@ export default function Portal() {
     }
   }
   async function handleLogout() {
-    await api("/api/admin/logout", {method:"POST"}).catch(()=>{});
+    await api("/api/admin/logout", {method:"POST"}).catch(()=>{}); // also clears the member cookie server-side
     setAdmin(false);
     setReports(rs => rs.filter(r=>r.status==="published"));
     setContacts([]);
@@ -2096,8 +2260,42 @@ export default function Portal() {
     setSowSummary("");
     setBrands([]);
     setClientsList([]);
-    if (tab==="requests") setTab("calendar");
+    setTeamMembers([]);
+    setCurrentMember(null);
+    setMyTasks([]);
+    if (tab==="requests"||tab==="home") setTab("calendar");
   }
+
+  async function selectMember(memberId) {
+    await api("/api/member-session", {method:"POST", body:{memberId}});
+    setCurrentMember(teamMembers.find(m=>m.id===memberId) || null);
+  }
+  async function switchMember() {
+    await api("/api/member-session", {method:"DELETE"}).catch(()=>{});
+    setCurrentMember(null);
+    setMyTasks([]);
+    if (tab==="home") setTab("calendar");
+  }
+  async function addTeamMember(draft) {
+    try {
+      const created = await api("/api/team", {method:"POST", body:draft});
+      setTeamMembers(prev => [...prev, created].sort((a,b)=>a.name.localeCompare(b.name)));
+    } catch (e) { console.error("Failed to add team member", e); }
+  }
+  async function removeTeamMember(id) {
+    setTeamMembers(prev => prev.filter(m=>m.id!==id));
+    if (currentMember?.id===id) { setCurrentMember(null); setMyTasks([]); }
+    try { await api(`/api/team/${id}`, {method:"DELETE"}); }
+    catch (e) { console.error("Failed to remove team member", e); }
+  }
+
+  async function loadMyTasks() {
+    try {
+      const data = await api("/api/my-tasks");
+      setMyTasks(data.tasks);
+    } catch (e) { console.error("Failed to load my tasks", e); }
+  }
+  useEffect(() => { if (currentMember && tab==="home") loadMyTasks(); }, [currentMember?.id, tab]);
 
   function patchItemLocal(id, patch) { setItems(prev => prev.map(i => i.id===id ? {...i, ...patch} : i)); }
   async function persistItemPatch(id, patch) {
@@ -2336,16 +2534,22 @@ export default function Portal() {
       <div style={{background:R.black,padding:"18px 24px 0"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
           <div>
-            <ClientSwitcher clientInfo={clientInfo} clientsList={clientsList} admin={admin} onSwitch={switchClient} onOpenBrands={()=>setShowBrandManager(true)} onCreateClient={createClient}/>
+            <ClientSwitcher clientInfo={clientInfo} clientsList={clientsList} admin={admin} onSwitch={switchClient} onOpenBrands={()=>setShowBrandManager(true)} onManageTeam={()=>setShowTeamManager(true)} onCreateClient={createClient}/>
             <div style={{fontSize:10,color:"#555",marginTop:2}}>August 2026</div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            {admin&&(<span style={{fontSize:9,fontWeight:700,color:"#f59e42",background:"#f59e4218",padding:"3px 8px",borderRadius:4}}>ADMIN</span>)}
+            {admin&&currentMember&&(
+              <button onClick={switchMember} title="Switch" style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",padding:0}}>
+                <MemberAvatar member={currentMember} size={24}/>
+                <span style={{fontSize:11,fontWeight:700,color:R.white}}>{currentMember.name}</span>
+              </button>
+            )}
             <button onClick={()=>{if(admin){handleLogout();}else{setShowLogin(!showLogin);setLoginError("");}}} style={{background:"#222",borderRadius:8,padding:"5px 12px",border:"none",cursor:"pointer"}}>
               <span style={{fontSize:13,fontWeight:900,color:R.white,letterSpacing:2}}>RATE</span>
             </button>
           </div>
         </div>
+        {admin&&!currentMember&&(<MemberPicker teamMembers={teamMembers} onSelect={selectMember} onManageTeam={()=>setShowTeamManager(true)}/>)}
         {/* Admin login */}
         {showLogin&&!admin&&(
           <div style={{paddingBottom:12}}>
@@ -2358,7 +2562,7 @@ export default function Portal() {
         )}
         {/* Tabs */}
         <div style={{display:"flex",gap:0,overflowX:"auto"}}>
-          {[{k:"strategy",l:"Strategy"},{k:"dates",l:"Key Dates"},{k:"calendar",l:"Calendar"},{k:"approvals",l:"Approvals",count:rc+ic},{k:"reporting",l:"Reporting"},...(admin?[{k:"requests",l:"Requests",count:requests.filter(r=>r.status==="new").length}]:[])].map(t=>(
+          {[...(currentMember?[{k:"home",l:"Home"}]:[]),{k:"strategy",l:"Strategy"},{k:"dates",l:"Key Dates"},{k:"calendar",l:"Calendar"},{k:"approvals",l:"Approvals",count:rc+ic},{k:"reporting",l:"Reporting"},...(admin?[{k:"requests",l:"Requests",count:requests.filter(r=>r.status==="new").length}]:[])].map(t=>(
             <button key={t.k} onClick={()=>{setTab(t.k);closePanel();setSelEvent(null);}} style={{
               background:"none",border:"none",cursor:"pointer",padding:"14px 20px",fontSize:15,fontWeight:700,
               color:tab===t.k?R.lime:R.white,borderBottom:tab===t.k?`3px solid ${R.lime}`:"3px solid transparent",
@@ -2384,12 +2588,13 @@ export default function Portal() {
 
       {/* CONTENT */}
       <div style={{padding:"20px 24px 48px",marginRight:(sel||selEvent)?360:0,transition:"margin-right .2s"}}>
+        {tab==="home"&&currentMember&&(<HomeView currentMember={currentMember} tasks={myTasks} onOpen={openMyTask}/>)}
         {tab==="strategy"&&(<StrategyView strategies={strategies} areas={areas} fArea={fArea} admin={admin} monthSummary={monthSummary} onToggleSummary={(v)=>updateMonthSummary({...monthSummary,enabled:v})} onEditSummary={(text)=>updateMonthSummary({...monthSummary,text})} onOpenForm={(s)=>setModal(s?{editingStrategy:s}:"addStrategy")}/>)}
         {tab==="dates"&&(<KeyDatesView events={events} areas={areas} onSelect={(ev)=>{closePanel();setSelEvent(ev);}} admin={admin} planningDates={planningDates} showPlanningReference={showPlanningReference} onToggleShowPlanningReference={updateShowPlanningReference}/>)}
         {tab==="calendar"&&(<CalView items={items} events={events} areas={areas} fArea={fArea} fTypes={fTypes} fStates={fStates} onSelect={(it)=>{setSelEvent(null);openItem(it);}} onSelectEvent={(ev)=>{closePanel();setSelEvent(ev);}} sel={sel} admin={admin} onAdd={()=>openAddForDate(todayISO())} onAddOnDate={openAddForDate} month={calDate.month} year={calDate.year} onPrevMonth={prevMonth} onNextMonth={nextMonth} onToday={goToday}/>)}
         {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onSelect={(it)=>{setSelEvent(null);openItem(it);}}/>)}
         {tab==="reporting"&&(<ReportingView reports={reports} deliverables={deliverables} areas={areas} admin={admin} clientName={clientInfo.name} onCreateDraft={createDraftReport} onUpdateReport={updateReport} onPublishReport={publishReport} onAddDeliverable={addDeliverable} onUpdateDeliverable={updateDeliverable} onRemoveDeliverable={removeDeliverable}/>)}
-        {tab==="requests"&&admin&&(<RequestInboxView requests={requests} contacts={contacts} areas={areas} sowSummary={sowSummary} onUpdateSowSummary={updateSowSummary} onAddContact={addContact} onRemoveContact={removeContact} onCreateRequest={createRequest} onUpdateRequest={updateRequest} onConvert={convertRequestToItem} onDecline={declineRequest}/>)}
+        {tab==="requests"&&admin&&(<RequestInboxView requests={requests} contacts={contacts} areas={areas} teamMembers={teamMembers} sowSummary={sowSummary} onUpdateSowSummary={updateSowSummary} onAddContact={addContact} onRemoveContact={removeContact} onCreateRequest={createRequest} onUpdateRequest={updateRequest} onConvert={convertRequestToItem} onDecline={declineRequest}/>)}
       </div>
 
       {/* SIDE PANELS */}
@@ -2398,13 +2603,13 @@ export default function Portal() {
 
       {/* MODALS */}
       <FormPanel open={modal==="add"} onClose={closeAddModal} title="Add Content Item">
-        <ItemForm areas={areas} themes={themes} items={items} defaultDate={addDefaults?.date} defaultArea={fArea} onSave={handleSaveItem} onCancel={closeAddModal}/>
+        <ItemForm areas={areas} themes={themes} items={items} teamMembers={teamMembers} defaultDate={addDefaults?.date} defaultArea={fArea} onSave={handleSaveItem} onCancel={closeAddModal}/>
       </FormPanel>
       <FormPanel open={modal&&modal.editing} onClose={()=>setModal(null)} title="Edit Item">
-        {modal&&modal.editing&&(<ItemForm item={modal.editing} areas={areas} themes={themes} items={items} onSave={handleSaveItem} onDelete={handleDeleteItem} onCancel={()=>setModal(null)}/>)}
+        {modal&&modal.editing&&(<ItemForm item={modal.editing} areas={areas} themes={themes} items={items} teamMembers={teamMembers} onSave={handleSaveItem} onDelete={handleDeleteItem} onCancel={()=>setModal(null)}/>)}
       </FormPanel>
       <FormPanel open={modal&&modal.creatingFromRequest} onClose={()=>setModal(null)} title="Convert Request to Activity">
-        {modal&&modal.creatingFromRequest&&(<ItemForm prefill={buildPrefillFromRequest(modal.creatingFromRequest, areas)} areas={areas} themes={themes} items={items} onSave={handleSaveItem} onCancel={()=>setModal(null)}/>)}
+        {modal&&modal.creatingFromRequest&&(<ItemForm prefill={buildPrefillFromRequest(modal.creatingFromRequest, areas)} areas={areas} themes={themes} items={items} teamMembers={teamMembers} onSave={handleSaveItem} onCancel={()=>setModal(null)}/>)}
       </FormPanel>
       <Modal open={modal==="addStrategy"} onClose={()=>setModal(null)} title="New Strategy" wide>
         <StrategyForm areas={areas} onSave={handleSaveStrategy} onCancel={()=>setModal(null)}/>
@@ -2413,6 +2618,7 @@ export default function Portal() {
         {modal&&modal.editingStrategy&&(<StrategyForm strategy={modal.editingStrategy} areas={areas} onSave={handleSaveStrategy} onDelete={handleDeleteStrategy} onCancel={()=>setModal(null)}/>)}
       </Modal>
       <BrandManager open={showBrandManager} onClose={()=>setShowBrandManager(false)} brands={brands} onAdd={addBrand} onRemove={removeBrand}/>
+      <TeamManager open={showTeamManager} onClose={()=>setShowTeamManager(false)} teamMembers={teamMembers} onAdd={addTeamMember} onRemove={removeTeamMember}/>
     </div>
   );
 }

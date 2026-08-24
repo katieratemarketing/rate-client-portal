@@ -262,8 +262,10 @@ create table team_members (
 -- different concept, not to be unified with this.
 alter table content_items add column assignee_id uuid references team_members(id) on delete set null;
 alter table requests add column assignee_id uuid references team_members(id) on delete set null;
+alter table deliverables add column assignee_id uuid references team_members(id) on delete set null;
 create index content_items_assignee_idx on content_items(assignee_id);
 create index requests_assignee_idx on requests(assignee_id);
+create index deliverables_assignee_idx on deliverables(assignee_id);
 
 -- ══════════════════════════════════════════════
 -- Row Level Security — enabled with no policies (service_role only, see note above)

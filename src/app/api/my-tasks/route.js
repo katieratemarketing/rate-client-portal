@@ -14,12 +14,14 @@ export async function GET(request) {
   if (!memberId) return NextResponse.json({ tasks: [] });
 
   const sb = supabaseAdmin();
-  const [itemsRes, requestsRes] = await Promise.all([
+  const [itemsRes, requestsRes, deliverablesRes] = await Promise.all([
     sb.from("content_items").select("id, title, date, state, ch, clients(slug, name)").eq("assignee_id", memberId).order("date"),
     sb.from("requests").select("id, title, deadline, status, request_type, clients(slug, name)").eq("assignee_id", memberId).order("deadline"),
+    sb.from("deliverables").select("id, title, status, clients(slug, name)").eq("assignee_id", memberId).order("created_at"),
   ]);
   if (itemsRes.error) return NextResponse.json({ error: itemsRes.error.message }, { status: 500 });
   if (requestsRes.error) return NextResponse.json({ error: requestsRes.error.message }, { status: 500 });
+  if (deliverablesRes.error) return NextResponse.json({ error: deliverablesRes.error.message }, { status: 500 });
 
   const tasks = [
     ...itemsRes.data.map((row) => ({
@@ -39,6 +41,19 @@ export async function GET(request) {
       date: row.deadline,
       status: row.status,
       type: row.request_type,
+      clientSlug: row.clients?.slug,
+      clientName: row.clients?.name,
+    })),
+    // Ongoing projects have no fixed date by design — date stays null so
+    // Home can group/label them distinctly rather than sorting them in
+    // among dated work.
+    ...deliverablesRes.data.map((row) => ({
+      kind: "deliverable",
+      id: row.id,
+      title: row.title,
+      date: null,
+      status: row.status,
+      type: null,
       clientSlug: row.clients?.slug,
       clientName: row.clients?.name,
     })),

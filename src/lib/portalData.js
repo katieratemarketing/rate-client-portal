@@ -163,6 +163,7 @@ export function rowToDeliverable(row) {
     status: row.status,
     statusNote: orEmpty(row.status_note),
     area: orEmpty(row.area),
+    assigneeId: row.assignee_id,
   };
 }
 
@@ -173,6 +174,7 @@ export function deliverableToRow(d) {
   if ("status" in d) row.status = d.status;
   if ("statusNote" in d) row.status_note = d.statusNote;
   if ("area" in d) row.area = d.area;
+  if ("assigneeId" in d) row.assignee_id = d.assigneeId || null;
   return row;
 }
 

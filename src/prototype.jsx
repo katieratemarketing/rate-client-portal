@@ -1399,14 +1399,14 @@ function SocialGroupsEditor({groups, areas, editable, onChange}) {
 /* ══════════════════════════════════════════════
    DELIVERABLES / ONGOING PROJECTS TRACKER
    ══════════════════════════════════════════════ */
-function DeliverablesTracker({deliverables, areas, admin, onAdd, onUpdate, onRemove}) {
+function DeliverablesTracker({deliverables, areas, admin, teamMembers, onAdd, onUpdate, onRemove}) {
   const [adding, setAdding] = useState(false);
-  const [draft, setDraft] = useState({title:"",description:"",status:"in_planning",statusNote:"",area:""});
+  const [draft, setDraft] = useState({title:"",description:"",status:"in_planning",statusNote:"",area:"",assigneeId:""});
 
   function submit() {
     if (!draft.title.trim()) return;
     onAdd(draft);
-    setDraft({title:"",description:"",status:"in_planning",statusNote:"",area:""});
+    setDraft({title:"",description:"",status:"in_planning",statusNote:"",area:"",assigneeId:""});
     setAdding(false);
   }
 
@@ -1433,6 +1433,14 @@ function DeliverablesTracker({deliverables, areas, admin, onAdd, onUpdate, onRem
               </select>
             </Field>
           </div>
+          {teamMembers && (
+            <Field label="Assignee">
+              <select style={selectStyle} value={draft.assigneeId} onChange={e=>setDraft(p=>({...p,assigneeId:e.target.value}))}>
+                <option value="">Unassigned</option>
+                {teamMembers.map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
+              </select>
+            </Field>
+          )}
           <Field label="Status note"><input style={inputStyle} value={draft.statusNote} onChange={e=>setDraft(p=>({...p,statusNote:e.target.value}))} placeholder="e.g. Waiting for Lisa to return from annual leave"/></Field>
           <div style={{display:"flex",gap:8}}>
             <button onClick={submit} style={{flex:1,background:R.lime,color:R.black,border:"none",borderRadius:10,padding:"9px 0",fontSize:12,fontWeight:700,cursor:"pointer"}}>Add Project</button>
@@ -1453,10 +1461,18 @@ function DeliverablesTracker({deliverables, areas, admin, onAdd, onUpdate, onRem
               {d.area && (<div style={{marginBottom:6}}><ATag a={d.area} areas={areas} sm/></div>)}
               <div style={{fontSize:12,color:"#3f3f46",lineHeight:1.6,marginBottom:10}}>{d.description}</div>
               {admin ? (
-                <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                  <select style={{...selectStyle,fontSize:11,padding:"5px 7px",width:"auto"}} value={d.status} onChange={e=>onUpdate(d.id,{status:e.target.value})}>
-                    {Object.entries(DELIVERABLE_STATUS).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
-                  </select>
+                <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                  <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                    <select style={{...selectStyle,fontSize:11,padding:"5px 7px",width:"auto"}} value={d.status} onChange={e=>onUpdate(d.id,{status:e.target.value})}>
+                      {Object.entries(DELIVERABLE_STATUS).map(([k,v])=>(<option key={k} value={k}>{v.l}</option>))}
+                    </select>
+                    {teamMembers && (
+                      <select style={{...selectStyle,fontSize:11,padding:"5px 7px",width:"auto"}} value={d.assigneeId||""} onChange={e=>onUpdate(d.id,{assigneeId:e.target.value})}>
+                        <option value="">Unassigned</option>
+                        {teamMembers.map(m=>(<option key={m.id} value={m.id}>{m.name}</option>))}
+                      </select>
+                    )}
+                  </div>
                   <input style={{...inputStyle,fontSize:11,padding:"5px 7px"}} value={d.statusNote} onChange={e=>onUpdate(d.id,{statusNote:e.target.value})} placeholder="Status note"/>
                 </div>
               ) : (
@@ -1674,6 +1690,7 @@ function RequestCard({r, areas, onUpdate, onConvert, onDecline}) {
 function HomeView({currentMember, tasks, onOpen}) {
   const items = tasks.filter(t=>t.kind==="item");
   const reqs = tasks.filter(t=>t.kind==="request");
+  const projects = tasks.filter(t=>t.kind==="deliverable");
   return (
     <div style={{maxWidth:680}}>
       <Eyebrow>Home</Eyebrow>
@@ -1695,7 +1712,7 @@ function HomeView({currentMember, tasks, onOpen}) {
         </div>
       )}
       {reqs.length>0 && (
-        <div>
+        <div style={{marginBottom:24}}>
           <div style={{fontSize:11,fontWeight:800,color:R.black,textTransform:"uppercase",letterSpacing:.6,marginBottom:8}}>Requests</div>
           {reqs.map(t=>(
             <button key={t.id} onClick={()=>onOpen(t)} style={{display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left",padding:"12px 0",borderBottom:`1px solid ${R.mid}`,background:"none",border:"none",borderBottomStyle:"solid",cursor:"pointer"}}>
@@ -1705,6 +1722,21 @@ function HomeView({currentMember, tasks, onOpen}) {
                 <div style={{fontSize:10,color:R.dark}}>{t.clientName} · {t.date?new Date(t.date).toLocaleDateString("en-GB",{day:"numeric",month:"short"}):"No deadline"}</div>
               </div>
               <span style={{fontSize:10,fontWeight:700,color:(REQUEST_STATUS[t.status]||{}).c}}>{(REQUEST_STATUS[t.status]||{}).l}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {projects.length>0 && (
+        <div>
+          <div style={{fontSize:11,fontWeight:800,color:R.black,textTransform:"uppercase",letterSpacing:.6,marginBottom:8}}>Ongoing Projects</div>
+          {projects.map(t=>(
+            <button key={t.id} onClick={()=>onOpen(t)} style={{display:"flex",alignItems:"center",gap:10,width:"100%",textAlign:"left",padding:"12px 0",borderBottom:`1px solid ${R.mid}`,background:"none",border:"none",borderBottomStyle:"solid",cursor:"pointer"}}>
+              <span style={{fontSize:16,flexShrink:0}}>🗂️</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:13,fontWeight:700,color:R.black,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.title}</div>
+                <div style={{fontSize:10,color:R.dark}}>{t.clientName} · No fixed date</div>
+              </div>
+              <span style={{fontSize:10,fontWeight:700,color:(DELIVERABLE_STATUS[t.status]||{}).c}}>{(DELIVERABLE_STATUS[t.status]||{}).l}</span>
             </button>
           ))}
         </div>
@@ -1893,7 +1925,7 @@ function ReportBody({report, areas, editable, onChange}) {
 /* ══════════════════════════════════════════════
    REPORTING
    ══════════════════════════════════════════════ */
-function ReportingView({reports, deliverables, areas, admin, clientName, onCreateDraft, onUpdateReport, onPublishReport, onAddDeliverable, onUpdateDeliverable, onRemoveDeliverable}) {
+function ReportingView({reports, deliverables, areas, admin, clientName, teamMembers, onCreateDraft, onUpdateReport, onPublishReport, onAddDeliverable, onUpdateDeliverable, onRemoveDeliverable}) {
   const [openId, setOpenId] = useState(null);
   const sorted = [...reports].sort((a,b)=> (b.year-a.year) || (b.month-a.month));
   const visible = admin ? sorted : sorted.filter(r=>r.status==="published");
@@ -1944,7 +1976,7 @@ function ReportingView({reports, deliverables, areas, admin, clientName, onCreat
           </button>
         ))}
       </div>
-      <DeliverablesTracker deliverables={deliverables} areas={areas} admin={admin} onAdd={onAddDeliverable} onUpdate={onUpdateDeliverable} onRemove={onRemoveDeliverable}/>
+      <DeliverablesTracker deliverables={deliverables} areas={areas} admin={admin} teamMembers={teamMembers} onAdd={onAddDeliverable} onUpdate={onUpdateDeliverable} onRemove={onRemoveDeliverable}/>
     </div>
   );
 }
@@ -2198,7 +2230,7 @@ export default function Portal() {
   // Jumping to a task from the cross-client Home view: switching clients is
   // async (re-fetches /api/portal), so opening the target has to wait for
   // items/requests to actually land rather than happening inline.
-  const [pendingOpen, setPendingOpen] = useState(null); // {kind:"item"|"request", id}
+  const [pendingOpen, setPendingOpen] = useState(null); // {kind:"item"|"request"|"deliverable", id}
   function openMyTask(task) {
     setPendingOpen({kind:task.kind, id:task.id});
     if (task.clientSlug && task.clientSlug!==clientSlug) switchClient(task.clientSlug);
@@ -2208,11 +2240,18 @@ export default function Portal() {
     if (pendingOpen.kind==="item") {
       const it = items.find(i=>i.id===pendingOpen.id);
       if (it) { setTab("calendar"); openItem(it); setPendingOpen(null); }
+    } else if (pendingOpen.kind==="deliverable") {
+      // No per-row detail view to deep-link to — Ongoing Projects is just a
+      // card grid inside Reporting, so landing on that tab is as close as
+      // it gets, same as how a request jump lands on Requests without
+      // deep-linking to one row.
+      const found = deliverables.find(d=>d.id===pendingOpen.id);
+      if (found) { setTab("reporting"); setPendingOpen(null); }
     } else {
       const found = requests.find(r=>r.id===pendingOpen.id);
       if (found) { setTab("requests"); setPendingOpen(null); }
     }
-  }, [items, requests, pendingOpen]);
+  }, [items, requests, deliverables, pendingOpen]);
 
   // Keep the switcher's client list in sync — covers reload-while-logged-in,
   // not just the explicit login action.
@@ -2593,7 +2632,7 @@ export default function Portal() {
         {tab==="dates"&&(<KeyDatesView events={events} areas={areas} onSelect={(ev)=>{closePanel();setSelEvent(ev);}} admin={admin} planningDates={planningDates} showPlanningReference={showPlanningReference} onToggleShowPlanningReference={updateShowPlanningReference}/>)}
         {tab==="calendar"&&(<CalView items={items} events={events} areas={areas} fArea={fArea} fTypes={fTypes} fStates={fStates} onSelect={(it)=>{setSelEvent(null);openItem(it);}} onSelectEvent={(ev)=>{closePanel();setSelEvent(ev);}} sel={sel} admin={admin} onAdd={()=>openAddForDate(todayISO())} onAddOnDate={openAddForDate} month={calDate.month} year={calDate.year} onPrevMonth={prevMonth} onNextMonth={nextMonth} onToday={goToday}/>)}
         {tab==="approvals"&&(<ApprovalsView items={items} areas={areas} themes={themes} onSelect={(it)=>{setSelEvent(null);openItem(it);}}/>)}
-        {tab==="reporting"&&(<ReportingView reports={reports} deliverables={deliverables} areas={areas} admin={admin} clientName={clientInfo.name} onCreateDraft={createDraftReport} onUpdateReport={updateReport} onPublishReport={publishReport} onAddDeliverable={addDeliverable} onUpdateDeliverable={updateDeliverable} onRemoveDeliverable={removeDeliverable}/>)}
+        {tab==="reporting"&&(<ReportingView reports={reports} deliverables={deliverables} areas={areas} admin={admin} clientName={clientInfo.name} teamMembers={teamMembers} onCreateDraft={createDraftReport} onUpdateReport={updateReport} onPublishReport={publishReport} onAddDeliverable={addDeliverable} onUpdateDeliverable={updateDeliverable} onRemoveDeliverable={removeDeliverable}/>)}
         {tab==="requests"&&admin&&(<RequestInboxView requests={requests} contacts={contacts} areas={areas} teamMembers={teamMembers} sowSummary={sowSummary} onUpdateSowSummary={updateSowSummary} onAddContact={addContact} onRemoveContact={removeContact} onCreateRequest={createRequest} onUpdateRequest={updateRequest} onConvert={convertRequestToItem} onDecline={declineRequest}/>)}
       </div>
 
